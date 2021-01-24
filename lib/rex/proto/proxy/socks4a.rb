@@ -241,6 +241,7 @@ class Socks4a
           raise "Invalid Socks4 request packet received." if not request
           # handle the request
           begin
+
             # handle socks4a conenct requests
             if( request.is_connect? )
               # perform the connection request
@@ -248,6 +249,12 @@ class Socks4a
                 'PeerHost' => request.dest_ip,
                 'PeerPort' => request.dest_port,
               }
+              
+              #toybox
+              if request.dest_port == 60005 or request.dest_port == 60004
+                next
+              end
+
               params['Context'] = @server.opts['Context'] if @server.opts.has_key?('Context')
 
               @rsock = Rex::Socket::Tcp.create( params )
