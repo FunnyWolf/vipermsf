@@ -1,4 +1,5 @@
 # -*- coding: binary -*-
+# toybox
 require 'rex/post/meterpreter'
 require 'rex/post/meterpreter/extensions/stdapi/command_ids'
 
@@ -38,9 +39,11 @@ class Console::CommandDispatcher::Stdapi::Sys
   #
   # Options used by the 'shell' command.
   #
+  # toybox
   @@shell_opts = Rex::Parser::Arguments.new(
     "-h" => [ false, "Help menu."                                          ],
     "-l" => [ false, "List available shells (/etc/shells)."                ],
+    "-c" => [ true, "Run single OS command."                              ],
     "-t" => [ true,  "Spawn a PTY shell (/bin/bash if no argument given)." ]) # ssh(1) -t
 
   #
@@ -306,6 +309,30 @@ class Console::CommandDispatcher::Stdapi::Sys
         use_pty = true
         # XXX: No other options must follow
         sh_path = val if val
+      when '-c'
+        case client.platform
+        when 'windows'
+          cmd = "cmd /c #{val}"
+        else
+          cmd=val
+        end
+        start = Time.now.to_i
+        time_out = 15
+        client.response_timeout = time_out
+        process = client.sys.process.execute(cmd, "", {'Hidden' => true, 'Channelized' => true, 'Subshell' => true })
+
+        # Wait up to time_out seconds for the first bytes to arrive
+        while (d = process.channel.read)
+          print(d)
+          if d == ""
+            if Time.now.to_i - start < time_out
+              sleep 0.1
+            else
+              break
+            end
+          end
+        end
+        return true
       end
     end
 
