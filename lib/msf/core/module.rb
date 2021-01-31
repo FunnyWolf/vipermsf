@@ -42,6 +42,7 @@ module Msf
     autoload :SideEffects, 'msf/core/module/side_effects'
     autoload :Stability, 'msf/core/module/stability'
     autoload :Reliability, 'msf/core/module/reliability'
+    # toybox
     autoload :Rpcredis,'msf/core/module/rpcredis'
 
     include Msf::Module::Alert
@@ -63,6 +64,7 @@ module Msf
     include Msf::Module::SideEffects
     include Msf::Module::Stability
     include Msf::Module::Reliability
+    # toybox
     include Msf::Module::Rpcredis
 
     # The key where a comma-separated list of Ruby module names will live in the

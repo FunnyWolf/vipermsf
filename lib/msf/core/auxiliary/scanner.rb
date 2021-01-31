@@ -66,6 +66,7 @@ def run
   threads_max = datastore['THREADS'].to_i
   @tl = []
   @scan_errors = []
+  # toybox
   @scan_result = []
   res = Queue.new
   results = Hash.new
@@ -119,6 +120,7 @@ def run
 
           begin
             res << {tip => nmod.run_host(targ)}
+	  # toybox
           if defined? nmod.process_result
             @scan_result.push(nmod.process_result)
           end
@@ -166,6 +168,7 @@ def run
     end
 
     scanner_handle_fatal_errors
+    # toybox
     if @scan_result.length > 0
     	pub_json_result(true,
                     nil,

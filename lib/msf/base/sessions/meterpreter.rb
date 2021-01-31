@@ -1,7 +1,5 @@
 # -*- coding: binary -*-
 # toybox
-require 'msf/base'
-require 'msf/base/sessions/scriptable'
 require 'rex/post/meterpreter'
 
 module Msf
@@ -29,7 +27,7 @@ class Meterpreter < Rex::Post::Meterpreter::Client
   #
   include Msf::Session::Provider::SingleCommandShell
 
-  include Msf::Session::Scriptable
+  include Msf::Sessions::Scriptable
 
   # Override for server implementations that can't do SSL
   def supports_ssl?
@@ -460,7 +458,6 @@ class Meterpreter < Rex::Post::Meterpreter::Client
     end
     false
   end
-
 
   def update_session_info
     # sys.config.getuid, and fs.dir.getwd cache their results, so update them

@@ -2,7 +2,6 @@
 # toybox
 require 'pp'
 require 'rex'
-require 'msf/ui/web/driver'
 
 module Msf
 module RPC
@@ -119,6 +118,7 @@ class RPC_Console < RPC_Base
   def rpc_write(cid, data)
     cid = cid.to_s
     return { 'result' => 'failure' } if not @console_driver.consoles[cid]
+    # toybox
     wrote = @console_driver.write_console(cid, data || '')
     prompt = @console_driver.consoles[cid].prompt || ''
     {

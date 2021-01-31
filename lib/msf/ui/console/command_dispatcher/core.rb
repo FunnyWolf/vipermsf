@@ -10,18 +10,6 @@ require 'rex/ui/text/output/buffer/stdout'
 # Project
 #
 
-require 'msf/ui/console/command_dispatcher/encoder'
-require 'msf/ui/console/command_dispatcher/exploit'
-require 'msf/ui/console/command_dispatcher/nop'
-require 'msf/ui/console/command_dispatcher/payload'
-require 'msf/ui/console/command_dispatcher/auxiliary'
-require 'msf/ui/console/command_dispatcher/post'
-require 'msf/ui/console/command_dispatcher/evasion'
-require 'msf/ui/console/command_dispatcher/jobs'
-require 'msf/ui/console/command_dispatcher/resource'
-require 'msf/ui/console/command_dispatcher/modules'
-require 'msf/ui/console/command_dispatcher/developer'
-require 'msf/util/document_generator'
 
 require 'msf/core/opt_condition'
 
@@ -1832,9 +1820,9 @@ class Core
 
     # A value needs to be specified
     if words.length == 2
-      return tab_complete_option_values(str, words, opt: words[1])
+      return tab_complete_option_values(active_module, str, words, opt: words[1])
     end
-    tab_complete_option_names(str, words)
+    tab_complete_option_names(active_module, str, words)
   end
 
   def cmd_setg_help
@@ -1852,7 +1840,7 @@ class Core
   #   line. `words` is always at least 1 when tab completion has reached this
   #   stage since the command itself has been completed.
   def cmd_unset_tabs(str, words)
-    tab_complete_datastore_names(str, words)
+    tab_complete_datastore_names(active_module, str, words)
   end
 
   #

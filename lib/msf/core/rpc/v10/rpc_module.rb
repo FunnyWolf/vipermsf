@@ -1,7 +1,6 @@
 # -*- coding: binary -*-
 # toybox
 require 'json'
-require 'msf/util/document_generator'
 
 module Msf
 module RPC
