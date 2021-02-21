@@ -1,7 +1,5 @@
 # -*- coding: binary -*-
 
-require 'rex/ui/text/output/buffer/stdout'
-require 'rex/parser/arguments'
 
 module Msf
   module Ui
@@ -672,7 +670,17 @@ module Msf
               mod = framework.modules.create(mod_name)
 
               unless mod
+                # Checks to see if we have any load_errors for the current module.
+                # and if so, returns them to the user.
+                load_error = framework.modules.load_error_by_name(mod_name)
+                if load_error
+                  print_error("Failed to load module: #{load_error}")
+                  return false
+                end
                 unless mod_resolved
+                  elog("Module #{mod_name} not found, and no loading errors found. If you're using a custom module" \
+                    ' refer to our wiki: https://github.com/rapid7/metasploit-framework/wiki/Running-Private-Modules')
+
                   # Avoid trying to use the search result if it exactly matches
                   # the module we were trying to load. The module cannot be
                   # loaded and searching isn't going to change that.
@@ -1293,6 +1301,9 @@ module Msf
                 'Prefix'     => "\n",
                 'Postfix'    => "\n",
                 'SearchTerm' => row_filter,
+                # For now, don't perform any word wrapping on the search table as it breaks the workflow of
+                # copying module names in conjunction with the `use <paste-buffer>` command
+                'Width' => ::BigDecimal::INFINITY,
                 'Columns' => [
                   '#',
                   'Name',

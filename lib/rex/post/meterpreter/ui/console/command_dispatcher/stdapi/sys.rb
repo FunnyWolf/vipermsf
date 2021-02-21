@@ -309,6 +309,7 @@ class Console::CommandDispatcher::Stdapi::Sys
         use_pty = true
         # XXX: No other options must follow
         sh_path = val if val
+      # toybox
       when '-c'
         case client.platform
         when 'windows'

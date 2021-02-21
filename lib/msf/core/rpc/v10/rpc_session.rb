@@ -1,8 +1,7 @@
 # -*- coding: binary -*-
 # toybox
 require 'rex'
-require 'rex/ui/text/output/buffer'
-require 'timeout'
+
 module Msf
 module RPC
 class RPC_Session < RPC_Base

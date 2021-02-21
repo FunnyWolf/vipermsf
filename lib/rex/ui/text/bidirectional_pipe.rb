@@ -4,9 +4,6 @@ module Rex
 module Ui
 module Text
 
-require 'rex/ui/text/output'
-require 'rex/ui/text/output/buffer'
-require 'rex/ui/text/input/buffer'
 
 class BidirectionalPipe < Rex::Ui::Text::Input
 # toybox

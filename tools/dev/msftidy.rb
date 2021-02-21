@@ -180,7 +180,7 @@ class Msftidy
         when 'ZDI'
           warn("Invalid ZDI reference") if value !~ /^\d{2}-\d{3,4}$/
         when 'WPVDB'
-          warn("Invalid WPVDB reference") if value !~ /^\d+$/
+          warn("Invalid WPVDB reference") if value !~ /^\d+$/ and value !~ /^[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}?$/
         when 'PACKETSTORM'
           warn("Invalid PACKETSTORM reference") if value !~ /^\d+$/
         when 'URL'
@@ -195,6 +195,8 @@ class Msftidy
           elsif value =~ /^https?:\/\/www\.kb\.cert\.org\/vuls\/id\//
             warn("Please use 'US-CERT-VU' for '#{value}'")
           elsif value =~ /^https?:\/\/wpvulndb\.com\/vulnerabilities\//
+            warn("Please use 'WPVDB' for '#{value}'")
+          elsif value =~ /^https?:\/\/wpscan\.com\/vulnerability\//
             warn("Please use 'WPVDB' for '#{value}'")
           elsif value =~ /^https?:\/\/(?:[^\.]+\.)?packetstormsecurity\.(?:com|net|org)\//
             warn("Please use 'PACKETSTORM' for '#{value}'")
@@ -482,7 +484,7 @@ class Msftidy
   def check_bad_terms
     # "Stack overflow" vs "Stack buffer overflow" - See explanation:
     # http://blogs.technet.com/b/srd/archive/2009/01/28/stack-overflow-stack-exhaustion-not-the-same-as-stack-buffer-overflow.aspx
-    if @module_type == 'exploit' && @source.gsub("\n", "") =~ /stack[[:space:]]+overflow/i
+    if @module_type == 'exploits' && @source.gsub("\n", "") =~ /stack[[:space:]]+overflow/i
       warn('Contains "stack overflow" You mean "stack buffer overflow"?')
     elsif @module_type == 'auxiliary' && @source.gsub("\n", "") =~ /stack[[:space:]]+overflow/i
       warn('Contains "stack overflow" You mean "stack exhaustion"?')
@@ -723,7 +725,7 @@ class Msftidy
   #
   def check_author
     # Only the three common module types have a consistently defined info hash
-    return unless %w[exploit auxiliary post].include?(@module_type)
+    return unless %w[exploits auxiliary post].include?(@module_type)
 
     unless @source =~ /["']Author["'][[:space:]]*=>/
       error('Missing "Author" info, please add')
@@ -738,6 +740,18 @@ class Msftidy
 
     unless @source =~ /["']Description["'][[:space:]]*=>/
       error('Missing "Description" info, please add')
+    end
+  end
+
+  # Check for exploit modules specifying notes
+  #
+  def check_notes
+    # Only exploits require notes
+    return unless @module_type == 'exploits'
+
+    unless @source =~ /["']Notes["'][[:space:]]*=>/
+      # This should be updated to warning eventually
+      info('Missing "Notes" info, please add')
     end
   end
 
@@ -777,6 +791,7 @@ class Msftidy
     check_arch
     check_author
     check_description
+    check_notes
   end
 
   private

@@ -3,7 +3,6 @@ source 'https://rubygems.org'
 #   spec.add_runtime_dependency '<name>', [<version requirements>]
 gemspec name: 'metasploit-framework'
 
-gem 'sqlite3', '~>1.3.0'
 # toybox
 gem 'yajl-ruby'
 gem 'uuid'
@@ -26,7 +25,7 @@ group :development do
   # memory profiling
   gem 'memory_profiler'
   # cpu profiling
-  gem 'ruby-prof'
+  gem 'ruby-prof', '1.4.2'
   # Metasploit::Aggregator external session proxy
   # disabled during 2.5 transition until aggregator is available
   #gem 'metasploit-aggregator'

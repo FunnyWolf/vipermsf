@@ -1,6 +1,5 @@
 # -*- coding: binary -*-
 # toybox
-require 'rex/ui'
 
 module Rex
 module Ui

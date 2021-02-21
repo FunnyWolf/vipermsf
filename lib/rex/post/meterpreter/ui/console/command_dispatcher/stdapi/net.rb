@@ -2,7 +2,6 @@
 # toybox
 require 'rex/post/meterpreter'
 require 'rex/post/meterpreter/extensions/stdapi/command_ids'
-require 'rex/service_manager'
 
 module Rex
 module Post

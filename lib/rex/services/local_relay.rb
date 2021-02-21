@@ -2,7 +2,6 @@
 # toybox
 require 'thread'
 require 'rex/socket'
-require 'rex/service'
 module Rex
 module Services
 

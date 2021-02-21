@@ -1,4 +1,5 @@
 # toybox
+require 'rex/text'
 require "uuid"
 module Msf::Module::UUID
   #

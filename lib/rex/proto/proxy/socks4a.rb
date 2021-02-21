@@ -1,9 +1,8 @@
 # -*- coding: binary -*-
-#toybox
+# toybox
 # sf - Sept 2010
 #
 require 'thread'
-require 'rex/logging'
 require 'rex/socket'
 
 module Rex
@@ -241,7 +240,6 @@ class Socks4a
           raise "Invalid Socks4 request packet received." if not request
           # handle the request
           begin
-
             # handle socks4a conenct requests
             if( request.is_connect? )
               # perform the connection request

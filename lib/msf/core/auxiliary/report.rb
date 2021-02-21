@@ -1,5 +1,7 @@
 # -*- coding: binary -*-
 # toybox
+require 'metasploit/framework/require'
+
 module Msf
 
 ###

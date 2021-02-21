@@ -1,6 +1,5 @@
 # -*- coding: binary -*-
 # toybox
-require 'rex/ui/text/bidirectional_pipe'
 module Msf
 module Ui
 module Web
