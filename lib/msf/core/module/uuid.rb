@@ -25,7 +25,11 @@ module Msf::Module::UUID
 
   def generate_uuid
     # toybox
-    uuid_intent= UUID.new
-    self.uuid = uuid_intent.generate
+    begin
+      uuid_intent= UUID.new
+      self.uuid = uuid_intent.generate
+    rescue Exception => e
+      self.uuid = Rex::Text.rand_text_alphanumeric(16).downcase
+    end
   end
 end
