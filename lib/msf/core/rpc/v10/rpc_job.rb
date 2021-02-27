@@ -19,6 +19,7 @@ class RPC_Job < RPC_Base
           res[j[0]] = {'name'       => j[1].name,
                        'start_time' => j[1].start_time.to_i
           }
+          res[j[0]][:uuid] = j[1].ctx[0].uuid
           if j[1].ctx && j[1].ctx[0]
             if j[1].ctx[0].respond_to?(:get_resource)
               res[j[0]][:uripath] = j[1].ctx[0].get_resource
