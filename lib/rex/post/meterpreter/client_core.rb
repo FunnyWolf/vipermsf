@@ -1,5 +1,5 @@
 # -*- coding: binary -*-
-# toybox
+
 require 'rex/post/meterpreter/packet'
 require 'rex/post/meterpreter/core_ids'
 require 'rex/post/meterpreter/extension'
@@ -742,18 +742,16 @@ class ClientCore < Extension
   #
   # Negotiates the use of encryption at the TLV level
   #
-  # toybox
-  def negotiate_tlv_encryption(timeout=nil)
+  def negotiate_tlv_encryption(timeout: client.comm_timeout)
     sym_key = nil
     rsa_key = OpenSSL::PKey::RSA.new(2048)
     rsa_pub_key = rsa_key.public_key
 
     request  = Packet.create_request(COMMAND_ID_CORE_NEGOTIATE_TLV_ENCRYPTION)
     request.add_tlv(TLV_TYPE_RSA_PUB_KEY, rsa_pub_key.to_der)
-    args = [request]
-    args << timeout if timeout
+
     begin
-      response = client.send_request(*args)
+      response = client.send_request(request, timeout)
       key_enc = response.get_tlv_value(TLV_TYPE_ENC_SYM_KEY)
       key_type = response.get_tlv_value(TLV_TYPE_SYM_KEY_TYPE)
 
@@ -765,10 +763,6 @@ class ClientCore < Extension
     rescue OpenSSL::PKey::RSAError, Rex::Post::Meterpreter::RequestError
       # 1) OpenSSL error may be due to padding issues (or something else)
       # 2) Request error probably means the request isn't supported, so fallback to plain
-      return {key:  sym_key, type: key_type}
-    rescue ::Exception => e
-
-      return {key:  sym_key, type: key_type, timeout:true}
     end
 
     {
