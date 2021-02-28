@@ -1,5 +1,5 @@
 require 'open3'
-# toybox
+
 module Msf
   module Util
     class ServiceHelper
@@ -45,18 +45,16 @@ module Msf
           nil
         end
       end
-      # toybox
+
       def self.thin_cmd(conf:, address:, port:, ssl:, ssl_key:, ssl_cert:, ssl_disable_verify:,
                         env: 'production', daemonize:, log:, pid:, tag:)
         server_opts = "--rackup #{conf} --address #{address} --port #{port}"
-        ssl_opts    = ssl ? "--ssl --ssl-key-file #{ssl_key} --ssl-cert-file #{ssl_cert}" : ''
-        ssl_opts << ' --ssl-disable-verify' if ssl_disable_verify and ssl
+        ssl_opts = ssl ? "--ssl --ssl-key-file #{ssl_key} --ssl-cert-file #{ssl_cert}" : ''
+        ssl_opts << ' --ssl-disable-verify' if ssl_disable_verify
         adapter_opts = "--environment #{env}"
-        daemon_opts  = daemonize ? "--daemonize --log #{log} --pid #{pid} --tag #{tag}" : ''
+        daemon_opts = daemonize ? "--daemonize --log #{log} --pid #{pid} --tag #{tag}" : ''
+        all_opts = [server_opts, ssl_opts, adapter_opts, daemon_opts].reject(&:empty?).join(' ')
 
-        default_opts = "--threaded --timeout 10 --max-conns 500 --max-persistent-conns 100 --threadpool-size 100"
-        all_opts     = [server_opts, ssl_opts, adapter_opts, daemon_opts, default_opts].reject(&:empty?).join(' ')
-        $stdout.puts "thin #{all_opts}"
         "thin #{all_opts}"
       end
     end
