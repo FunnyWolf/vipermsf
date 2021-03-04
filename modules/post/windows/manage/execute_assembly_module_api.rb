@@ -91,21 +91,21 @@ class MetasploitModule < Msf::Post
     end
     installed_dotnet_versions.each do |fi|
       if fi[0] == '4'
-        if File.file?(File.join(Msf::Config.install_root, "scripts", "csharp", "#{datastore['ASSEMBLY']}-N40.exe"))
-          exe_path = File.join(Msf::Config.install_root, "scripts", "csharp", "#{datastore['ASSEMBLY']}-N40.exe")
-          break
-        end
         if File.file?(File.join(Msf::Config.loot_directory, "#{datastore['ASSEMBLY']}-N40.exe"))
           exe_path = File.join(Msf::Config.loot_directory, "#{datastore['ASSEMBLY']}-N40.exe")
           break
         end
-      elsif fi[0] == '3' || fi[0] == '2'
-        if File.file?(File.join(Msf::Config.install_root, "scripts", "csharp", "#{datastore['ASSEMBLY']}-N20.exe"))
-          exe_path = File.join(Msf::Config.install_root, "scripts", "csharp", "#{datastore['ASSEMBLY']}-N20.exe")
+        if File.file?(File.join(Msf::Config.install_root, "scripts", "csharp", "#{datastore['ASSEMBLY']}-N40.exe"))
+          exe_path = File.join(Msf::Config.install_root, "scripts", "csharp", "#{datastore['ASSEMBLY']}-N40.exe")
           break
         end
+      elsif fi[0] == '3' || fi[0] == '2'
         if File.file?(File.join(Msf::Config.loot_directory, "#{datastore['ASSEMBLY']}-N20.exe"))
           exe_path = File.join(Msf::Config.loot_directory, "#{datastore['ASSEMBLY']}-N20.exe")
+          break
+        end
+        if File.file?(File.join(Msf::Config.install_root, "scripts", "csharp", "#{datastore['ASSEMBLY']}-N20.exe"))
+          exe_path = File.join(Msf::Config.install_root, "scripts", "csharp", "#{datastore['ASSEMBLY']}-N20.exe")
           break
         end
       end
