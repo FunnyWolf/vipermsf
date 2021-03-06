@@ -102,7 +102,7 @@ module PacketDispatcher
 
   def on_passive_request(cli, req)
     begin
-      self.last_checkin = Time.now
+      self.last_checkin = ::Time.now
       resp = send_queue.shift
       cli.send_response(resp)
     rescue => e
@@ -252,7 +252,7 @@ module PacketDispatcher
   # @return [void]
   def keepalive
     if @ping_sent
-      if Time.now.to_i - last_checkin.to_i > PING_TIME*2
+      if ::Time.now.to_i - last_checkin.to_i > PING_TIME*2
         dlog("No response to ping, session #{self.sid} is dead", LEV_3)
         self.alive = false
       end
