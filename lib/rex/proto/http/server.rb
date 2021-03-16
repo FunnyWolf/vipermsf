@@ -375,6 +375,7 @@ protected
     # If keep-alive isn't enabled for this client, close the connection
     if (cli.keepalive == false)
       close_client(cli)
+      cli.close
     end
   end
 
