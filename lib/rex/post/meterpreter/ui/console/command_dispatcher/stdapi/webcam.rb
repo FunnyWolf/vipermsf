@@ -1,4 +1,5 @@
 # -*- coding: binary -*-
+# toybox
 require 'rex/post/meterpreter'
 require 'rex/post/meterpreter/extensions/stdapi/command_ids'
 
@@ -73,6 +74,8 @@ class Console::CommandDispatcher::Stdapi::Webcam
     end
 
     path    = Rex::Text.rand_text_alpha(8) + ".jpeg"
+    # toybox
+    path = File.join(Msf::Config.loot_directory, path)
     quality = 50
     view    = true
     index   = 1

@@ -1,5 +1,5 @@
 # -*- coding: binary -*-
-# toybox
+
 require 'rex/post/meterpreter/packet_response_waiter'
 require 'rex/exceptions'
 
