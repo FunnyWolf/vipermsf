@@ -3,8 +3,6 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 require 'base64'
-require 'msf/core/post/windows/reflective_dll_injection'
-
 
 class MetasploitModule < Msf::Post
   Rank = NormalRanking
