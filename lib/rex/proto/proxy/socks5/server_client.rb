@@ -241,10 +241,7 @@ module Socks5
         'PeerHost' => request.address,
         'PeerPort' => request.port,
       }
-      #toybox
-      if request.port == 60005 or request.port == 60004
-        return
-      end
+
       params['Context'] = @server.opts['Context'] if @server.opts.has_key?('Context')
       @rsock = Rex::Socket::Tcp.create(params)
 

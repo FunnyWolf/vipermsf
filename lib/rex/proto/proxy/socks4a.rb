@@ -248,10 +248,6 @@ class Socks4a
                 'PeerPort' => request.dest_port,
               }
               
-              #toybox
-              if request.dest_port == 60005 or request.dest_port == 60004
-                next
-              end
 
               params['Context'] = @server.opts['Context'] if @server.opts.has_key?('Context')
 
