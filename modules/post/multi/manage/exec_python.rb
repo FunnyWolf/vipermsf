@@ -9,7 +9,7 @@ require 'base64'
 class MetasploitModule < Msf::Post
   include Msf::Post::File
   include Msf::Exploit::FileDropper
-
+  include Msf::Post::Common
 
   def initialize(info = {})
     super(update_info(info,
