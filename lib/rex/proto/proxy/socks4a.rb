@@ -1,5 +1,5 @@
 # -*- coding: binary -*-
-# toybox
+#
 # sf - Sept 2010
 #
 require 'thread'
@@ -247,8 +247,6 @@ class Socks4a
                 'PeerHost' => request.dest_ip,
                 'PeerPort' => request.dest_port,
               }
-              
-
               params['Context'] = @server.opts['Context'] if @server.opts.has_key?('Context')
 
               @rsock = Rex::Socket::Tcp.create( params )

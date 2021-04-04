@@ -1,5 +1,5 @@
 # -*- coding: binary -*-
-#toybox
+
 require 'bindata'
 require 'rex/socket'
 require 'rex/proto/proxy/socks5/packet'
@@ -241,7 +241,6 @@ module Socks5
         'PeerHost' => request.address,
         'PeerPort' => request.port,
       }
-
       params['Context'] = @server.opts['Context'] if @server.opts.has_key?('Context')
       @rsock = Rex::Socket::Tcp.create(params)
 

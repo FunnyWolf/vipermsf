@@ -110,16 +110,17 @@ def run
         # Stop scanning if we hit a fatal error
         break if has_fatal_errors?
 
-        ip = ar.next_ip
-        break if not ip
+        host = ar.next_host
+        break if not host
 
-        @tl << framework.threads.spawn("ScannerHost(#{self.refname})-#{ip}", false, ip.dup) do |tip|
-          targ = tip
+        @tl << framework.threads.spawn("ScannerHost(#{self.refname})-#{host[:address]}", false, host.dup) do |thr_host|
+          targ = thr_host[:address]
           nmod = self.replicant
-          nmod.datastore['RHOST'] = targ
+          nmod.datastore['RHOST'] = thr_host[:address]
+          nmod.datastore['VHOST'] = thr_host[:hostname] if nmod.options.include?('VHOST') && nmod.datastore['VHOST'].blank?
 
           begin
-            res << {tip => nmod.run_host(targ)}
+            res << {thr_host[:address] => nmod.run_host(targ)}
 	  # toybox
           if defined? nmod.process_result
             @scan_result.push(nmod.process_result)
