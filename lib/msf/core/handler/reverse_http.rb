@@ -427,8 +427,6 @@ protected
 
     # Force this socket to be closed
     self.service.close_client(cli)
-    # toybox
-    cli.close
   end
 
 end

@@ -1,7 +1,8 @@
 # -*- coding: binary -*-
 # toybox
+require 'erb'
 require 'rex/socket'
-
+include ERB::Util
 
 module Rex
 module Proto
@@ -376,8 +377,6 @@ protected
     # If keep-alive isn't enabled for this client, close the connection
     if (cli.keepalive == false)
       close_client(cli)
-      # toybox
-      cli.close
     end
   end
 
