@@ -368,7 +368,7 @@ protected
       else
         handler.on_request(cli, request)
       end
-
+      # toybox
       # If keep-alive isn't enabled for this client, close the connection
       if (cli.keepalive == false)
         close_client(cli)
@@ -377,6 +377,7 @@ protected
       elog("Failed to find handler for resource: #{request.resource}", LogSource)
 
       send_e404(cli, request)
+      # toybox
       # focus close client for 404
       close_client(cli)
     end
