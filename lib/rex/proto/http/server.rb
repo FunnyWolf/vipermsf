@@ -260,7 +260,7 @@ class Server
     resp = Response::E404.new
 
     resp['Content-Type'] = 'text/html'
-
+    resp['Connection']   = 'close'
     resp.body =
       "<html><head>" +
       "<title>404 Not Found</title>" +
@@ -368,16 +368,20 @@ protected
       else
         handler.on_request(cli, request)
       end
+
+      # If keep-alive isn't enabled for this client, close the connection
+      if (cli.keepalive == false)
+        close_client(cli)
+      end
     else
       elog("Failed to find handler for resource: #{request.resource}", LogSource)
 
       send_e404(cli, request)
-    end
-
-    # If keep-alive isn't enabled for this client, close the connection
-    if (cli.keepalive == false)
+      # focus close client for 404
       close_client(cli)
     end
+
+
   end
 
 end
