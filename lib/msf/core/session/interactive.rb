@@ -56,7 +56,8 @@ module Interactive
     begin
       @peer_info = rstream.peerinfo
     rescue ::Exception
-      @peer_info = '127.0.0.1'
+      # @peer_info = '127.0.0.1'
+      @peer_info = "#{rstream.peerhost}:#{rstream.peerport}"
     end
   end
 
