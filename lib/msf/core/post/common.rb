@@ -34,22 +34,7 @@ module Msf::Post::Common
   # Checks if the remote system has a process with ID +pid+
   #
   def has_pid?(pid)
-    pid_list = []
-    case client.type
-    when /meterpreter/
-      pid_list = client.sys.process.processes.collect {|e| e['pid']}
-    when /shell/
-      if client.platform == 'windows'
-        o = cmd_exec('tasklist /FO LIST')
-        pid_list = o.scan(/^PID:\s+(\d+)/).flatten
-      else
-        o = cmd_exec('ps ax')
-        pid_list = o.scan(/^\s*(\d+)/).flatten
-      end
-
-      pid_list = pid_list.collect {|e| e.to_i}
-    end
-
+    pid_list = get_processes.collect { |e| e['pid'] }
     pid_list.include?(pid)
   end
 
@@ -84,7 +69,7 @@ module Msf::Post::Common
   #
   # Returns a (possibly multi-line) String.
   #
-  def cmd_exec(cmd, args=nil, time_out=15)
+  def cmd_exec(cmd, args = nil, time_out = 15)
     case session.type
     when /meterpreter/
       #
@@ -105,34 +90,12 @@ module Msf::Post::Common
       # through /bin/sh, solving all the pesky parsing troubles, without
       # affecting Windows.
       #
-      start = Time.now.to_i
       if args.nil? and cmd =~ /[^a-zA-Z0-9\/._-]/
         args = ""
       end
 
       session.response_timeout = time_out
-      process = session.sys.process.execute(cmd, args, {'Hidden' => true, 'Channelized' => true, 'Subshell' => true })
-      o = ""
-      # Wait up to time_out seconds for the first bytes to arrive
-      while (d = process.channel.read)
-        o << d
-        if d == ""
-          if Time.now.to_i - start < time_out
-            sleep 0.1
-          else
-            break
-          end
-        end
-      end
-      o.chomp! if o
-
-      begin
-        process.channel.close
-      rescue IOError => e
-        # Channel was already closed, but we got the cmd output, so let's soldier on.
-      end
-
-      process.close
+      o                        = session.sys.process.capture_output(cmd, args, { 'Hidden' => true, 'Channelized' => true, 'Subshell' => true },time_out)
     when /powershell/
       if args.nil? || args.empty?
         o = session.shell_command("#{cmd}", time_out)
@@ -152,20 +115,20 @@ module Msf::Post::Common
     return o
   end
 
-  def cmd_exec_get_pid(cmd, args=nil, time_out=15)
+  def cmd_exec_get_pid(cmd, args = nil, time_out = 15)
     case session.type
-      when /meterpreter/
-        if args.nil? and cmd =~ /[^a-zA-Z0-9\/._-]/
-          args = ""
-        end
-        session.response_timeout = time_out
-        process = session.sys.process.execute(cmd, args, {'Hidden' => true, 'Channelized' => true, 'Subshell' => true })
-        process.channel.close
-        pid = process.pid
-        process.close
-        pid
-      else
-        print_error "cmd_exec_get_pid is incompatible with non-meterpreter sessions"
+    when /meterpreter/
+      if args.nil? and cmd =~ /[^a-zA-Z0-9\/._-]/
+        args = ""
+      end
+      session.response_timeout = time_out
+      process                  = session.sys.process.execute(cmd, args, { 'Hidden' => true, 'Channelized' => true, 'Subshell' => true })
+      process.channel.close
+      pid = process.pid
+      process.close
+      pid
+    else
+      print_error "cmd_exec_get_pid is incompatible with non-meterpreter sessions"
     end
   end
 
@@ -179,8 +142,8 @@ module Msf::Post::Common
     virt_normal = virt.to_s.strip
     return if virt_normal.empty?
     virt_data = {
-      :host => session.target_host,
-      :virtual_host => virt_normal
+            :host         => session.target_host,
+            :virtual_host => virt_normal
     }
     report_host(virt_data)
   end
@@ -194,8 +157,8 @@ module Msf::Post::Common
       return session.sys.config.getenv(env)
     when /shell/
       if session.platform == 'windows'
-        if env[0,1] == '%'
-          unless env[-1,1] == '%'
+        if env[0, 1] == '%'
+          unless env[-1, 1] == '%'
             env << '%'
           end
         else
@@ -204,7 +167,7 @@ module Msf::Post::Common
 
         return cmd_exec("echo #{env}")
       else
-        unless env[0,1] == '$'
+        unless env[0, 1] == '$'
           env = "$#{env}"
         end
 
@@ -225,7 +188,7 @@ module Msf::Post::Common
     when /shell/
       result = {}
       envs.each do |env|
-        res = get_env(env)
+        res         = get_env(env)
         result[env] = res unless res.blank?
       end
 
@@ -249,6 +212,37 @@ module Msf::Post::Common
     end
   rescue
     raise "Unable to check if command `#{cmd}' exists"
+  end
+
+  def get_processes
+    if session.type == 'meterpreter'
+      return session.sys.process.get_processes.map { |p| p.slice('name', 'pid') }
+    end
+    processes = []
+    if session.platform == 'windows'
+      tasklist = cmd_exec('tasklist').split("\n")
+      4.times { tasklist.delete_at(0) }
+      tasklist.each do |p|
+        properties      = p.split
+        process         = {}
+        process['name'] = properties[0]
+        process['pid']  = properties[1].to_i
+        processes.push(process)
+      end
+      # adding manually because this is common for all windows I think and splitting for this was causing problem for other processes.
+      processes.prepend({ 'name' => '[System Process]', 'pid' => 0 })
+    else
+      ps_aux = cmd_exec('ps aux').split("\n")
+      ps_aux.delete_at(0)
+      ps_aux.each do |p|
+        properties      = p.split
+        process         = {}
+        process['name'] = properties[10].gsub(/\[|\]/, "")
+        process['pid']  = properties[1].to_i
+        processes.push(process)
+      end
+    end
+    return processes
   end
 
 end
