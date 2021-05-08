@@ -24,7 +24,7 @@ class MetasploitModule < Msf::Post
                              OptString.new('RESULTFILE', [false, 'exe/elf execute result file on target']),
                              OptString.new('ARGS', [false, 'Command-line arguments to pass to the uploaded file']),
                              OptInt.new('TIMEOUT', [true, 'Timeout for command execution', 1800]),
-                             OptBool.new('CLEANUP', [false, 'Cleanup upload file after exec', true]),
+                             OptBool.new('CLEANUP', [false, 'Cleanup upload file after exec', false]),
                      ])
   end
 
@@ -39,6 +39,8 @@ class MetasploitModule < Msf::Post
     end
     if File.file?(File.join(Msf::Config.install_root, "scripts", "pe", datastore['LPATH']))
       script_path = File.join(Msf::Config.install_root, "scripts", "pe", datastore['LPATH'])
+    elsif File.file?(File.join(Msf::Config.loot_directory, datastore['LPATH']))
+      script_path = File.join(Msf::Config.loot_directory, datastore['LPATH'])
     elsif File.file?(datastore['LPATH'])
       script_path = datastore['LPATH']
     else

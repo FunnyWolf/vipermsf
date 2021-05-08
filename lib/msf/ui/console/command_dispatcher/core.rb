@@ -1,5 +1,5 @@
 # -*- coding: binary -*-
-
+# toybox
 #
 # Rex
 #
@@ -1433,7 +1433,7 @@ class Core
                     'Channelized' => true,
                     'Subshell'    => true,
                     'Hidden'      => true
-                  })
+                  },response_timeout)
                 print_line(data) unless data.blank?
               rescue ::Rex::Post::Meterpreter::RequestError
                 print_error("Failed: #{$!.class} #{$!}")
