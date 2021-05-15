@@ -43,7 +43,6 @@ group :development, :test do
   gem 'rspec-rails'
   gem 'rspec-rerun'
   gem 'rubocop'
-  gem 'swagger-blocks'
 end
 
 group :test do

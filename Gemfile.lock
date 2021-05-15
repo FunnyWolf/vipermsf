@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    metasploit-framework (6.0.44)
+    metasploit-framework (6.0.45)
       actionpack (~> 5.2.2)
       activerecord (~> 5.2.2)
       activesupport (~> 5.2.2)
@@ -78,6 +78,7 @@ PATH
       sinatra
       sqlite3
       sshkey
+      swagger-blocks
       thin
       tzinfo
       tzinfo-data
@@ -123,13 +124,13 @@ GEM
       activerecord (>= 3.1.0, < 7)
     ast (2.4.2)
     aws-eventstream (1.1.1)
-    aws-partitions (1.451.0)
+    aws-partitions (1.456.0)
     aws-sdk-core (3.114.0)
       aws-eventstream (~> 1, >= 1.0.2)
       aws-partitions (~> 1, >= 1.239.0)
       aws-sigv4 (~> 1.1)
       jmespath (~> 1.0)
-    aws-sdk-ec2 (1.235.0)
+    aws-sdk-ec2 (1.236.0)
       aws-sdk-core (~> 3, >= 3.112.0)
       aws-sigv4 (~> 1.1)
     aws-sdk-iam (1.52.0)
@@ -158,7 +159,7 @@ GEM
     diff-lcs (1.4.4)
     dnsruby (1.61.5)
       simpleidn (~> 0.1)
-    docile (1.3.5)
+    docile (1.4.0)
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
     ed25519 (1.2.4)
@@ -172,10 +173,10 @@ GEM
       eventmachine (>= 1.0.0.beta.4)
     erubi (1.10.0)
     eventmachine (1.2.7)
-    factory_bot (6.1.0)
+    factory_bot (6.2.0)
       activesupport (>= 5.0.0)
-    factory_bot_rails (6.1.0)
-      factory_bot (~> 6.1.0)
+    factory_bot_rails (6.2.0)
+      factory_bot (~> 6.2.0)
       railties (>= 5.0.0)
     faker (2.17.0)
       i18n (>= 1.6, < 2)
@@ -259,7 +260,7 @@ GEM
     network_interface (0.0.2)
     nexpose (7.3.0)
     nio4r (2.5.7)
-    nokogiri (1.11.3)
+    nokogiri (1.11.4)
       mini_portile2 (~> 2.5.0)
       racc (~> 1.4)
     octokit (4.21.0)
@@ -289,7 +290,7 @@ GEM
       byebug (~> 11.0)
       pry (~> 0.13.0)
     public_suffix (4.0.6)
-    puma (5.2.2)
+    puma (5.3.1)
       nio4r (~> 2.0)
     racc (1.5.2)
     rack (2.2.3)
@@ -311,10 +312,10 @@ GEM
     rainbow (3.0.0)
     rake (13.0.3)
     rb-readline (0.5.5)
-    recog (2.3.19)
+    recog (2.3.20)
       nokogiri
     redcarpet (3.5.1)
-    redis (4.1.3)
+    redis (4.2.5)
     regexp_parser (2.1.1)
     reline (0.2.5)
       io-console (~> 0.5)
@@ -486,7 +487,6 @@ DEPENDENCIES
   rubocop
   ruby-prof (= 1.4.2)
   simplecov (= 0.18.2)
-  swagger-blocks
   timecop
   uuid
   yajl-ruby

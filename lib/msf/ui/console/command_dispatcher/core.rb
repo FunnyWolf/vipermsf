@@ -1,5 +1,5 @@
 # -*- coding: binary -*-
-# toybox
+
 #
 # Rex
 #
@@ -1429,11 +1429,11 @@ class Core
               c, c_args = cmd.split(' ', 2)
               begin
                 data = session.sys.process.capture_output(c, c_args,
-                  {
-                    'Channelized' => true,
-                    'Subshell'    => true,
-                    'Hidden'      => true
-                  },response_timeout)
+                {
+                  'Channelized' => true,
+                  'Subshell'    => true,
+                  'Hidden'      => true
+                }, response_timeout)
                 print_line(data) unless data.blank?
               rescue ::Rex::Post::Meterpreter::RequestError
                 print_error("Failed: #{$!.class} #{$!}")

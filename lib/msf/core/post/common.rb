@@ -1,5 +1,5 @@
 # -*- coding: binary -*-
-# toybox
+
 module Msf::Post::Common
 
   def clear_screen
@@ -95,7 +95,7 @@ module Msf::Post::Common
       end
 
       session.response_timeout = time_out
-      o                        = session.sys.process.capture_output(cmd, args, { 'Hidden' => true, 'Channelized' => true, 'Subshell' => true },time_out)
+      o = session.sys.process.capture_output(cmd, args, {'Hidden' => true, 'Channelized' => true, 'Subshell' => true }, time_out)
     when /powershell/
       if args.nil? || args.empty?
         o = session.shell_command("#{cmd}", time_out)
@@ -122,7 +122,7 @@ module Msf::Post::Common
           args = ""
         end
         session.response_timeout = time_out
-        process = session.sys.process.execute(cmd, args, {'Hidden' => true, 'Channelized' => true, 'Subshell' => true },time_out)
+        process = session.sys.process.execute(cmd, args, {'Hidden' => true, 'Channelized' => true, 'Subshell' => true })
         process.channel.close
         pid = process.pid
         process.close
