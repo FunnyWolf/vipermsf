@@ -432,9 +432,9 @@ def start_web_service(expect_auth: true)
 
   print 'Attempting to start MSF web service...'
 
-  unless File.file?(@ws_ssl_key_default)
+  unless File.file?(@options[:ssl_key])
     puts "#{'failed'.red.bold}"
-    print_error "The SSL Key needed for the webservice to connect to the database could not be found at #{@ws_ssl_key_default}."
+    print_error "The SSL Key needed for the webservice to connect to the database could not be found at #{@options[:ssl_key]}."
     print_error 'Has the webservice been initialized with "msfdb init"  or "msfdb init --component webservice"?'
     return false
   end
@@ -656,11 +656,11 @@ end
 
 # TODO: In the future this can be replaced by Msf::WebServices::HttpDBManagerService
 def thin_cmd
-  server_opts = "--rackup #{@ws_conf} --address #{@options[:address]} --port #{@options[:port]}"
-  ssl_opts = @options[:ssl] ? "--ssl --ssl-key-file #{@options[:ssl_key]} --ssl-cert-file #{@options[:ssl_cert]}" : ''
+  server_opts = "--rackup #{@ws_conf.shellescape} --address #{@options[:address].shellescape} --port #{@options[:port]}"
+  ssl_opts = @options[:ssl] ? "--ssl --ssl-key-file #{@options[:ssl_key].shellescape} --ssl-cert-file #{@options[:ssl_cert].shellescape}" : ''
   ssl_opts << ' --ssl-disable-verify' if skip_ssl_verify?
   adapter_opts = "--environment #{@options[:ws_env]}"
-  daemon_opts = "--daemonize --log #{@ws_log} --pid #{@ws_pid} --tag #{@ws_tag}" if @options[:daemon]
+  daemon_opts = "--daemonize --log #{@ws_log.shellescape} --pid #{@ws_pid.shellescape} --tag #{@ws_tag}" if @options[:daemon]
   all_opts = [server_opts, ssl_opts, adapter_opts, daemon_opts].reject(&:blank?).join(' ')
 
   "thin #{all_opts}"
