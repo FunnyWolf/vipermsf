@@ -5,12 +5,12 @@
 
 require 'zlib'
 
-
 # require 'rex/post/meterpreter/extensions/python/python'
 class MetasploitModule < Msf::Post
   include Msf::Post::File
   include Msf::Exploit::FileDropper
   include Msf::Post::Common
+  include Msf::Payload::Python
 
   def initialize(info = {})
     super(update_info(info,
@@ -73,7 +73,7 @@ class MetasploitModule < Msf::Post
 
     if session.platform == "linux"
       # run with system python
-      python_version = get_linux_python_version
+      python_run, python_version = get_linux_python_version
       if python_version == nil
         pub_json_result(false,
                         "this linux host does not have python",
@@ -82,8 +82,7 @@ class MetasploitModule < Msf::Post
         return
       end
 
-      code_base64 = Base64.strict_encode64(code)
-      python_cmd  = "python -c \"exec '#{code_base64}'.decode('base64')\""
+      python_cmd = "#{python_run} -c \"#{py_create_exec_stub(File.read(script_path))}\""
 
       timeout = datastore['TIMEOUT']
       # -bash: /usr/bin/python: Argument list too long
@@ -91,7 +90,7 @@ class MetasploitModule < Msf::Post
         filename = '/' + Time.now.to_i.to_s + '.py'
         tmprpath = session.fs.dir.pwd + filename
         upload_file(tmprpath, temp_path)
-        script_result = cmd_exec(cmd = "python #{tmprpath}", args = "", time_out = timeout)
+        script_result = cmd_exec(cmd = "#{python_run} #{tmprpath}", args = "", time_out = timeout)
         register_file_for_cleanup(tmprpath)
       else
         script_result = cmd_exec(cmd = python_cmd, args = "", time_out = timeout)
@@ -100,7 +99,6 @@ class MetasploitModule < Msf::Post
                       python_version,
                       script_result,
                       self.uuid)
-
 
       return
     else
@@ -125,7 +123,7 @@ class MetasploitModule < Msf::Post
         pub_json_result(true,
                         pyresult[:stderr],
                         pyresult[:stdout],
-                         self.uuid)
+                        self.uuid)
       else
         pub_json_result(false,
                         "python extensions load failed",
@@ -137,8 +135,20 @@ class MetasploitModule < Msf::Post
 
   def get_linux_python_version()
     result = cmd_exec("python -V")
-    /Python (.+)/ =~ result
-    $1
+    if (result =~ /Python (.+)/)
+      return "python", $1
+    end
+
+    result = cmd_exec("python2 -V")
+    if (result =~ /Python (.+)/)
+      return "python2", $1
+    end
+
+    result = cmd_exec("python3 -V")
+    if (result =~ /Python (.+)/)
+      return "python3", $1
+    end
+    return nil, nil
   end
 
   def rpath

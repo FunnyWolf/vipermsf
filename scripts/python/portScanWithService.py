@@ -541,7 +541,7 @@ def main(startip, stopip, port_list):
     if RUN_MODE == 'single_script':
         pass
     else:
-        json_str = base64.b64encode(json.dumps(result_list).encode('ascii'))
+        json_str = base64.b64encode(json.dumps(result_list).encode('ascii')).decode("utf-8")
         print(json_str)
 
 # 系统函数,为了获取输入参数

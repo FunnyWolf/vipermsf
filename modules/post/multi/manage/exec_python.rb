@@ -10,6 +10,7 @@ class MetasploitModule < Msf::Post
   include Msf::Post::File
   include Msf::Exploit::FileDropper
   include Msf::Post::Common
+  include Msf::Payload::Python
 
   def initialize(info = {})
     super(update_info(info,
@@ -64,10 +65,9 @@ class MetasploitModule < Msf::Post
       return
     end
 
-
     if session.platform == "linux"
       # run with system python
-      python_version = get_linux_python_version
+      python_run, python_version = get_linux_python_version
       if python_version == nil
         pub_json_result(false,
                         'this linux system does not have python',
@@ -75,15 +75,14 @@ class MetasploitModule < Msf::Post
                         self.uuid)
         return
       end
-      timeout     = datastore['TIMEOUT']
-      code_base64 = Base64.strict_encode64(File.read(script_path))
-      python_cmd  = "#{python_version} -c \"exec '#{code_base64}'.decode('base64')\""
+      timeout    = datastore['TIMEOUT']
+      python_cmd = "#{python_run} -c \"#{py_create_exec_stub(File.read(script_path))}\""
 
       if python_cmd.length > 1024
         filename = '/' + Time.now.to_i.to_s + '.py'
         tmprpath = session.fs.dir.pwd + filename
-        upload_file(tmprpath, temp_path)
-        script_result = cmd_exec(cmd = "#{python_version} #{tmprpath}", args = "", time_out = timeout)
+        upload_file(tmprpath, script_path)
+        script_result = cmd_exec(cmd = "#{python_run} #{tmprpath}", args = "", time_out = timeout)
         register_file_for_cleanup(tmprpath)
       else
         script_result = cmd_exec(cmd = python_cmd, args = "", time_out = timeout)
@@ -132,20 +131,20 @@ class MetasploitModule < Msf::Post
 
   def get_linux_python_version()
     result = cmd_exec("python -V")
-    /Python (.+)/ =~ result
-    if $1 == nil
-      result = cmd_exec("python2 -V")
-      /Python (.+)/ =~ result
-      if $1 == nil
-        result = cmd_exec("python3 -V")
-        /Python (.+)/ =~ result
-        return nil
-      else
-        return "python2"
-      end
-    else
-      return "python"
+    if (result =~ /Python (.+)/)
+      return "python", $1
     end
+
+    result = cmd_exec("python2 -V")
+    if (result =~ /Python (.+)/)
+      return "python2", $1
+    end
+
+    result = cmd_exec("python3 -V")
+    if (result =~ /Python (.+)/)
+      return "python3", $1
+    end
+    return nil, nil
   end
 
   def rpath
