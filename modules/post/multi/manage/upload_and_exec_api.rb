@@ -70,6 +70,7 @@ class MetasploitModule < Msf::Post
     if datastore['CLEANUP']
       register_file_for_cleanup(tmprpath)
     end
+    localfile = nil
     if !datastore['RESULTFILE'].blank?
       resultfilepath = File.join(session.fs.dir.pwd, datastore['RESULTFILE'])
       localfile      = Time.now.to_i.to_s + "-" + datastore['RESULTFILE'].delete('/\\')
