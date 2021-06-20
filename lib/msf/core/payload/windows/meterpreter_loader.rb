@@ -25,7 +25,7 @@ module Payload::Windows::MeterpreterLoader
       ],
       'Platform'      => 'win',
       'Arch'          => ARCH_X86,
-      'PayloadCompat' => { 'Convention' => 'sockedi handleedi -https', },
+      'PayloadCompat' => { 'Convention' => 'sockedi dns handleedi -https', },
       'Stage'         => { 'Payload'   => "" }
       ))
   end

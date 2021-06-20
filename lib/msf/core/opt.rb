@@ -29,6 +29,20 @@ module Msf
       Msf::OptAddressLocal.new(__method__.to_s, [ required, desc, default ])
     end
 
+    # @return [OptAddress]
+    def self.DOMAIN(default=nil, required=true, desc="Domain name")
+      Msf::OptString.new(__method__.to_s, [ required, desc, default ])
+    end
+
+    # @return [OptEnum]
+    def self.REQ_TYPE(default=nil, required=true, desc="Domain name")
+      Msf::OptEnum.new(__method__.to_s, [ required, desc, 'DNSKEY', ['IPv6', 'DNSKEY']])
+    end
+    # @return [OptAddress]
+    def self.NS_IP(default=nil, required=true, desc="Name server adddress")
+      Msf::OptAddress.new(__method__.to_s, [ required, desc, default ])
+    end
+
     # @return [OptPort]
     def self.LPORT(default=nil, required=true, desc="The listen port")
       Msf::OptPort.new(__method__.to_s, [ required, desc, default ])
@@ -109,6 +123,9 @@ module Msf
     CHOST = CHOST()
     CPORT = CPORT()
     LHOST = LHOST()
+    DOMAIN = DOMAIN()
+    NS_IP = NS_IP()
+    REQ_TYPE = REQ_TYPE()
     LPORT = LPORT()
     Proxies = Proxies()
     RHOST = RHOST()

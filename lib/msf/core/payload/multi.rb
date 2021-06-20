@@ -22,7 +22,7 @@ module Msf::Payload::Multi
       'Platform'      => ['multi'],
       'Arch'          => ARCH_ALL,
       'Stage'         => {'Payload' => ''},
-      'PayloadCompat' => {'Convention' => 'sockedi sockrdi http https'},
+      'PayloadCompat' => {'Convention' => 'sockedi sockrdi http https dns'},
       ))
   end
 

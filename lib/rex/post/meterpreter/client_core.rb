@@ -29,12 +29,14 @@ class ClientCore < Extension
   METERPRETER_TRANSPORT_TCP   = 0
   METERPRETER_TRANSPORT_HTTP  = 1
   METERPRETER_TRANSPORT_HTTPS = 2
+  METERPRETER_TRANSPORT_DNS   = 3
 
   VALID_TRANSPORTS = {
       'reverse_tcp'   => METERPRETER_TRANSPORT_TCP,
       'reverse_http'  => METERPRETER_TRANSPORT_HTTP,
       'reverse_https' => METERPRETER_TRANSPORT_HTTPS,
-      'bind_tcp'      => METERPRETER_TRANSPORT_TCP
+      'bind_tcp'      => METERPRETER_TRANSPORT_TCP,
+      'reverse_dns'   => METERPRETER_TRANSPORT_DNS
   }
 
   include Rex::Payloads::Meterpreter::UriChecksum
@@ -807,6 +809,9 @@ private
         when /^http/i
           # Covers HTTP and HTTPS
           c.include(::Msf::Payload::Windows::MigrateHttp)
+        when /^dns/i
+          # Covers reverse DNS
+          c.include(::Msf::Payload::Windows::MigrateDns)
         end
       else
         c.include(::Msf::Payload::Windows::BlockApi_x64)
@@ -818,6 +823,9 @@ private
         when /^http/i
           # Covers HTTP and HTTPS
           c.include(::Msf::Payload::Windows::MigrateHttp_x64)
+        when /^dns/i
+          # Covers reverse DNS
+          c.include(::Msf::Payload::Windows::MigrateDns_x64)
         end
       end
 

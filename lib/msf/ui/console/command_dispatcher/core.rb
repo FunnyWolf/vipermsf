@@ -1300,7 +1300,7 @@ class Core
     sid      = nil
     cmds     = []
     script   = nil
-    response_timeout = 15
+    response_timeout = 1200
     search_term = nil
     session_name = nil
 

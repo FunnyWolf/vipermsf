@@ -206,6 +206,7 @@ class MsfAutoload
       'migrate_common_x64' => 'MigrateCommon_x64',
       'migrate_tcp_x64' => 'MigrateTcp_x64',
       'migrate_named_pipe_x64' => 'MigrateNamedPipe_x64',
+      'migrate_dns_x64' => 'MigrateDns_x64',
       'reverse_named_pipe_x64' => 'ReverseNamedPipe_x64',
       'meterpreter_loader_x64' => 'MeterpreterLoader_x64',
       'rftransceiver' => 'RFTransceiver',

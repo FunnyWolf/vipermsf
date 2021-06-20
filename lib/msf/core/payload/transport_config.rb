@@ -48,6 +48,17 @@ module Msf::Payload::TransportConfig
     config
   end
 
+  def transport_config_reverse_dns(opts={})
+    ds = opts[:datastore] || datastore
+    {
+            scheme:     'dns',
+            lhost:      ds['DOMAIN'],
+            req_type:   ds['REQ_TYPE'],
+            nhost:      ds['NS_IP'],
+            server_id:  ds['SERVER_ID']
+    }.merge(timeout_config(opts))
+  end
+
   def transport_uri_components(opts={})
     ds = opts[:datastore] || datastore
     if opts[:url]

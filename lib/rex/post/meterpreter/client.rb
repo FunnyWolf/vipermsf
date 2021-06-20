@@ -146,7 +146,13 @@ class Client
     end
 
     self.response_timeout = opts[:timeout] || self.class.default_timeout
-    self.send_keepalives  = true
+
+    if opts[:send_keepalives] == false
+      self.send_keepalives  = false
+    else
+      self.send_keepalives  = true
+    end
+
 
     # TODO: Clarify why we don't allow unicode to be set in initial options
     # self.encode_unicode   = opts.has_key?(:encode_unicode) ? opts[:encode_unicode] : true
