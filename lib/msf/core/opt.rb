@@ -1,4 +1,5 @@
 # -*- coding: binary -*-
+# toybox
 module Msf
   #
   # Builtin framework options with shortcut methods

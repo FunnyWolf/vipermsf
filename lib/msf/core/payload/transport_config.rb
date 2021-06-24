@@ -1,5 +1,5 @@
 # -*- coding: binary -*-
-
+# toybox
 ##
 # This module contains helper functions for creating the transport
 # configuration stubs that are used for Meterpreter payloads.

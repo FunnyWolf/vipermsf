@@ -1,4 +1,5 @@
 # -*- coding: binary -*-
+# toybox
 require 'rex/socket/x509_certificate'
 require 'rex/post/meterpreter/extension_mapper'
 require 'securerandom'
