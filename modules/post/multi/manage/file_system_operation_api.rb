@@ -7,9 +7,7 @@ require 'json'
 require 'open-uri'
 require 'yajl'
 
-
 class MetasploitModule < Msf::Post
-
 
   def initialize(info = {})
     super(update_info(info,
@@ -25,7 +23,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
     register_options(
             [
 
-                    OptEnum.new('OPERATION', [true, 'type of opertaion', 'upload', ['pwd', 'show_mount', 'list', 'upload', 'download', 'create_dir', 'destory_file', 'destory_dir', 'execute', 'cat', 'cd','update_file']]),
+                    OptEnum.new('OPERATION', [true, 'type of opertaion', 'upload', ['pwd', 'show_mount', 'list', 'upload', 'download', 'create_dir', 'destory_file', 'destory_dir', 'execute', 'cat', 'cd', 'update_file']]),
                     OptString.new('SESSION_DIR', [false, 'sessions dir path (list,upload,destory_dir)',]),
                     OptString.new('SESSION_FILE', [false, 'sessions file path(download,destory_file)',]),
                     OptString.new('MSF_FILE', [false, 'local file path(upload)',]),
@@ -36,7 +34,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
 
   # Run Method for when run command is issued
   def run
-    result = {:status => true, :message => nil, :data => nil, :endflag => nil}
+    result = { :status => true, :message => nil, :data => nil, :endflag => nil }
     if session.type == "shell"
       result[:status]  = false
       result[:message] = 'Unsupport shell type'
@@ -45,7 +43,6 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       print("#{json}")
       return
     end
-
 
     operation   = datastore['OPERATION']
     sessiondir  = datastore['SESSION_DIR']
@@ -113,7 +110,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
   end
 
   def pwd
-    result      = {:status => true, :message => nil, :data => nil, :endflag => nil}
+    result      = { :status => true, :message => nil, :data => nil, :endflag => nil }
     result_list = []
     pwddir      = client.fs.dir.pwd
     pwddir      = pwddir.gsub(/\\windows\\system32/i, '')
@@ -135,17 +132,15 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
 
     result[:status]  = true
     result[:message] = 'pwd finish'
-    result[:data]    = {:path => remotepath.gsub(/\\/, '/'), :entries => result_list}
+    result[:data]    = { :path => remotepath.gsub(/\\/, '/'), :entries => result_list }
     json             = Yajl::Encoder.encode(result)
     json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
     print("#{json}")
 
-
   end
 
-
   def show_mount
-    result      = {:status => true, :message => nil, :data => nil, :endflag => nil}
+    result      = { :status => true, :message => nil, :data => nil, :endflag => nil }
     result_list = []
     if session.platform == "windows"
       mounts = client.fs.mount.show_mount
@@ -162,7 +157,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       end
       result[:status]  = true
       result[:message] = 'show mount finish'
-      result[:data]    = {:path => '/', :entries => result_list}
+      result[:data]    = { :path => '/', :entries => result_list }
       json             = Yajl::Encoder.encode(result)
       json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
       print("#{json}")
@@ -182,16 +177,15 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
 
       result[:status]  = true
       result[:message] = 'show mount finish'
-      result[:data]    = {:path => '/', :entries => result_list}
+      result[:data]    = { :path => '/', :entries => result_list }
       json             = Yajl::Encoder.encode(result)
       json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
       print("#{json}")
     end
   end
 
-
   def list(remotepath)
-    result      = {:status => true, :message => nil, :data => nil, :endflag => nil}
+    result      = { :status => true, :message => nil, :data => nil, :endflag => nil }
     result_list = []
 
     if session.platform == "windows" and remotepath == '/'
@@ -209,13 +203,12 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       end
       result[:status]  = true
       result[:message] = 'List finish'
-      result[:data]    = {:path => '/', :entries => result_list}
+      result[:data]    = { :path => '/', :entries => result_list }
       json             = Yajl::Encoder.encode(result)
       json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
       print("#{json}")
       return
     end
-
 
     client.fs.dir.entries_with_info(remotepath).each do |p|
       if p['FileName'] != '.' && p['FileName'] != '..'
@@ -232,14 +225,14 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
 
     result[:status]  = true
     result[:message] = 'List finish'
-    result[:data]    = {:path => remotepath, :entries => result_list}
+    result[:data]    = { :path => remotepath, :entries => result_list }
     json             = Yajl::Encoder.encode(result)
     json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
     print("#{json}")
   end
 
   def destory(remotepath)
-    result = {:status => true, :message => nil, :data => nil, :endflag => nil}
+    result = { :status => true, :message => nil, :data => nil, :endflag => nil }
     begin
       client.fs.file.rm(remotepath)
       result[:status]  = true
@@ -256,7 +249,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
   end
 
   def destory_dir(remotepath)
-    result = {:status => true, :message => nil, :data => nil, :endflag => nil}
+    result = { :status => true, :message => nil, :data => nil, :endflag => nil }
     begin
       dir_path = client.fs.file.expand_path(remotepath)
 
@@ -277,7 +270,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
 
   def create_dir(remotepath)
     res    = true
-    result = {:status => true, :message => nil, :data => nil, :endflag => nil}
+    result = { :status => true, :message => nil, :data => nil, :endflag => nil }
     begin
       client.fs.dir.mkdir(remotepath)
 
@@ -312,7 +305,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
   end
 
   def uploadurl(localurl, remotepath)
-    result      = {:status => true, :message => nil, :data => nil, :endflag => nil}
+    result      = { :status => true, :message => nil, :data => nil, :endflag => nil }
     meterp_temp = Tempfile.new('meterp')
     meterp_temp.binmode
     temp_path = meterp_temp.path
@@ -324,7 +317,6 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       end
     end
 
-
     client.fs.file.upload_file(remotepath, temp_path)
     result[:status]  = true
     result[:message] = 'Upload finish'
@@ -335,19 +327,24 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
 
   def download(localpath, remotepath)
 
-
-    result = {:status => true, :message => nil, :data => nil, :endflag => nil}
+    result = { :status => true, :message => nil, :data => nil, :endflag => nil }
 
     begin
       # Download the remote file to the temporary file
-      client.fs.file.download_file(localpath, remotepath, {block_size: 100 * 1024})
+      opts = {
+              :block_size => 24 * 1024,
+              :tries      => true,
+              :tries_no   => 10,
+      }
+
+      client.fs.file.download_file(localpath, remotepath, opts)
       result[:status]  = true
       result[:message] = 'Download finish'
       json             = Yajl::Encoder.encode(result)
       json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
       print("#{json}")
     rescue Rex::Post::Meterpreter::RequestError => re
-      result = {:status => false, :message => re.to_s, :data => nil, :endflag => nil}
+      result = { :status => false, :message => re.to_s, :data => nil, :endflag => nil }
       json   = Yajl::Encoder.encode(result)
       json   = json.encode('UTF-8', :invalid => :replace, :replace => "?")
       print("#{json}")
@@ -357,18 +354,18 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
   end
 
   def execute(remotepath, args)
-    result = {:status => true, :message => nil, :data => nil, :endflag => nil}
+    result = { :status => true, :message => nil, :data => nil, :endflag => nil }
     #cmd    = "#{remotepath} #{args}"
 
     begin
-      client.sys.process.execute(remotepath, args, opts = {'Hidden' => true, 'Subshell' => true})
+      client.sys.process.execute(remotepath, args, opts = { 'Hidden' => true, 'Subshell' => true })
       result[:status]  = true
       result[:message] = 'Execute finish'
       json             = Yajl::Encoder.encode(result)
       json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
       print("#{json}")
     rescue Rex::Post::Meterpreter::RequestError => re
-      result = {:status => false, :message => re.to_s, :data => nil, :endflag => nil}
+      result = { :status => false, :message => re.to_s, :data => nil, :endflag => nil }
       json   = Yajl::Encoder.encode(result)
       json   = json.encode('UTF-8', :invalid => :replace, :replace => "?")
       print("#{json}")
@@ -376,11 +373,11 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
   end
 
   def cat_file(remotepath)
-    result = {:status => true, :message => nil, :data => nil, :endflag => nil}
+    result = { :status => true, :message => nil, :data => nil, :endflag => nil }
     if (client.fs.file.stat(remotepath).directory?)
-      result = {:status => false, :message => "is a directory", :data => nil, :endflag => nil}
+      result = { :status => false, :message => "is a directory", :data => nil, :endflag => nil }
     elsif (client.fs.file.stat(remotepath).size >= 1024 * 100)
-      result = {:status => false, :message => "to big", :data => nil, :endflag => nil}
+      result = { :status => false, :message => "to big", :data => nil, :endflag => nil }
     else
       fd   = client.fs.file.new(remotepath, "rb")
       data = ""
@@ -404,10 +401,10 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
   def cd_path(remotepath)
     if (client.fs.file.stat(remotepath).directory?)
       client.fs.dir.chdir(remotepath)
-      result = {:status => true, :message => nil, :data => nil, :endflag => nil}
+      result = { :status => true, :message => nil, :data => nil, :endflag => nil }
     else
       (client.fs.file.stat(remotepath).size >= 1024 * 100)
-      result = {:status => false, :message => "is a file", :data => nil, :endflag => nil}
+      result = { :status => false, :message => "is a file", :data => nil, :endflag => nil }
     end
     json = Yajl::Encoder.encode(result)
     json = json.encode('UTF-8', :invalid => :replace, :replace => "?")
