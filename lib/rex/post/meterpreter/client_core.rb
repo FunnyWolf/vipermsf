@@ -1,5 +1,5 @@
 # -*- coding: binary -*-
-#¡¡toybox
+#toybox
 require 'rex/post/meterpreter/packet'
 require 'rex/post/meterpreter/core_ids'
 require 'rex/post/meterpreter/extension'
