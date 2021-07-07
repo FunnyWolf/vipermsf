@@ -1,5 +1,5 @@
 # -*- coding: binary -*-
-
+# toybox
 require 'rex/post/meterpreter/command_mapper'
 require 'rex/post/meterpreter/packet_response_waiter'
 require 'rex/exceptions'
@@ -92,9 +92,9 @@ module PacketDispatcher
 
   def on_passive_request(cli, req)
     begin
-      self.last_checkin = ::Time.now
       resp = send_queue.shift
       cli.send_response(resp)
+      self.last_checkin = ::Time.now
     rescue => e
       send_queue.unshift(resp) if resp
       elog("Exception sending a reply to the reader request #{cli.inspect}", error: e)
