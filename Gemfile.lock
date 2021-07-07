@@ -88,6 +88,7 @@ PATH
       xdr
       xmlrpc
       zeitwerk
+      reline
 
 GEM
   remote: https://rubygems.org/
@@ -471,6 +472,7 @@ GEM
     xmlrpc (0.3.2)
       webrick
     yajl-ruby (1.4.1)
+    reline (0.2.5)
     yard (0.9.26)
     zeitwerk (2.4.2)
 
@@ -496,6 +498,7 @@ DEPENDENCIES
   uuid
   yajl-ruby
   yard
+  reline
 
 BUNDLED WITH
    2.1.4
