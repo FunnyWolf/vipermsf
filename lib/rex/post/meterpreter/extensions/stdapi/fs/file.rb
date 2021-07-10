@@ -290,7 +290,7 @@ class File < Rex::Post::Meterpreter::Extensions::Stdapi::Fs::IO
     # all of the contents of the local file
     stat.call('uploading', src_file, dest_file) if stat
     # toybox
-    buf_size = 100 * 1024
+    buf_size = 24 * 1024
 
     begin
       dest_fd = client.fs.file.new(dest_file, "wb")

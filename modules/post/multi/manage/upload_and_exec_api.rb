@@ -52,8 +52,10 @@ class MetasploitModule < Msf::Post
     end
 
     tmprpath = rpath
-    print_status_redis("Uploading #{script_path} to #{tmprpath}")
-    session.fs.file.upload_file(tmprpath, script_path)
+    session.fs.file.upload_file(tmprpath, script_path) do |step, src, dst|
+      print_status_redis("#{step.ljust(11)}: #{src} -> #{dst}")
+    end
+
     if session.platform == 'windows'
       # Don't use cmd.exe /c start so we can fetch output
       cmd = tmprpath
@@ -78,7 +80,15 @@ class MetasploitModule < Msf::Post
       begin
         # Download the remote file to the temporary file
         print_status_redis("Downloading #{resultfilepath} to #{localpath}")
-        session.fs.file.download_file(localpath, resultfilepath, { block_size: 100 * 1024 })
+        opts = {
+                :block_size => 24 * 1024,
+                :tries      => true,
+                :tries_no   => 10,
+        }
+        session.fs.file.download_file(localpath, resultfilepath, opts) do |step, src, dst|
+          print_status_redis("#{step.ljust(11)}: #{src} -> #{dst}")
+        end
+
         register_file_for_cleanup(resultfilepath)
       rescue Rex::Post::Meterpreter::RequestError => re
         print_error(re.to_s)

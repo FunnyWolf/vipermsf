@@ -297,9 +297,9 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
   end
 
   def upload(localpath, remotepath)
-
-    client.fs.file.upload_file(remotepath, localpath)
-
+    client.fs.file.upload_file(remotepath, localpath) do |step, src, dst|
+      print_status_redis("#{step.ljust(11)}: #{src} -> #{dst}")
+    end
     return true
 
   end
@@ -337,7 +337,11 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
               :tries_no   => 10,
       }
 
-      client.fs.file.download_file(localpath, remotepath, opts)
+      client.fs.file.download_file(localpath, remotepath, opts) do |step, src, dst|
+        print_status_redis("#{step.ljust(11)}: #{src} -> #{dst}")
+      end
+
+      # client.fs.file.download_file(localpath, remotepath, opts)
       result[:status]  = true
       result[:message] = 'Download finish'
       json             = Yajl::Encoder.encode(result)
