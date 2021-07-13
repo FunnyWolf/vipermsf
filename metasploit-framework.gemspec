@@ -122,7 +122,6 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'http-cookie'
    # Needed for some modules (polkit_auth_bypass.rb)
   spec.add_runtime_dependency 'unix-crypt'
-  spec.add_runtime_dependency 'reline'
   #
   # File Parsing Libraries
   #
