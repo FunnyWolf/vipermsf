@@ -56,20 +56,9 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       # else
       #   sessionuploadfile = File.join(sessiondir, msffile.delete('/\\'))
       # end
-      msffilepath = File.join(Msf::Config.loot_directory, msffile.delete('/\\'))
-
+      msffilepath       = File.join(Msf::Config.loot_directory, msffile.delete('/\\'))
       sessionuploadfile = File.join(sessiondir, msffile.delete('/\\'))
       upload(msffilepath, sessionuploadfile)
-      result[:status]  = true
-      result[:message] = "upload finish"
-      json             = Yajl::Encoder.encode(result)
-      json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
-      print("#{json}")
-      pub_json_result(true,
-                      nil,
-                      nil,
-                      self.uuid)
-
     elsif operation == 'download'
       msffile   = File.basename(sessionfile)
       localpath = File.join(Msf::Config.loot_directory, msffile.delete('/\\'))
@@ -90,8 +79,6 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       destory_dir(sessiondir)
     elsif operation == 'create_dir'
       create_dir(sessiondir)
-    elsif operation == 'uploadurl'
-      uploadurl(localurl, remotepath)
     elsif operation == 'execute'
       execute(sessionfile, args)
     elsif operation == 'cat'
@@ -297,42 +284,31 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
   end
 
   def upload(localpath, remotepath)
-    client.fs.file.upload_file(remotepath, localpath) do |step, src, dst|
+    result = { :status => true, :message => nil, :data => nil, :endflag => nil }
+    opts   = {
+            :block_size => 256 * 1024,
+            :tries      => true,
+            :tries_no   => 10,
+    }
+    client.fs.file.upload_file(remotepath, localpath, opts) do |step, src, dst|
       print_status_redis("#{step.ljust(11)}: #{src} -> #{dst}")
     end
-    return true
-
-  end
-
-  def uploadurl(localurl, remotepath)
-    result      = { :status => true, :message => nil, :data => nil, :endflag => nil }
-    meterp_temp = Tempfile.new('meterp')
-    meterp_temp.binmode
-    temp_path = meterp_temp.path
-
-    File.open(temp_path, "wb") do |saved_file|
-      # the following "open" is provided by open-uri
-      open(localurl, "rb") do |read_file|
-        saved_file.write(read_file.read)
-      end
-    end
-
-    client.fs.file.upload_file(remotepath, temp_path)
     result[:status]  = true
-    result[:message] = 'Upload finish'
+    result[:message] = "upload finish"
     json             = Yajl::Encoder.encode(result)
     json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
-    print("#{json}")
+    pub_json_result(true,
+                    nil,
+                    nil,
+                    self.uuid)
   end
 
   def download(localpath, remotepath)
-
     result = { :status => true, :message => nil, :data => nil, :endflag => nil }
-
     begin
       # Download the remote file to the temporary file
       opts = {
-              :block_size => 24 * 1024,
+              :block_size => 256 * 1024,
               :tries      => true,
               :tries_no   => 10,
       }

@@ -285,22 +285,72 @@ class File < Rex::Post::Meterpreter::Extensions::Stdapi::Fs::IO
   #
   # Upload a single file.
   #
-  def File.upload_file(dest_file, src_file, &stat)
+  def File.upload_file(dest_file, src_file,opts = {}, &stat)
     # Open the file on the remote side for writing and read
     # all of the contents of the local file
+
+    adaptive = opts["adaptive"]
+    block_size = opts["block_size"] || 1024 * 1024
+    continue = opts["continue"]
+    tries_no = opts["tries_no"]
+    tries = opts["tries"]
+
     stat.call('uploading', src_file, dest_file) if stat
-    # toybox
-    buf_size = 24 * 1024
 
     begin
       dest_fd = client.fs.file.new(dest_file, "wb")
       src_fd = ::File.open(src_file, "rb")
       src_size = src_fd.stat.size
-      while (buf = src_fd.read(buf_size))
-        dest_fd.write(buf)
-        percent = src_fd.pos.to_f / src_size.to_f * 100.0
-        msg = "Uploaded #{Filesize.new(src_fd.pos).pretty} of #{Filesize.new(src_size).pretty} (#{percent.round(2)}%)"
-        stat.call(msg, src_file, dest_file) if stat
+      if tries
+        seek_back = false
+        adjust_block = false
+        tries_cnt = 0
+        begin # while
+          begin # exception
+            if seek_back
+              in_pos = dest_fd.pos
+              src_fd.seek(in_pos)
+              seek_back = false
+              stat.call("Resuming at #{Filesize.new(in_pos).pretty} of #{src_size}", src_file, dest_file)
+            else
+              # succesfully read and wrote - reset the counter
+              tries_cnt = 0
+            end
+            adjust_block = true
+            data = src_fd.read(block_size)
+            adjust_block = false
+          rescue Rex::TimeoutError
+            # timeout encountered - either seek back and retry or quit
+            if (tries && (tries_no == 0 || tries_cnt < tries_no))
+              tries_cnt += 1
+              seek_back = true
+              # try a smaller block size for the next round
+              if adaptive && adjust_block
+                block_size = [block_size >> 1, MIN_BLOCK_SIZE].max
+                adjust_block = false
+                msg = "Error uploading, block size set to #{block_size} - retry # #{tries_cnt}"
+                stat.call(msg, src_file, dest_file)
+              else
+                stat.call("Error uploading - retry # #{tries_cnt}", src_file, dest_file)
+              end
+              retry
+            else
+              stat.call('Error uploading - giving up', src_file, dest_file)
+              raise
+            end
+          end
+          dest_fd.write(data) if (data != nil)
+          percent = src_fd.pos.to_f / src_size.to_f * 100.0
+          msg = "Uploaded #{Filesize.new(src_fd.pos).pretty} of #{src_size} (#{percent.round(2)}%)"
+          stat.call(msg, src_file, dest_file)
+        end while (data != nil)
+      else
+        while (data = src_fd.read(block_size))
+          dest_fd.write(data)
+          percent = src_fd.pos.to_f / src_size.to_f * 100.0
+          msg = "Uploaded #{Filesize.new(src_fd.pos).pretty} of #{Filesize.new(src_size).pretty} (#{percent.round(2)}%)"
+          stat.call(msg, src_file, dest_file) if stat
+        end
       end
     ensure
       src_fd.close unless src_fd.nil?
