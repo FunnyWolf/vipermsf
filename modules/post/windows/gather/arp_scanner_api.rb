@@ -10,22 +10,22 @@ class MetasploitModule < Msf::Post
 
   OUI_LIST = Rex::Oui
 
-  def initialize(info = {})
-    super(update_info(info,
-                      'Name'         => 'Windows Gather ARP Scanner',
-                      'Description'  => %q{ This Module will perform an ARP scan for a given IP range through a
+  def initialize(info={})
+    super( update_info( info,
+        'Name'          => 'Windows Gather ARP Scanner',
+        'Description'   => %q{ This Module will perform an ARP scan for a given IP range through a
           Meterpreter Session.},
-                      'License'      => MSF_LICENSE,
-                      'Author'       => ['Carlos Perez <carlos_perez[at]darkoperator.com>'],
-                      'Platform'     => ['win'],
-                      'SessionTypes' => ['meterpreter']
-          ))
+        'License'       => MSF_LICENSE,
+        'Author'        => [ 'Carlos Perez <carlos_perez[at]darkoperator.com>'],
+        'Platform'      => [ 'win' ],
+        'SessionTypes'  => [ 'meterpreter']
+      ))
     register_options(
-            [
-                    OptString.new('RHOSTS', [true, 'The target address range or CIDR identifier', nil]),
-                    OptInt.new('THREADS', [false, 'The number of concurrent threads', 10])
+      [
+        OptString.new('RHOSTS', [true, 'The target address range or CIDR identifier', nil]),
+        OptInt.new('THREADS', [false, 'The number of concurrent threads', 10])
 
-            ])
+      ])
   end
 
   # Run Method for when run command is issued
