@@ -21,14 +21,6 @@ module Msf::Module::Rpcredis
     return @@redis_client
   end
 
-
-  def pub_module_result(result_json)
-    @@redis_client = self.redis_client
-
-    flag = @@redis_client.publish "MSF_RPC_RESULT_CHANNEL", result_json
-  end
-
-
   def pub_json_result(status = nil, message = nil, data = nil, uuid = nil)
     result           = {}
     result[:uuid]    = uuid
