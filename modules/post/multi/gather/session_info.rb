@@ -26,7 +26,7 @@ class MetasploitModule < Msf::Post
                     OptBool.new('RIGHTINFO', [false, 'get session UAC info', false]),
                     OptBool.new('UACINFO', [false, 'get session UAC info', false]),
                     OptBool.new('PINFO', [false, 'get session process info', false]),
-                    OptInt.new('TIMEOUT', [true, 'Timeout in seconds for get info depand reg.', 2]),
+                    OptInt.new('TIMEOUT', [true, 'Timeout in seconds for get info depand reg.', 10]),
             ])
 
   end
