@@ -70,18 +70,6 @@ class MetasploitModule < Msf::Post
       return
     end
 
-    params_size = if datastore['ARGUMENTS'].nil?
-                    0
-                  else
-                    datastore['ARGUMENTS'].length
-                  end
-    if params_size > 1023
-      pub_json_result(false,
-                      'Parameters max lenght 1024 ',
-                      nil,
-                      self.uuid)
-      return
-    end
     installed_dotnet_versions = get_dotnet_versions
     print_status("Dot Net Versions installed on target: #{installed_dotnet_versions}")
     print_status_redis("Dot Net Versions installed on target: #{installed_dotnet_versions}")

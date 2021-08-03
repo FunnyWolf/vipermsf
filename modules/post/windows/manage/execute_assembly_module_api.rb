@@ -57,19 +57,6 @@ class MetasploitModule < Msf::Post
   end
 
   def run
-    params_size = if datastore['ARGUMENTS'].nil?
-                    0
-                  else
-                    datastore['ARGUMENTS'].length
-                  end
-    if params_size > 1023
-      pub_json_result(false,
-                      'Parameters max lenght 1024 ',
-                      nil,
-                      self.uuid)
-      return
-    end
-
     installed_dotnet_versions = get_dotnet_versions
     print_status("Dot Net Versions installed on target: #{installed_dotnet_versions}")
     print_status_redis("Dot Net Versions installed on target: #{installed_dotnet_versions}")
@@ -99,7 +86,16 @@ class MetasploitModule < Msf::Post
           exe_path = File.join(Msf::Config.install_root, "scripts", "csharp", "#{datastore['ASSEMBLY']}-N40.exe")
           break
         end
-      elsif fi[0] == '3' || fi[0] == '2'
+      elsif fi[0] == '3'
+        if File.file?(File.join(Msf::Config.loot_directory, "#{datastore['ASSEMBLY']}-N30.exe"))
+          exe_path = File.join(Msf::Config.loot_directory, "#{datastore['ASSEMBLY']}-N30.exe")
+          break
+        end
+        if File.file?(File.join(Msf::Config.install_root, "scripts", "csharp", "#{datastore['ASSEMBLY']}-N30.exe"))
+          exe_path = File.join(Msf::Config.install_root, "scripts", "csharp", "#{datastore['ASSEMBLY']}-N30.exe")
+          break
+        end
+      elsif fi[0] == '2'
         if File.file?(File.join(Msf::Config.loot_directory, "#{datastore['ASSEMBLY']}-N20.exe"))
           exe_path = File.join(Msf::Config.loot_directory, "#{datastore['ASSEMBLY']}-N20.exe")
           break
