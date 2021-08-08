@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import argparse
 import base64
 import codecs
 import contextlib
@@ -77,40 +76,46 @@ try:
     from queue import Queue
 except Exception as E:
     import Queue
-from socket import AF_INET, SOCK_STREAM, SOCK_DGRAM, IPPROTO_UDP
+from socket import AF_INET, SOCK_STREAM, SOCK_DGRAM
 
 global MAX_THREADS
 global TIME_OUT
-global RUN_MODE
 
 
 def add_port_banner(result_queue, host, port, proto, banner):
     """添加一个结果"""
     result_queue.put({'host': host, 'port': port, 'proto': proto, 'banner': banner})
-    if RUN_MODE == 'single_script':
-        print({'host': host, 'port': port, 'proto': proto, 'banner': banner})
 
 
-def dqtoi(dq):
-    """ip地址转数字."""
-    octets = dq.split(".")
-    if len(octets) != 4:
-        raise ValueError
-    for octet in octets:
-        if int(octet) > 255:
-            raise ValueError
-    return (int(octets[0]) << 24) + \
-           (int(octets[1]) << 16) + \
-           (int(octets[2]) << 8) + \
-           (int(octets[3]))
+def to_ips(ipstr):
+    iplist = []
+    lines = ipstr.split(",")
+    for raw in lines:
+        if '/' in raw:
+            addr, mask = raw.split('/')
+            mask = int(mask)
 
+            bin_addr = ''.join([(8 - len(bin(int(i))[2:])) * '0' + bin(int(i))[2:] for i in addr.split('.')])
+            start = bin_addr[:mask] + (32 - mask) * '0'
+            end = bin_addr[:mask] + (32 - mask) * '1'
+            bin_addrs = [(32 - len(bin(int(i))[2:])) * '0' + bin(i)[2:] for i in range(int(start, 2), int(end, 2) + 1)]
 
-def itodq(intval):
-    """数字转ip地址."""
-    return "%u.%u.%u.%u" % ((intval >> 24) & 0x000000ff,
-                            ((intval & 0x00ff0000) >> 16),
-                            ((intval & 0x0000ff00) >> 8),
-                            (intval & 0x000000ff))
+            dec_addrs = ['.'.join([str(int(bin_addr[8 * i:8 * (i + 1)], 2)) for i in range(0, 4)]) for bin_addr in
+                         bin_addrs]
+
+            iplist.extend(dec_addrs)
+
+        elif '-' in raw:
+            addr, end = raw.split('-')
+            end = int(end)
+            start = int(addr.split('.')[3])
+            prefix = '.'.join(addr.split('.')[:-1])
+            addrs = [prefix + '.' + str(i) for i in range(start, end + 1)]
+            iplist.extend(addrs)
+            return addrs
+        else:
+            iplist.extend([raw])
+    return iplist
 
 
 def compile_pattern(allprobes):
@@ -459,58 +464,25 @@ class ScanTheard(threading.Thread):
             except Exception as E:
                 continue
 
-            host = itodq(req_dict.get('host'))
+            host = req_dict.get('host')
             port = req_dict.get('port')
             if isinstance(port, int):
                 try:
                     self.sd = socket.socket(AF_INET, SOCK_STREAM)
-                    self.sd.bind(("0.0.0.0", 0))
                     global TIME_OUT
                     self.sd.settimeout(TIME_OUT)
                     self.sd.connect((host, port))
                     self.sd.close()
-                    # self.serviceScan.sd = self.sd
                     data = self.serviceScan.scan(host, port, 'tcp')
                     add_port_banner(result_queue=self.result_queue, host=host, port=port, proto="TCP", banner=data)
                 except Exception as E:
                     pass
-            elif isinstance(port, dict):
-                udp_port = port.get("UDP")
-                self.sd = socket.socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
-                self.sd.bind(("0.0.0.0", 0))
-                self.sd.settimeout(TIME_OUT)
-                self.sd.connect((host, udp_port))
-                banner = "no banner"
-                self.sd.close()
-                add_port_banner(result_queue=self.result_queue, host=host, port=port, proto="UDP", banner=banner)
             else:
                 pass
 
 
-def async_scan(ipaddress_port):
-    ipaddress = ipaddress_port[0]
-    port = ipaddress_port[1]
-    serviceScan = ServiceScan()
-    sd = socket.socket(AF_INET, SOCK_STREAM)
-    try:
-        global TIME_OUT
-
-        sd.settimeout(TIME_OUT)
-        sd.connect((ipaddress, port))
-
-        data = serviceScan.scan(ipaddress, port, 'tcp')
-        sd.close()
-
-    except Exception as E:
-        pass
-    finally:
-        sd.close()
-
-
-def main(startip, stopip, port_list):
-    start = dqtoi(startip)
-    stop = dqtoi(stopip)
-
+def main(ipstr, port_list):
+    ip_list = to_ips(ipstr)
     try:
         req_queue = Queue.Queue()
         result_queue = Queue.Queue()
@@ -521,7 +493,7 @@ def main(startip, stopip, port_list):
         except Exception as E:
             return
 
-    for host in range(start, stop + 1):
+    for host in ip_list:
         for port in port_list:
             req_queue.put({'host': host, 'port': port})
 
@@ -537,12 +509,9 @@ def main(startip, stopip, port_list):
     while result_queue.empty() is not True:
         tmp = result_queue.get()
         result_list.append(tmp)
+    json_str = base64.b64encode(json.dumps(result_list).encode('ascii')).decode("utf-8")
+    print(json_str)
 
-    if RUN_MODE == 'single_script':
-        pass
-    else:
-        json_str = base64.b64encode(json.dumps(result_list).encode('ascii')).decode("utf-8")
-        print(json_str)
 
 # 系统函数,为了获取输入参数
 def get_script_param(key):
@@ -560,53 +529,15 @@ SOCKET_READ_BUFFERSIZE = 1024  # SOCKET DEFAULT READ BUFFER
 NMAP_ENABLE_PROBE_INCLUED = True  # Scan probes inclued target port
 NMAP_ENABLE_PROBE_EXCLUED = True  # Scan probes exclued target port
 
-IPLIST = []
+if get_script_param('max_threads') is not None:
+    MAX_THREADS = get_script_param('max_threads')
+if get_script_param('time_out') is not None:
+    TIME_OUT = get_script_param('time_out')
 
-RUN_MODE = 'VIPER'  # 'single_script' 'VIPER'
-if RUN_MODE == 'single_script':
-    parser = argparse.ArgumentParser(
-        add_help=True, description="This script can scan port and service,like nmap")
-    parser.add_argument('-s', metavar='startip', help="Start IPaddress(e.g. '192.172.1.1')")
-    parser.add_argument('-e', metavar='endip', help="End IPaddress(e.g. '192.172.1.255')")
-    parser.add_argument('-p', default=[],
-                        metavar='N,N,N',
-                        type=lambda s: [int(i) for i in s.split(",")],
-                        help=("Port(s) to scan(e.g. '22,80,3389').Deafult is top1000 ports"),
-                        )
-    parser.add_argument('-t',
-                        metavar='N',
-                        help='Socket Timeout(second),default is 1', default=1, type=float)
-    parser.add_argument('--threads',
-                        metavar='N',
-                        help='Max threads,default is 1', default=1, type=int)
-    args = parser.parse_args()
-
-    startip = args.s
-    stopip = args.e
-    port_list = args.p
-    if startip is None or stopip is None:
-        print("[x] Please set Start IPaddress,End IPaddress.")
-        parser.print_help()
-        exit(0)
-
-    if len(port_list) == 0 or port_list is None:
-        port_list = TOP_1000_PORTS
-    MAX_THREADS = args.threads
-    TIME_OUT = args.t
-    time1 = time.time()
-    main(startip, stopip, port_list)
-    print("Time use : {}".format(time.time() - time1))
-
-else:  # VIPER插件模式
-    # 获取输入参数
-    if get_script_param('max_threads') is not None:
-        MAX_THREADS = get_script_param('max_threads')
-    if get_script_param('time_out') is not None:
-        TIME_OUT = get_script_param('time_out')
-    startip = get_script_param('startip')
-    stopip = get_script_param('stopip')
-    port_list = get_script_param('port_list')
-    if port_list is None or len(port_list) == 0:
-        port_list = TOP_1000_PORTS
-    # 开始运行
-    main(startip, stopip, port_list)
+ipstr = get_script_param('ipstr')
+ipstr = ipstr.encode("utf-8")
+port_list = get_script_param('port_list')
+if port_list is None or len(port_list) == 0:
+    port_list = TOP_1000_PORTS
+# 开始运行
+main(ipstr, port_list)

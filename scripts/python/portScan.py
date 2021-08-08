@@ -13,34 +13,39 @@ except Exception as E:
     import Queue
 
 
+def to_ips(ipstr):
+    iplist = []
+    lines = ipstr.split(",")
+    for raw in lines:
+        if '/' in raw:
+            addr, mask = raw.split('/')
+            mask = int(mask)
+
+            bin_addr = ''.join([(8 - len(bin(int(i))[2:])) * '0' + bin(int(i))[2:] for i in addr.split('.')])
+            start = bin_addr[:mask] + (32 - mask) * '0'
+            end = bin_addr[:mask] + (32 - mask) * '1'
+            bin_addrs = [(32 - len(bin(int(i))[2:])) * '0' + bin(i)[2:] for i in range(int(start, 2), int(end, 2) + 1)]
+
+            dec_addrs = ['.'.join([str(int(bin_addr[8 * i:8 * (i + 1)], 2)) for i in range(0, 4)]) for bin_addr in
+                         bin_addrs]
+
+            iplist.extend(dec_addrs)
+
+        elif '-' in raw:
+            addr, end = raw.split('-')
+            end = int(end)
+            start = int(addr.split('.')[3])
+            prefix = '.'.join(addr.split('.')[:-1])
+            addrs = [prefix + '.' + str(i) for i in range(start, end + 1)]
+            iplist.extend(addrs)
+            return addrs
+        else:
+            iplist.extend([raw])
+    return iplist
+
+
 def add_port_banner(result_queue, host, port, proto):
     result_queue.put({'host': host, 'port': port, 'proto': proto})
-
-
-def dqtoi(dq):
-    """ip地址转数字."""
-    octets = dq.split(".")
-    if len(octets) != 4:
-        raise ValueError
-    for octet in octets:
-        if int(octet) > 255:
-            raise ValueError
-    return (int(octets[0]) << 24) + \
-           (int(octets[1]) << 16) + \
-           (int(octets[2]) << 8) + \
-           (int(octets[3]))
-
-
-def itodq(intval):
-    "Return a dotted-quad string given an integer. "
-    return "%u.%u.%u.%u" % ((intval >> 24) & 0x000000ff,
-                            ((intval & 0x00ff0000) >> 16),
-                            ((intval & 0x0000ff00) >> 8),
-                            (intval & 0x000000ff))
-
-
-class Timeout(Exception):
-    pass
 
 
 # Scan code from here
@@ -59,7 +64,7 @@ class ScanTheard(threading.Thread):
             except Exception as E:
                 continue
 
-            host = itodq(req_dict.get('host'))
+            host = req_dict.get('host')
             port = req_dict.get('port')
             if isinstance(port, int):
                 try:
@@ -77,10 +82,11 @@ class ScanTheard(threading.Thread):
                 pass
 
 
-def main(startip, stopip, port_list):
-    start = dqtoi(startip)
-    stop = dqtoi(stopip)
-
+def main(ipstr, port_list):
+    try:
+        ip_list = to_ips(ipstr)
+    except Exception as E:
+        ip_list = []
     try:
         req_queue = Queue.Queue()
         result_queue = Queue.Queue()
@@ -90,7 +96,7 @@ def main(startip, stopip, port_list):
             result_queue = Queue()
         except Exception as E:
             return
-    for host in range(start, stop + 1):
+    for host in ip_list:
         for port in port_list:
             req_queue.put({'host': host, 'port': port})
 
@@ -115,7 +121,7 @@ def get_script_param(key):
         dict_params = json.loads(base64.b64decode(input_str))
         return dict_params.get(key)
     except Exception as E:
-        return {}
+        return None
 
 
 # main函数部分,为了确保windows的python插件能直接执行,不要放在if __name__=="__main__":函数中
@@ -124,16 +130,14 @@ global TIME_OUT
 global resolv
 TIME_OUT = 0.05
 MAX_THREADS = 10
-srcip = "0.0.0.0"
 
 # 获取输入参数
 if get_script_param('max_threads') is not None:
     MAX_THREADS = get_script_param('max_threads')
 if get_script_param('time_out') is not None:
     TIME_OUT = get_script_param('time_out')
-startip = get_script_param('startip')
-stopip = get_script_param('stopip')
+ipstr = get_script_param('ipstr')
+ipstr = ipstr.encode("utf-8")
 port_list = get_script_param('port_list')
-
 # 开始运行
-main(startip, stopip, port_list)
+main(ipstr, port_list)
