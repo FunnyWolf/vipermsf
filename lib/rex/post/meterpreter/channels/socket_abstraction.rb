@@ -104,12 +104,11 @@ module SocketAbstraction
   # Performs a write operation on the right side of the local stream.
   #
   def dio_write_handler(packet, data)
-    rv = Rex::ThreadSafe.select(nil, [rsock], nil, 0.01)
-    if(rv)
-      rsock.syswrite(data)
-      return true
-    else
+    total_sent = rsock.write(data)
+    if total_sent.nil?
       return false
+    else
+      return true
     end
   end
 
