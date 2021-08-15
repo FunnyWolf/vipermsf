@@ -156,7 +156,7 @@ class ChannelRelay
   include Rex::IO::SocketAbstraction
 
   def initialize(src, dst, threadname = "SshChannelMonitorRemote")
-    initialize_abstraction(src, dst, threadname)
+    initialize_abstraction(src, dst)
   end
 
   def initialize_abstraction(src, dst, threadname)
