@@ -112,9 +112,13 @@ class WebConsole
   end
 
   def prompt
-    if(self.console.active_session)
-      meterpreter_ui_console = self.console.active_session.console
-      return meterpreter_ui_console.prompt + " " + meterpreter_ui_console.prompt_char + " "
+    if (self.console.active_session)
+      if self.console.active_session.channels.empty?
+        meterpreter_ui_console = self.console.active_session.console
+        return meterpreter_ui_console.prompt + " " + meterpreter_ui_console.prompt_char + " "
+      else
+        return ""
+      end
     end
     self.pipe.prompt
   end
