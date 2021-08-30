@@ -112,15 +112,19 @@ class WebConsole
   end
 
   def prompt
-    if (self.console.active_session)
-      if self.console.active_session.channels.empty?
-        meterpreter_ui_console = self.console.active_session.console
-        return meterpreter_ui_console.prompt + " " + meterpreter_ui_console.prompt_char + " "
-      else
-        return ""
+    if(self.console.active_session)
+      if(self.console.active_session.respond_to?('channels'))
+        self.console.active_session.channels.each_value do |ch|
+          if(ch.respond_to?('interacting') && ch.interacting)
+            return ""
+          end
+        end
       end
+      meterpreter_ui_console = self.console.active_session.console
+      return meterpreter_ui_console.prompt + " " + meterpreter_ui_console.prompt_char + " "
+    else
+      return self.pipe.prompt
     end
-    self.pipe.prompt
   end
 
   def tab_complete(cmd)

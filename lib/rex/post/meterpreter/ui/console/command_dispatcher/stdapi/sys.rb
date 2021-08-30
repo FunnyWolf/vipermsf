@@ -338,6 +338,7 @@ class Console::CommandDispatcher::Stdapi::Sys
             end
           end
         end
+        process.channel._close
         return true
       end
     end

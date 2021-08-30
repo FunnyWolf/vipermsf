@@ -380,8 +380,9 @@ class Channel
     @mutex.synchronize {
       cid = self.cid
       self.cid = nil
+      self.client.remove_channel(cid)
     }
-    client.remove_channel(cid)
+
 
     # Trap IOErrors as parts of the channel may have already been closed
     begin
