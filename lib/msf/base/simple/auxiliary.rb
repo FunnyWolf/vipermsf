@@ -46,7 +46,7 @@ module Auxiliary
 
     # Clone the module to prevent changes to the original instance
     mod = omod.replicant
-    Msf::Simple::Framework.simplify_module( mod, false )
+    Msf::Simple::Framework.simplify_module(mod)
     yield(mod) if block_given?
 
     # Import options from the OptionStr or Option hash.
@@ -94,7 +94,7 @@ module Auxiliary
 
     # Clone the module to prevent changes to the original instance
     mod = omod
-    Msf::Simple::Framework.simplify_module( mod, false )
+    Msf::Simple::Framework.simplify_module( mod )
     yield(mod) if block_given?
 
     # Import options from the OptionStr or Option hash.
@@ -151,7 +151,7 @@ module Auxiliary
   # 	The local output through which data can be displayed.
   #
   def self.check_simple(mod, opts, job_listener: Msf::Simple::NoopJobListener.instance)
-    Msf::Simple::Framework.simplify_module(mod, false)
+    Msf::Simple::Framework.simplify_module(mod)
 
     mod._import_extra_options(opts)
     if opts['LocalInput']
@@ -247,6 +247,9 @@ protected
         raise $!
       end
       return
+    rescue ::Msf::OptionValidateError => e
+      mod.error = e
+      ::Msf::Ui::Formatter::OptionValidateError.print_error(mod, e)
     rescue ::Exception => e
       mod.error = e
       mod.print_error("Auxiliary failed: #{e.class} #{e}")
