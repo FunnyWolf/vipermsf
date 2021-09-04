@@ -101,7 +101,7 @@ class MetasploitModule < Msf::Auxiliary
     vprint_status("Original Certifcate Details\n\n#{cert.to_text}")
 
     begin
-      keylength = /Key: \((\d+)/i.match(cert.signature_algorithm)[1] # Grab keylength from target cert
+      keylength = /Key: \((\d+)/i.match(cert.to_text)[1] # Grab keylength from target cert
     rescue StandardError
       keylength = 1024
     end
