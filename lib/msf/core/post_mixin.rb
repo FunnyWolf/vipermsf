@@ -1,5 +1,5 @@
 # -*- coding: binary -*-
-#
+# toybox
 # A mixin used for providing Modules with post-exploitation options and helper methods
 #
 module Msf::PostMixin
