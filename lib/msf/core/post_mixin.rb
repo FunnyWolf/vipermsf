@@ -38,10 +38,10 @@ module Msf::PostMixin
     # for its platform, capabilities, etc.
     check_for_session_readiness if session.type == "meterpreter"
 
-    incompatibility = session_incompatibility(session)
-    unless incompatibility.nil?
-      print_warning("SESSION may not be compatible with this module (#{incompatibility})")
-    end
+    # incompatibility = session_incompatibility(session)
+    # unless incompatibility.nil?
+    #   print_warning("SESSION may not be compatible with this module (#{incompatibility})")
+    # end
 
     # Msf::Exploit#setup for exploits, NoMethodError for post modules
     super rescue NoMethodError
