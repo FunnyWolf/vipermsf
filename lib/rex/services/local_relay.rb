@@ -513,9 +513,10 @@ protected
           # and write it to the other
           begin
             # Pass the data onto the other fd, most likely writing it.
-            data = rfd.sysread(65536)
+            # TODO
+            data = rfd.read(102400)
             rfd.other_stream.on_other_data(data)
-          # If we catch an error, close the connection
+            # If we catch an error, close the connection
           rescue ::Exception => e
             elog("Error in #{self} monitor_relays read", 'rex', error: e)
             close_relay_conn(rfd)
