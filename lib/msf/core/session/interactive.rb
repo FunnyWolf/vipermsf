@@ -130,6 +130,14 @@ protected
     true
   end
 
+  def abort_foreground_supported
+    true
+  end
+
+  def abort_foreground
+    self.rstream.write("\u0003")
+  end
+
   def _usr1
     # A simple signal to exit vim in reverse shell
     # Just for fun
