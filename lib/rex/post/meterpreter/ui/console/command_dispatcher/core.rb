@@ -1,4 +1,5 @@
 # -*- coding: binary -*-
+# toybox
 require 'set'
 require 'rex/post/meterpreter'
 require 'rex'
@@ -1141,7 +1142,6 @@ class Console::CommandDispatcher::Core
     end
 
     pid = nil
-    writable_dir = nil
     opts = {
       timeout: nil
     }
@@ -1150,8 +1150,6 @@ class Console::CommandDispatcher::Core
       case opt
       when '-t'
         opts[:timeout] = val.to_i
-      when '-p'
-        writable_dir = val
       when '-P'
         unless val =~ /^\d+$/
           print_error("Not a PID: #{val}")
@@ -1235,7 +1233,7 @@ class Console::CommandDispatcher::Core
     server ? print_status("Migrating from #{server.pid} to #{pid}...") : print_status("Migrating to #{pid}")
 
     # Do this thang.
-    client.core.migrate(pid, writable_dir, opts)
+    client.core.migrate(pid, opts)
 
     print_status('Migration completed successfully.')
 

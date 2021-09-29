@@ -588,7 +588,7 @@ class ClientCore < Extension
   # Migrates the meterpreter instance to the process specified
   # by pid.  The connection to the server remains established.
   #
-  def migrate(target_pid, writable_dir = nil, opts = {})
+  def migrate(target_pid, opts = {})
     keepalive              = client.send_keepalives
     client.send_keepalives = false
     target_process         = nil
