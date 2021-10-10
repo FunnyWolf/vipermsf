@@ -1,5 +1,6 @@
 # -*- coding: binary -*-
 # toybox
+include Msf::Module::Rpcredis
 module Msf
 module Ui
 module Web
@@ -58,7 +59,9 @@ class WebConsole
     self.pipe = WebConsolePipe.new
 
     # Create a read subscriber
-    self.pipe.create_subscriber('msfweb')
+    self.pipe.create_subscriber_proc('msfweb')    do |msg|
+      pub_console_print(self.prompt,Rex::Text.encode_base64(msg))
+    end
 
     # Skip database initialization if it is already configured
     if framework.db && framework.db.active
@@ -112,16 +115,15 @@ class WebConsole
   end
 
   def prompt
-    if(self.console.active_session)
-      if(self.console.active_session.respond_to?('channels'))
+    if self.console != nil and self.console.active_session
+      if self.console.active_session.respond_to?('channels')
         self.console.active_session.channels.each_value do |ch|
-          if(ch.respond_to?('interacting') && ch.interacting)
+          if ch.respond_to?('interacting') && ch.interacting
             return ""
           end
         end
       end
-      meterpreter_ui_console = self.console.active_session.console
-      return meterpreter_ui_console.prompt + " " + meterpreter_ui_console.prompt_char + " "
+      return self.pipe.prompt
     else
       return self.pipe.prompt
     end
@@ -171,7 +173,6 @@ class WebConsole
   def active_module=(val)
     self.console.active_module = val
   end
-
 end
 
 

@@ -14,7 +14,7 @@ module Text
 module Shell
 
   include Rex::Text::Color
-
+  include Msf::Module::Rpcredis
   ###
   #
   # This module is meant to be mixed into an input medium class instance as a
@@ -205,6 +205,7 @@ module Shell
       # Set the actual prompt to the saved prompt with any substitutions
       # or updates from our output driver, be they color or whatever
       self.input.prompt = self.output.update_prompt(format_prompt(p))
+      pub_console_print(self.input.prompt,Rex::Text.encode_base64(""))
     end
   end
 

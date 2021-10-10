@@ -44,7 +44,16 @@ module Msf::Module::Rpcredis
     json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
     @@redis_client   = self.redis_client
     flag             = @@redis_client.publish "MSF_RPC_DATA_CHANNEL", json
-    print("#{json}")
+  end
+
+  def pub_console_print(prompt = nil, message = nil)
+    result           = {}
+    result[:prompt]  = prompt
+    result[:message] = message
+    json             = Yajl::Encoder.encode(result)
+    json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+    @@redis_client   = self.redis_client
+    flag             = @@redis_client.publish "MSF_RPC_CONSOLE_PRINT", json
   end
 
   def print_good_redis(content)

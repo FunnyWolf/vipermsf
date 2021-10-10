@@ -572,9 +572,6 @@ class Meterpreter < Rex::Post::Meterpreter::Client
     console.framework = framework
     if framework.datastore['MeterpreterPrompt']
       console.update_prompt(framework.datastore['MeterpreterPrompt'])
-    # toybox
-    else
-      console.update_prompt("meterpreter")
     end
     # Call the console interaction subsystem of the meterpreter client and
     # pass it a block that returns whether or not we should still be
