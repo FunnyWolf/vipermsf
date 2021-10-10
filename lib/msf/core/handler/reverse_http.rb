@@ -19,6 +19,7 @@ module ReverseHttp
 
   include Msf::Handler
   include Msf::Handler::Reverse
+  include Msf::Handler::Reverse::Comm
   include Rex::Payloads::Meterpreter::UriChecksum
   include Msf::Payload::Windows::VerifySsl
 
@@ -162,6 +163,14 @@ module ReverseHttp
     end
   end
 
+  def comm_string
+    if self.service.listener.nil?
+      "(setting up)"
+    else
+      via_string(self.service.listener.client) if self.service.listener.respond_to?(:client)
+    end
+  end
+
   # Use the #refname to determine whether this handler uses SSL or not
   #
   def ssl?
@@ -206,6 +215,7 @@ module ReverseHttp
     local_addr = nil
     local_port = bind_port
     ex = false
+    comm = select_comm
 
     # Start the HTTPS server service on this host/port
     bind_addresses.each do |ip|
@@ -216,7 +226,7 @@ module ReverseHttp
             'Msf'        => framework,
             'MsfExploit' => self,
           },
-          nil,
+          comm,
           (ssl?) ? datastore['HandlerSSLCert'] : nil, nil, nil, datastore['SSLVersion']
         )
         local_addr = ip

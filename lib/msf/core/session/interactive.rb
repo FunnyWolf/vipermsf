@@ -56,8 +56,14 @@ module Interactive
     begin
       @peer_info = rstream.peerinfo
     rescue ::Exception
-      # @peer_info = '127.0.0.1'
       @peer_info = "#{rstream.peerhost}:#{rstream.peerport}"
+    end
+  end
+
+  def comm_channel
+    return @comm_info if @comm_info
+    if rstream.respond_to?(:channel)
+      @comm_info = "via session #{rstream.channel.client.sid}" if rstream.channel.client.respond_to?(:sid)
     end
   end
 
