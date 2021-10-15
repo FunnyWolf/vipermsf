@@ -58,6 +58,7 @@ class MetasploitModule < Msf::Post
 
   def run
     installed_dotnet_versions = get_dotnet_versions
+    installed_dotnet_versions.reverse
     print_status("Dot Net Versions installed on target: #{installed_dotnet_versions}")
     print_status_redis("Dot Net Versions installed on target: #{installed_dotnet_versions}")
     if installed_dotnet_versions == []
