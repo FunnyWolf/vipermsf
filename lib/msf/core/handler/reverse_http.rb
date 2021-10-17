@@ -85,10 +85,6 @@ module ReverseHttp
         ),
         OptBool.new('IgnoreUnknownPayloads',
           'Whether to drop connections from payloads using unknown UUIDs'
-        ),
-	# toybox
-        OptBool.new('KillHandlerFouce',
-                    'stop handler without check whether session exists'
         )
       ], Msf::Handler::ReverseHttp)
   end
@@ -244,12 +240,17 @@ module ReverseHttp
     self.service.server_name = datastore['HttpServerName']
 
     # Add the new resource
-    service.add_resource((luri + "/").gsub("//", "/"),
-      'Proc' => Proc.new { |cli, req|
-        on_request(cli, req)
-      },
-      'VirtualDirectory' => true)
-
+    begin
+      service.add_resource((luri + "/").gsub("//", "/"),
+                           'Proc' => Proc.new { |cli, req|
+                             on_request(cli, req)
+                           },
+                           'VirtualDirectory' => true)
+    rescue
+      @repetitive_resource = true
+      ex = $!
+      raise ex
+    end
     print_status("Started #{scheme.upcase} reverse handler on #{listener_uri(local_addr)}")
     lookup_proxy_settings
 
@@ -264,10 +265,8 @@ module ReverseHttp
   #
   def stop_handler
     if self.service
-    # toybox
-      if datastore['KillHandlerFouce']
-        self.service.remove_resource((luri + "/").gsub("//", "/"))
-        Rex::ServiceManager.stop_service(self.service) # kill it anyway
+      if @repetitive_resource # just work for one time
+        @repetitive_resource = false
       else
         self.service.remove_resource((luri + "/").gsub("//", "/"))
         if self.service.resources.empty? && self.sessions == 0
