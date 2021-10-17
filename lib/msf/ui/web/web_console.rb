@@ -173,6 +173,7 @@ class WebConsole
   def active_module=(val)
     self.console.active_module = val
   end
+
 end
 
 

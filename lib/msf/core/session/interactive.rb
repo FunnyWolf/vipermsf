@@ -1,5 +1,5 @@
 # -*- coding: binary -*-
-
+# toybox
 module Msf
 module Session
 
