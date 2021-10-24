@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    metasploit-framework (6.1.11)
+    metasploit-framework (6.1.12)
       actionpack (~> 6.0)
       activerecord (~> 6.0)
       activesupport (~> 6.0)
@@ -31,7 +31,7 @@ PATH
       metasploit-model
       metasploit-payloads (= 2.0.58)
       metasploit_data_models
-      metasploit_payloads-mettle (= 1.0.13)
+      metasploit_payloads-mettle (= 1.0.15)
       mqtt
       msgpack
       nessus_rest
@@ -127,23 +127,23 @@ GEM
       activerecord (>= 3.1.0, < 7)
     ast (2.4.2)
     aws-eventstream (1.2.0)
-    aws-partitions (1.515.0)
-    aws-sdk-core (3.121.1)
+    aws-partitions (1.517.0)
+    aws-sdk-core (3.121.3)
       aws-eventstream (~> 1, >= 1.0.2)
       aws-partitions (~> 1, >= 1.239.0)
       aws-sigv4 (~> 1.1)
       jmespath (~> 1.0)
-    aws-sdk-ec2 (1.270.0)
-      aws-sdk-core (~> 3, >= 3.120.0)
+    aws-sdk-ec2 (1.271.0)
+      aws-sdk-core (~> 3, >= 3.121.2)
       aws-sigv4 (~> 1.1)
-    aws-sdk-iam (1.61.0)
-      aws-sdk-core (~> 3, >= 3.120.0)
+    aws-sdk-iam (1.62.0)
+      aws-sdk-core (~> 3, >= 3.121.2)
       aws-sigv4 (~> 1.1)
-    aws-sdk-kms (1.49.0)
-      aws-sdk-core (~> 3, >= 3.120.0)
+    aws-sdk-kms (1.50.0)
+      aws-sdk-core (~> 3, >= 3.121.2)
       aws-sigv4 (~> 1.1)
-    aws-sdk-s3 (1.103.0)
-      aws-sdk-core (~> 3, >= 3.120.0)
+    aws-sdk-s3 (1.104.0)
+      aws-sdk-core (~> 3, >= 3.121.2)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.4)
     aws-sigv4 (1.4.0)
@@ -270,7 +270,7 @@ GEM
       railties (~> 6.0)
       recog (~> 2.0)
       webrick
-    metasploit_payloads-mettle (1.0.13)
+    metasploit_payloads-mettle (1.0.15)
     method_source (1.0.0)
     mini_portile2 (2.6.1)
     minitest (5.14.4)
@@ -319,7 +319,7 @@ GEM
     public_suffix (4.0.6)
     puma (5.5.2)
       nio4r (~> 2.0)
-    racc (1.5.2)
+    racc (1.6.0)
     rack (2.2.3)
     rack-protection (2.1.0)
       rack
@@ -471,7 +471,7 @@ GEM
     ttfunk (1.7.0)
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
-    tzinfo-data (1.2021.3)
+    tzinfo-data (1.2021.4)
       tzinfo (>= 1.0.0)
     unf (0.1.4)
       unf_ext
@@ -504,7 +504,7 @@ GEM
       webrick
     yajl-ruby (1.4.1)
     yard (0.9.26)
-    zeitwerk (2.4.2)
+    zeitwerk (2.5.1)
 
 PLATFORMS
   ruby
