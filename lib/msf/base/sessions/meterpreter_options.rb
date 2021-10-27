@@ -9,19 +9,22 @@ module Msf
     #
     module MeterpreterOptions
 
-      TIMEOUT_SESSION = 24 * 3600 * 7  # 1 week
-      TIMEOUT_COMMS = 300              # 5 minutes
-      TIMEOUT_RETRY_TOTAL = 60 * 60    # 1 hour
-      TIMEOUT_RETRY_WAIT = 10          # 10 seconds
+      # TIMEOUT_SESSION = 24 * 3600 * 7  # 1 week
+      # TIMEOUT_COMMS = 300              # 5 minutes
+      # TIMEOUT_RETRY_TOTAL = 60 * 60    # 1 hour
+      TIMEOUT_SESSION     = 0
+      TIMEOUT_COMMS       = 0
+      TIMEOUT_RETRY_TOTAL = 0
+      TIMEOUT_RETRY_WAIT  = 10 # 10 seconds
 
       def initialize(info = {})
         super(info)
 
         register_advanced_options(
-          [
-            OptBool.new(
-              'AutoLoadStdapi',
-              [true, "Automatically load the Stdapi extension", true]
+                [
+                        OptBool.new(
+                                'AutoLoadStdapi',
+                                [true, "Automatically load the Stdapi extension", true]
             ),
             OptInt.new(
               'AutoVerifySessionTimeout',
