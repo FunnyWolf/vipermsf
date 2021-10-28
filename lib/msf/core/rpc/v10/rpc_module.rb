@@ -525,7 +525,14 @@ class RPC_Module < RPC_Base
         error(500, e.message)
       end
     when 'evasion'
-      _run_evasion(mod, opts)
+      begin
+        Timeout.timeout(timeout) do
+          result = _run_evasion(mod, opts)
+          return result
+        end
+      rescue ::Exception => e
+        error(500, e.message)
+      end
     end
 
   end
@@ -856,7 +863,6 @@ private
       'RunAsJob' => true,
       'Options'  => opts
     })
-
     {
       'job_id' => mod.job_id,
       'uuid'   => mod.uuid
