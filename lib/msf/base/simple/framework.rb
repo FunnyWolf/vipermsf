@@ -1,4 +1,5 @@
 # -*- coding: binary -*-
+# toybox
 require 'msf/core/constants'
 module Msf
 module Simple
@@ -112,6 +113,9 @@ module Framework
       log_sink_name = opts['Logger']
       Msf::Logging.init(log_sink_name)
     end
+
+    # Initialize redis conf
+    Msf::Module::Rpcredis.init
 
     # Load the configuration
     framework.load_config
