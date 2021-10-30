@@ -323,6 +323,11 @@ protected
   # Parses the HTTPS request
   #
   def on_request(cli, req)
+    # toybox
+    unless redis_rpc_call("IPFilter.is_allow", ip: cli.peerhost)
+      self.service.close_client(cli)
+      return
+    end
     Thread.current[:cli] = cli
     resp = Rex::Proto::Http::Response.new
     info = process_uri_resource(req.relative_resource)

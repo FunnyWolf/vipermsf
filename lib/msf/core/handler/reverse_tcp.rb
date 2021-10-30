@@ -1,4 +1,5 @@
 # -*- coding: binary -*-
+# toybox
 require 'rex/socket'
 require 'thread'
 
@@ -124,6 +125,11 @@ module ReverseTcp
         # Accept a client connection
         begin
           client = listener_sock.accept
+          # toybox
+          unless redis_rpc_call("IPFilter.is_allow", ip: client.peerhost)
+            client.close
+            next
+          end
           if client
             self.pending_connections += 1
             lqueue.push(client)

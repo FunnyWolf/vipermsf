@@ -71,7 +71,7 @@ module Msf::Module::Rpcredis
     json          = json.encode('UTF-8', :invalid => :replace, :replace => "?")
     # @@redis_client = self.redis_client
     flag = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
-    self.rpccall("IPFilter.is_allow", ip: "192.168.146.1")
+
   end
 
   def print_status_redis(content)
@@ -105,7 +105,7 @@ module Msf::Module::Rpcredis
     flag = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
   end
 
-  def rpccall(method_name, **kwargs)
+  def redis_rpc_call(method_name, **kwargs)
     # request setup
     function_call   = { 'function' => method_name.to_s, 'kwargs' => kwargs }
     response_queue  = @@message_queue + ':rpc:' + Rex::Text.rand_text_alpha(32)
