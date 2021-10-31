@@ -1,5 +1,5 @@
 # -*- coding: binary -*-
-
+# toybox
 require 'shellwords'
 
 module Msf
@@ -9,9 +9,6 @@ module Msf
     #
     module MeterpreterOptions
 
-      # TIMEOUT_SESSION = 24 * 3600 * 7  # 1 week
-      # TIMEOUT_COMMS = 300              # 5 minutes
-      # TIMEOUT_RETRY_TOTAL = 60 * 60    # 1 hour
       TIMEOUT_SESSION     = 0
       TIMEOUT_COMMS       = 0
       TIMEOUT_RETRY_TOTAL = 0
@@ -21,10 +18,10 @@ module Msf
         super(info)
 
         register_advanced_options(
-                [
-                        OptBool.new(
-                                'AutoLoadStdapi',
-                                [true, "Automatically load the Stdapi extension", true]
+          [
+            OptBool.new(
+              'AutoLoadStdapi',
+              [true, "Automatically load the Stdapi extension", true]
             ),
             OptInt.new(
               'AutoVerifySessionTimeout',

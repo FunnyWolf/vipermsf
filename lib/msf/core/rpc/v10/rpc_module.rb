@@ -863,6 +863,7 @@ private
       'RunAsJob' => true,
       'Options'  => opts
     })
+
     {
       'job_id' => mod.job_id,
       'uuid'   => mod.uuid
