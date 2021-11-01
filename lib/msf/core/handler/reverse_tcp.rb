@@ -126,7 +126,7 @@ module ReverseTcp
         begin
           client = listener_sock.accept
           # toybox
-          unless redis_rpc_call("IPFilter.is_allow", ip: client.peerhost)
+          unless redis_rpc_call("IPFilter.is_allow",0.5, ip: client.peerhost)
             client.close
             next
           end

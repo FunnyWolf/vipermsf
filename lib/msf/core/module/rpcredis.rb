@@ -14,7 +14,6 @@ module Msf::Module::Rpcredis
   def self.init
     @@redis_client  = self.redis_client
     @@message_queue = "rpcviper"
-    @@timeout       = 0.5
   end
 
   def redis_client
@@ -105,7 +104,7 @@ module Msf::Module::Rpcredis
     flag = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
   end
 
-  def redis_rpc_call(method_name, **kwargs)
+  def redis_rpc_call(method_name, timeout = 0.5, **kwargs)
     # request setup
     function_call   = { 'function' => method_name.to_s, 'kwargs' => kwargs }
     response_queue  = @@message_queue + ':rpc:' + Rex::Text.rand_text_alpha(32)
@@ -114,7 +113,7 @@ module Msf::Module::Rpcredis
     # transport
     @@redis_client.rpush @@message_queue, rpc_raw_request
     # message_queue, rpc_raw_response = @@redis_client.blpop response_queue, @@timeout
-    message_queue, rpc_raw_response = @@redis_client.blpop response_queue
+    message_queue, rpc_raw_response = @@redis_client.blpop response_queue, timeout
     if rpc_raw_response.nil?
       @@redis_client.lrem @@message_queue, 0, rpc_raw_request
       return

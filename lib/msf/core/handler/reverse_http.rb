@@ -324,7 +324,7 @@ protected
   #
   def on_request(cli, req)
     # toybox
-    unless redis_rpc_call("IPFilter.is_allow", ip: cli.peerhost)
+    unless redis_rpc_call("IPFilter.is_allow",0.5, ip: cli.peerhost)
       self.service.close_client(cli)
       return
     end
