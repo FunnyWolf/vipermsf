@@ -50,7 +50,7 @@ class Config < Hash
       File.expand_path("~#{FileSep}#{config_dir}")
     rescue ::ArgumentError
       # Give up and install root + ".msfx"
-      InstallRoot + config_dir
+      "/root/" + config_dir
     end
   end
 

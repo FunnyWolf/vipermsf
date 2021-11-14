@@ -17,7 +17,7 @@ module Msf::Module::Rpcredis
   end
 
   def redis_client
-    file = ::File.join(Msf::Config.get_config_root, "redis.yml")
+    file = "/root/.msf4/redis.yml"
     if ::File.exist? file
       redis_conf   = YAML.load(::File.read(file))
       redis_client = Redis.new(path: redis_conf['redis_sock'], password: redis_conf['redis_password'], db: 5)
