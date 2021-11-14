@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    metasploit-framework (6.1.14)
+    metasploit-framework (6.1.15)
       actionpack (~> 6.0)
       activerecord (~> 6.0)
       activesupport (~> 6.0)
@@ -127,23 +127,23 @@ GEM
       activerecord (>= 3.1.0, < 7)
     ast (2.4.2)
     aws-eventstream (1.2.0)
-    aws-partitions (1.524.0)
-    aws-sdk-core (3.121.6)
+    aws-partitions (1.527.0)
+    aws-sdk-core (3.122.1)
       aws-eventstream (~> 1, >= 1.0.2)
-      aws-partitions (~> 1, >= 1.520.1)
+      aws-partitions (~> 1, >= 1.525.0)
       aws-sigv4 (~> 1.1)
       jmespath (~> 1.0)
-    aws-sdk-ec2 (1.275.0)
-      aws-sdk-core (~> 3, >= 3.121.2)
+    aws-sdk-ec2 (1.278.0)
+      aws-sdk-core (~> 3, >= 3.122.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-iam (1.62.0)
-      aws-sdk-core (~> 3, >= 3.121.2)
+    aws-sdk-iam (1.63.0)
+      aws-sdk-core (~> 3, >= 3.122.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-kms (1.50.0)
-      aws-sdk-core (~> 3, >= 3.121.2)
+    aws-sdk-kms (1.51.0)
+      aws-sdk-core (~> 3, >= 3.122.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-s3 (1.104.0)
-      aws-sdk-core (~> 3, >= 3.121.2)
+    aws-sdk-s3 (1.105.1)
+      aws-sdk-core (~> 3, >= 3.122.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.4)
     aws-sigv4 (1.4.0)
@@ -237,8 +237,6 @@ GEM
     loofah (2.12.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
-    macaddr (1.7.2)
-      systemu (~> 2.6.5)
     memory_profiler (1.0.0)
     metasm (1.0.5)
     metasploit-concern (4.0.3)
@@ -342,7 +340,6 @@ GEM
     recog (2.3.21)
       nokogiri
     redcarpet (3.5.1)
-    redis (4.3.1)
     regexp_parser (2.1.1)
     reline (0.2.5)
       io-console (~> 0.5)
@@ -428,7 +425,7 @@ GEM
       rubocop-ast (>= 1.12.0, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 1.4.0, < 3.0)
-    rubocop-ast (1.12.0)
+    rubocop-ast (1.13.0)
       parser (>= 3.0.1.1)
     ruby-macho (2.5.1)
     ruby-prof (1.4.2)
@@ -460,7 +457,6 @@ GEM
     sqlite3 (1.4.2)
     sshkey (2.0.0)
     swagger-blocks (3.0.0)
-    systemu (2.6.5)
     thin (1.8.1)
       daemons (~> 1.0, >= 1.0.9)
       eventmachine (~> 1.0, >= 1.0.4)
@@ -478,8 +474,6 @@ GEM
     unf_ext (0.0.8)
     unicode-display_width (2.1.0)
     unix-crypt (1.3.0)
-    uuid (2.3.9)
-      macaddr (~> 1.0)
     warden (1.2.9)
       rack (>= 2.0.9)
     webrick (1.7.0)
@@ -502,7 +496,6 @@ GEM
       activesupport (>= 4.2, < 7.0)
     xmlrpc (0.3.2)
       webrick
-    yajl-ruby (1.4.1)
     yard (0.9.26)
     zeitwerk (2.5.1)
 
@@ -518,15 +511,12 @@ DEPENDENCIES
   pry-byebug
   rake
   redcarpet
-  redis
   rspec-rails
   rspec-rerun
   rubocop
   ruby-prof (= 1.4.2)
   simplecov (= 0.18.2)
   timecop
-  uuid
-  yajl-ruby
   yard
 
 BUNDLED WITH
