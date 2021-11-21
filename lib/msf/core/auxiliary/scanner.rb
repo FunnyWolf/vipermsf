@@ -64,7 +64,7 @@ def run
   @range_percent = 0
 
   threads_max = datastore['THREADS'].to_i
-  @tl = []
+  @thread_list = []
   @scan_errors = []
   # toybox
   @scan_result = []
@@ -105,7 +105,7 @@ def run
       break if has_fatal_errors?
 
       # Spawn threads for each host
-      while (@tl.length < threads_max)
+      while (@thread_list.length < threads_max)
 
         # Stop scanning if we hit a fatal error
         break if has_fatal_errors?
@@ -117,7 +117,7 @@ def run
         end
         break unless datastore
 
-        @tl << framework.threads.spawn("ScannerHost(#{self.refname})-#{datastore['RHOST']}", false, datastore.dup) do |thr_datastore|
+        @thread_list << framework.threads.spawn("ScannerHost(#{self.refname})-#{datastore['RHOST']}", false, datastore.dup) do |thr_datastore|
           targ = thr_datastore['RHOST']
           nmod = self.replicant
           nmod.datastore = thr_datastore
@@ -155,17 +155,17 @@ def run
       break if has_fatal_errors?
 
       # Exit once we run out of hosts
-      if(@tl.length == 0)
+      if(@thread_list.length == 0)
         break
       end
 
       # Attempt to wait for the oldest thread for a second,
       # remove any finished threads from the list
       # and continue on.
-      tla = @tl.length
-      @tl.first.join(1)
-      @tl.delete_if { |t| not t.alive? }
-      tlb = @tl.length
+      tla = @thread_list.length
+      @thread_list.first.join(1)
+      @thread_list.delete_if { |t| not t.alive? }
+      tlb = @thread_list.length
 
       @range_done += (tla - tlb)
       scanner_show_progress() if @show_progress
@@ -199,7 +199,7 @@ def run
       # Stop scanning if we hit a fatal error
       break if has_fatal_errors?
 
-      while (@tl.length < threads_max)
+      while (@thread_list.length < threads_max)
 
         batch = []
 
@@ -240,11 +240,11 @@ def run
             end
           end
           thread[:batch_size] = batch.length
-          @tl << thread
+          @thread_list << thread
         end
 
         # Exit once we run out of hosts
-        if (@tl.length == 0 or nohosts)
+        if (@thread_list.length == 0 or nohosts)
           break
         end
       end
@@ -253,7 +253,7 @@ def run
       break if has_fatal_errors?
 
       # Exit if there are no more pending threads
-      if (@tl.length == 0)
+      if (@thread_list.length == 0)
         break
       end
 
@@ -261,11 +261,11 @@ def run
       # remove any finished threads from the list
       # and continue on.
       tla = 0
-      @tl.map {|t| tla += t[:batch_size] }
-      @tl.first.join(1)
-      @tl.delete_if { |t| not t.alive? }
+      @thread_list.map {|t| tla += t[:batch_size] if t[:batch_size] }
+      @thread_list.first.join(1)
+      @thread_list.delete_if { |t| not t.alive? }
       tlb = 0
-      @tl.map {|t| tlb += t[:batch_size] }
+      @thread_list.map {|t| tlb += t[:batch_size] if t[:batch_size] }
 
       @range_done += tla - tlb
       scanner_show_progress() if @show_progress
@@ -286,7 +286,7 @@ def run
 end
 
 def seppuko!
-  @tl.each do |t|
+  @thread_list.each do |t|
     begin
       t.kill if t.alive?
     rescue ::Exception
@@ -300,10 +300,10 @@ end
 
 def scanner_handle_fatal_errors
   return unless has_fatal_errors?
-  return unless @tl
+  return unless @thread_list
 
   # First kill any running threads
-  @tl.each {|t| t.kill if t.alive? }
+  @thread_list.each {|t| t.kill if t.alive? }
 
   # Show the unique errors triggered by the scan
   uniq_errors = @scan_errors.uniq
