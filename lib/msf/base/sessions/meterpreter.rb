@@ -105,6 +105,10 @@ class Meterpreter < Rex::Post::Meterpreter::Client
     self.class.type
   end
 
+  def self.can_cleanup_files
+    true
+  end
+
   ##
   # :category: Msf::Session::Provider::SingleCommandShell implementors
   #

@@ -1,5 +1,4 @@
 # -*- coding: binary -*-
-# toybox
 require 'set'
 require 'rex/post/meterpreter'
 require 'rex'
@@ -167,7 +166,7 @@ class Console::CommandDispatcher::Core
   end
 
   def cmd_pivot_tabs(str, words)
-    return %w[list add remove] + @@pivot_opts.fmt.keys if words.length == 1
+    return %w[list add remove] + @@pivot_opts.option_keys if words.length == 1
 
     case words[-1]
     when '-a'
@@ -181,7 +180,7 @@ class Console::CommandDispatcher::Core
     when '-t'
       return ['pipe']
     when 'add', 'remove'
-      return @@pivot_opts.fmt.keys
+      return @@pivot_opts.option_keys
     end
 
     []
@@ -437,7 +436,7 @@ class Console::CommandDispatcher::Core
   def cmd_channel_tabs(str, words)
     case words.length
     when 1
-      @@channel_opts.fmt.keys
+      @@channel_opts.option_keys
     when 2
       case words[1]
       when '-k', '-c', '-i', '-r', '-w'
@@ -559,7 +558,7 @@ class Console::CommandDispatcher::Core
 
   def cmd_irb_tabs(str, words)
     return [] if words.length > 1
-    @@irb_opts.fmt.keys
+    @@irb_opts.option_keys
   end
 
   #
@@ -646,7 +645,7 @@ class Console::CommandDispatcher::Core
 
   def cmd_set_timeouts_tabs(str, words)
     return [] if words.length > 1
-    @@set_timeouts_opts.fmt.keys
+    @@set_timeouts_opts.option_keys
   end
 
   def cmd_set_timeouts(*args)
@@ -888,7 +887,7 @@ class Console::CommandDispatcher::Core
   end
 
   def cmd_transport_tabs(str, words)
-    return %w[list change add next prev remove] + @@transport_opts.fmt.keys if words.length == 1
+    return %w[list change add next prev remove] + @@transport_opts.option_keys if words.length == 1
 
     case words[-1]
     when '-c'
@@ -900,7 +899,7 @@ class Console::CommandDispatcher::Core
     when '-t'
       return %w[reverse_tcp reverse_http reverse_https bind_tcp]
     when 'add', 'remove', 'change'
-      return @@transport_opts.fmt.keys
+      return @@transport_opts.option_keys
     end
 
     []
@@ -1142,6 +1141,7 @@ class Console::CommandDispatcher::Core
     end
 
     pid = nil
+    writable_dir = nil
     opts = {
       timeout: nil
     }
@@ -1150,6 +1150,8 @@ class Console::CommandDispatcher::Core
       case opt
       when '-t'
         opts[:timeout] = val.to_i
+      when '-p'
+        writable_dir = val
       when '-P'
         unless val =~ /^\d+$/
           print_error("Not a PID: #{val}")
@@ -1233,7 +1235,7 @@ class Console::CommandDispatcher::Core
     server ? print_status("Migrating from #{server.pid} to #{pid}...") : print_status("Migrating to #{pid}")
 
     # Do this thang.
-    client.core.migrate(pid, opts)
+    client.core.migrate(pid, writable_dir, opts)
 
     print_status('Migration completed successfully.')
 
@@ -1268,13 +1270,14 @@ class Console::CommandDispatcher::Core
     @@load_opts.parse(args) { |opt, idx, val|
       case opt
       when '-l'
-        exts = SortedSet.new
+        exts = Set.new
         if extensions.include?('stdapi') && !client.sys.config.sysinfo['BuildTuple'].blank?
           # Use API to get list of extensions from the gem
           exts.merge(MetasploitPayloads::Mettle.available_extensions(client.sys.config.sysinfo['BuildTuple']))
         else
           exts.merge(client.binary_suffix.map { |suffix| MetasploitPayloads.list_meterpreter_extensions(suffix) }.flatten)
         end
+        exts = exts.sort.uniq
         print(exts.to_a.join("\n") + "\n")
 
         return true
@@ -1372,12 +1375,13 @@ class Console::CommandDispatcher::Core
   end
 
   def cmd_load_tabs(str, words)
-    tabs = SortedSet.new
+    tabs = Set.new
     if extensions.include?('stdapi') && !client.sys.config.sysinfo['BuildTuple'].blank?
       tabs.merge(MetasploitPayloads::Mettle.available_extensions(client.sys.config.sysinfo['BuildTuple']))
     else
       tabs.merge(client.binary_suffix.map { |suffix| MetasploitPayloads.list_meterpreter_extensions(suffix) }.flatten)
     end
+    tabs = tabs.sort.uniq
     return tabs.to_a
   end
 
