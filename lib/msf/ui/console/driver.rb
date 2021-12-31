@@ -479,11 +479,7 @@ protected
 
         self.busy = true
         begin
-          Open3.popen2e(line) {|stdin,output,thread|
-            output.each {|outline|
-              print_line(outline.chomp)
-            }
-          }
+          system(line)
         rescue ::Errno::EACCES, ::Errno::ENOENT
           print_error("Permission denied exec: #{line}")
         end
