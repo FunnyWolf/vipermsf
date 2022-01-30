@@ -1,5 +1,5 @@
 # -*- coding: binary -*-
-# toybox
+
 require 'rex/post/channel'
 require 'rex/post/meterpreter/channel'
 
@@ -67,11 +67,12 @@ module SocketAbstraction
   # Performs a write operation on the right side of the local stream.
   #
   def dio_write_handler(packet, data)
-    total_sent = rsock.write(data)
-    if total_sent.nil?
-      return false
-    else
+    rv = Rex::ThreadSafe.select(nil, [rsock], nil, 0.01)
+    if (rv)
+      rsock.syswrite(data)
       return true
+    else
+      return false
     end
   end
 
