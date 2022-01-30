@@ -25,11 +25,12 @@ class Priv < Extension
   end
 
   TECHNIQUE = {
-    any: 0,
-    named_pipe: 1,
-    named_pipe_2: 2,
-    token_dup: 3,
-    named_pipe_rpcss: 4
+          any:                      0,
+          named_pipe:               1,
+          named_pipe_2:             2,
+          token_dup:                3,
+          named_pipe_rpcss:         4,
+          named_pipe_print_spooler: 5
   }.freeze
 
   #

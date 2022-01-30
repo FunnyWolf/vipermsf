@@ -191,8 +191,8 @@ module Msf::Sessions
             'PeerHost' => peer_host,
             'PeerPort' => peer_port
           }
-          params = @params.merge(peer_info)
-          channel = TcpClientChannel.new(@client, cid, ssh_channel, params)
+          params    = @params.merge(peer_info)
+          channel   = TcpClientChannel.new(@client, cid, ssh_channel, params)
           @channels.insert(0, channel)
 
           # Let any waiting thread know we're ready
@@ -200,10 +200,12 @@ module Msf::Sessions
         }
       end
 
+      attr_reader :client
+
       protected
 
       def _accept
-        result = nil
+        result  = nil
         channel = @channels.pop
         if channel
           result = channel.lsock

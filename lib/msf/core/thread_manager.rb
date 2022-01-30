@@ -1,5 +1,5 @@
 # -*- coding: binary -*-
-# toybox
+
 =begin
 require 'active_record'
 #
@@ -93,12 +93,7 @@ class ThreadManager < Array
   #
   def spawn(name, crit, *args, &block)
     t = nil
-    #WorkAround for migration issues. Problem in spawn function where MeterpreterReciever thread not spawned for unknow reason
-    # adding a delay will reduce chances of that bug
-    if name == "MeterpreterReceiver"
-       ::IO.select(nil, nil, nil, 1)
-    end
-    ##############################
+
     if block
       t = ::Thread.new(name, crit, caller, block, *args) do |*argv|
         ::Thread.current[:tm_name] = argv.shift.to_s
