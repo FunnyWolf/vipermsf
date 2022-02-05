@@ -52,7 +52,7 @@ class TcpServerChannel < Rex::Post::Meterpreter::Channel
       }
     )
 
-    client_channel = TcpClientChannel.new(client, cid, TcpClientChannel, CHANNEL_FLAG_SYNCHRONOUS, packet, {:sock_params => params})
+    client_channel = TcpClientChannel.new(client, cid, TcpClientChannel, CHANNEL_FLAG_SYNCHRONOUS, packet, sock_params: params)
 
     @@server_channels[server_channel] ||= ::Queue.new
     @@server_channels[server_channel].enq(client_channel)
