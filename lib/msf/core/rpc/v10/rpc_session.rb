@@ -32,10 +32,12 @@ class RPC_Session < RPC_Base
     # toybox
     self.framework.sessions.each do |sess|
       i, s       = sess
+
       res[s.sid] = {
               'type'          => s.type.to_s,
               'tunnel_local'  => s.tunnel_local.to_s,
               'tunnel_peer'   => s.tunnel_peer.to_s,
+              'comm_channel_session'   => s.comm_channel_session,
               'via_exploit'   => s.via_exploit.to_s,
               'via_payload'   => s.via_payload.to_s,
               'desc'          => s.desc.to_s,
@@ -80,6 +82,7 @@ class RPC_Session < RPC_Base
             'type'          => s.type.to_s,
             'tunnel_local'  => s.tunnel_local.to_s,
             'tunnel_peer'   => s.tunnel_peer.to_s,
+            'comm_channel_session'   => s.comm_channel_session,
             'via_exploit'   => s.via_exploit.to_s,
             'via_payload'   => s.via_payload.to_s,
             'desc'          => s.desc.to_s,
