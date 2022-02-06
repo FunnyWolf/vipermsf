@@ -39,7 +39,7 @@ class MetasploitModule < Msf::Post
         session.webcam.webcam_start(indx + 1)
         webcam_started = true
         data = session.webcam.webcam_get_frame(50)
-        filename  = "#{Time.now.strftime("%Y-%m-%d-%H-%M-%S")}_#{indx + 1}camera.jpg"
+        filename  = "#{Time.now.strftime("%Y-%m-%d-%H-%M-%S")}_#{indx + 1}_camera.jpg"
         full_path = store_viper(data, filename)
         result[name] = filename
       ensure
