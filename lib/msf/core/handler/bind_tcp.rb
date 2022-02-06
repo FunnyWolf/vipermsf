@@ -14,7 +14,7 @@ module Handler
 module BindTcp
 
   include Msf::Handler
-
+  include Msf::Handler::Reverse::Comm
   #
   # Returns the handler specific string representation, in this case
   # 'bind_tcp'.
@@ -118,25 +118,49 @@ module BindTcp
       end
 
       stime = Time.now.to_i
+      comm = select_comm
+
+
 
       while (stime + ctimeout > Time.now.to_i)
-        begin
-          client = Rex::Socket::Tcp.create(
-            'PeerHost' => rhost,
-            'PeerPort' => lport.to_i,
-            'Proxies'  => datastore['Proxies'],
-            'Context'  =>
-              {
-                'Msf'        => framework,
-                'MsfPayload' => self,
-                'MsfExploit' => assoc_exploit
-              })
-        rescue Rex::ConnectionError => e
-          vprint_error(e.message)
-        rescue
-          wlog("Exception caught in bind handler: #{$!.class} #{$!}")
+        if(comm == nil)
+          begin
+            client = Rex::Socket::Tcp.create(
+                    'PeerHost' => rhost,
+                    'PeerPort' => lport.to_i,
+                    'Proxies'  => datastore['Proxies'],
+                    'Context'  =>
+                            {
+                                    'Msf'        => framework,
+                                    'MsfPayload' => self,
+                                    'MsfExploit' => assoc_exploit
+                            })
+          rescue Rex::ConnectionError => e
+            vprint_error(e.message)
+          rescue
+            wlog("Exception caught in bind handler: #{$!.class} #{$!}")
+          end
+        else
+          socket_subsystem = Rex::Post::Meterpreter::Extensions::Stdapi::Net::Socket.new(comm)
+          params = Rex::Socket::Parameters.new({
+                                                       'PeerHost' => rhost,
+                                                       'PeerPort' => lport.to_i,
+                                                       'Proxies'  => datastore['Proxies'],
+                                                       'Context'  =>
+                                                               {
+                                                                       'Msf'        => framework,
+                                                                       'MsfPayload' => self,
+                                                                       'MsfExploit' => assoc_exploit
+                                                               }
+                                               })
+          begin
+            client = socket_subsystem.create_tcp_client_channel(params)
+          rescue StandardError => e
+            vprint_error(e.message)
+          rescue
+            wlog("Exception caught in bind handler: #{$!.class} #{$!}")
+          end
         end
-
         break if client
 
         # Wait a second before trying again
