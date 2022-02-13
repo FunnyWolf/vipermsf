@@ -58,8 +58,8 @@ module Shell
     self.hist_last_saved = 0
 
     # Static prompt variables
-    self.local_hostname = ENV['HOSTNAME'] || `hostname`.split('.')[0] || ENV['COMPUTERNAME']
-    self.local_username = ENV['USER'] || `whoami` || ENV['USERNAME']
+    self.local_hostname = ENV['HOSTNAME'] || try_exec('hostname')&.split('.')&.first&.rstrip || ENV['COMPUTERNAME']
+    self.local_username = ENV['USER'] || try_exec('whoami')&.rstrip || ENV['USERNAME']
 
     self.framework = framework
   end
@@ -494,6 +494,14 @@ module Shell
   attr_reader   :cont_flag # :nodoc:
   attr_accessor :name
 private
+
+  def try_exec(command)
+    begin
+      %x{ #{ command } }
+    rescue SystemCallError
+      nil
+    end
+  end
 
   attr_writer   :cont_flag # :nodoc:
 

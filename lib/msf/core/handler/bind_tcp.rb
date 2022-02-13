@@ -1,4 +1,5 @@
 # -*- coding: binary -*-
+# toybox
 module Msf
 module Handler
 

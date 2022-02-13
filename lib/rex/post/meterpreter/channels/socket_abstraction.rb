@@ -68,7 +68,7 @@ module SocketAbstraction
   #
   def dio_write_handler(packet, data)
     rv = Rex::ThreadSafe.select(nil, [rsock], nil, 0.01)
-    if (rv)
+    if(rv)
       rsock.syswrite(data)
       return true
     else
