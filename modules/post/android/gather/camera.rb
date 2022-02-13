@@ -42,6 +42,7 @@ class MetasploitModule < Msf::Post
         filename  = "#{Time.now.strftime("%Y-%m-%d-%H-%M-%S")}_#{indx + 1}_camera.jpg"
         full_path = store_viper(data, filename)
         result[name] = filename
+        Rex.sleep(2)
       ensure
         client.webcam.webcam_stop if webcam_started
       end
