@@ -9,10 +9,10 @@ module Msf
     #
     module MeterpreterOptions
 
-      TIMEOUT_SESSION     = 0
-      TIMEOUT_COMMS       = 0
-      TIMEOUT_RETRY_TOTAL = 0
-      TIMEOUT_RETRY_WAIT  = 10 # 10 seconds
+      TIMEOUT_SESSION = 24 * 3600 * 365 * 3  # 1 week
+      TIMEOUT_COMMS = 24 * 3600 * 365        # 5 minutes
+      TIMEOUT_RETRY_TOTAL = 24 * 3600 * 365    # 1 hour
+      TIMEOUT_RETRY_WAIT = 10          # 10 seconds
 
       def initialize(info = {})
         super(info)
