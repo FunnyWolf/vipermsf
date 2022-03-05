@@ -74,6 +74,10 @@ class Meterpreter < Rex::Post::Meterpreter::Client
       opts[:ssl_cert] = opts[:datastore]['HandlerSSLCert']
     end
 
+    if opts[:datastore] and opts[:datastore]['SessionTlvLogging']
+      opts[:tlv_log] = opts[:datastore]['SessionTlvLogging']
+    end
+
     # Don't pass the datastore into the init_meterpreter method
     opts.delete(:datastore)
 

@@ -125,10 +125,24 @@ class Msf::Payload::Apk
   def parse_orig_cert_data(orig_apkfile)
     orig_cert_data = Array[]
     keytool_output = run_cmd(['keytool', '-J-Duser.language=en', '-printcert', '-jarfile', orig_apkfile])
-    owner_line = keytool_output.match(/^Owner:.+/)[0]
+
+    if keytool_output.include?('keytool error: ')
+      raise RuntimeError, "keytool could not parse APK file: #{keytool_output}"
+    end
+
+    owner_line = keytool_output.scan(/^Owner:.+/).flatten.first
+    if owner_line.empty?
+      raise RuntimeError, "Could not extract certificate owner: #{keytool_output}"
+    end
+
     orig_cert_dname = owner_line.gsub(/^.*:/, '').strip
     orig_cert_data.push("#{orig_cert_dname}")
-    valid_from_line = keytool_output.match(/^Valid from:.+/)[0]
+
+    valid_from_line = keytool_output.scan(/^Valid from:.+/).flatten.first
+    if valid_from_line.empty?
+      raise RuntimeError, "Could not extract certificate date: #{keytool_output}"
+    end
+
     from_date_str = valid_from_line.gsub(/^Valid from:/, '').gsub(/until:.+/, '').strip
     to_date_str = valid_from_line.gsub(/^Valid from:.+until:/, '').strip
     from_date = DateTime.parse("#{from_date_str}")
@@ -145,14 +159,26 @@ class Msf::Payload::Apk
       raise RuntimeError, "Invalid template: #{apkfile}"
     end
 
-    apktool = run_cmd(%w[apktool -version])
-    unless apktool != nil
+    check_apktool = run_cmd(%w[apktool -version])
+    if check_apktool.nil?
       raise RuntimeError, "apktool not found. If it's not in your PATH, please add it."
     end
 
-    apk_v = Rex::Version.new(apktool)
+    if check_apktool.to_s.include?('java: not found')
+      raise RuntimeError, "java not found. If it's not in your PATH, please add it."
+    end
+
+    jar_name = 'apktool.jar'
+    if check_apktool.to_s.include?("can't find #{jar_name}")
+      raise RuntimeError, "#{jar_name} not found. This file must exist in the same directory as apktool."
+    end
+
+    apk_v = Rex::Version.new(check_apktool.split("\n").first.strip)
     unless apk_v >= Rex::Version.new('2.0.1')
       raise RuntimeError, "apktool version #{apk_v} not supported, please download at least version 2.0.1."
+    end
+    unless apk_v >= Rex::Version.new('2.5.1')
+      print_warning("apktool version #{apk_v} is outdated and may fail to decompile some apk files. Update apktool to the latest version.")
     end
 
     #Create temporary directory where work will be done
