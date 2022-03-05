@@ -248,6 +248,8 @@ class Console::CommandDispatcher::Stdapi::Webcam
 
   def cmd_record_mic(*args)
     path = Rex::Text.rand_text_alpha(8) + ".wav"
+    # toybox
+    path = File.join(Msf::Config.loot_directory, path)
     play = true
     duration = 1
 
