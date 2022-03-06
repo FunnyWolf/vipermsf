@@ -6,11 +6,6 @@ require 'uri'
 
 module Msf::Module::Rpcredis
   attr_accessor :redis_client
-
-  # def initialize()
-  #   @@redis_client = self.redis_client
-  # end
-
   def self.init
     @@redis_client  = self.redis_client
     @@message_queue = "rpcviper"
@@ -18,13 +13,18 @@ module Msf::Module::Rpcredis
 
   def redis_client
     file = "/root/.msf4/redis.yml"
-    if ::File.exist? file
-      redis_conf   = YAML.load(::File.read(file))
-      redis_client = Redis.new(path: redis_conf['redis_sock'], password: redis_conf['redis_password'], db: 5)
-    else
-      redis_client = Redis.new(host: "127.0.0.1", password: 'foobared', port: 60004, db: 5)
+
+    begin
+      if ::File.exist? file
+        redis_conf   = YAML.load(::File.read(file))
+        redis_client = Redis.new(path: redis_conf['redis_sock'], password: redis_conf['redis_password'], db: 5)
+      else
+        redis_client = Redis.new(host: "127.0.0.1", password: 'foobared', port: 60004, db: 5)
+      end
+      return redis_client
+    rescue => e
+      print_error("There was an error init redis: #{e.message}.", e)
     end
-    return redis_client
   end
 
   def pub_json_result(status = nil, message = nil, data = nil, uuid = nil)
@@ -35,7 +35,6 @@ module Msf::Module::Rpcredis
     result[:data]    = data
     json             = Yajl::Encoder.encode(result)
     json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
-    # @@redis_client   = self.redis_client
     flag = @@redis_client.publish "MSF_RPC_RESULT_CHANNEL", json
     print("#{json}")
   end
@@ -48,7 +47,6 @@ module Msf::Module::Rpcredis
     result[:data]    = data
     json             = Yajl::Encoder.encode(result)
     json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
-    # @@redis_client   = self.redis_client
     flag = @@redis_client.publish "MSF_RPC_DATA_CHANNEL", json
   end
 
@@ -58,7 +56,6 @@ module Msf::Module::Rpcredis
     result[:message] = message
     json             = Yajl::Encoder.encode(result)
     json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
-    # @@redis_client   = self.redis_client
     flag = @@redis_client.publish "MSF_RPC_CONSOLE_PRINT", json
   end
 
@@ -68,7 +65,6 @@ module Msf::Module::Rpcredis
     log[:content] = content
     json          = Yajl::Encoder.encode(log)
     json          = json.encode('UTF-8', :invalid => :replace, :replace => "?")
-    # @@redis_client = self.redis_client
     flag = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
 
   end
@@ -79,9 +75,7 @@ module Msf::Module::Rpcredis
     log[:content] = content
     json          = Yajl::Encoder.encode(log)
     json          = json.encode('UTF-8', :invalid => :replace, :replace => "?")
-    # @@redis_client = self.redis_client
     flag = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
-
   end
 
   def print_warning_redis(content)
@@ -90,7 +84,6 @@ module Msf::Module::Rpcredis
     log[:content] = content
     json          = Yajl::Encoder.encode(log)
     json          = json.encode('UTF-8', :invalid => :replace, :replace => "?")
-    # @@redis_client = self.redis_client
     flag = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
   end
 
@@ -100,7 +93,6 @@ module Msf::Module::Rpcredis
     log[:content] = content
     json          = Yajl::Encoder.encode(log)
     json          = json.encode('UTF-8', :invalid => :replace, :replace => "?")
-    # @@redis_client = self.redis_client
     flag = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
   end
 
