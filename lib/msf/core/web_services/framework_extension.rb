@@ -1,3 +1,4 @@
+# toybox
 require 'sinatra/base'
 require 'uri'
 
@@ -49,7 +50,7 @@ module Msf::WebServices
             # SkipDatabaseInit false is the default behavior, however for explicitness - note that framework first
             # connects to a local database as a pre-requisite to connecting to a remote service to correctly
             # configure active record
-            'SkipDatabaseInit' => false
+            'SkipDatabaseInit' => true
           }
           framework = Msf::Simple::Framework.create(init_framework_opts)
           Msf::WebServices::FrameworkExtension.db_connect(framework, app)
