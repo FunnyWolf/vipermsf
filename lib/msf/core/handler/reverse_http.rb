@@ -241,12 +241,13 @@ module ReverseHttp
 
     # Add the new resource
     begin
-      service.add_resource((luri + "/").gsub("//", "/"),
+      self.service.add_resource((luri + "/").gsub("//", "/"),
                            'Proc' => Proc.new { |cli, req|
                              on_request(cli, req)
                            },
                            'VirtualDirectory' => true)
     rescue
+      Rex::ServiceManager.stop_service(self.service)
       @repetitive_resource = true
       ex = $!
       raise ex
@@ -269,7 +270,7 @@ module ReverseHttp
         @repetitive_resource = false
       else
         self.service.remove_resource((luri + "/").gsub("//", "/"))
-        if self.service.resources.empty? && self.sessions == 0
+        if self.service.resources.empty?
           Rex::ServiceManager.stop_service(self.service)
         end
       end
