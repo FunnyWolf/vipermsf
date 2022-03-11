@@ -57,9 +57,9 @@ module Msf
                 'ExitOnSession' => false,
               }
             }
+            handler.share_datastore(mod.datastore)
             # toybox
             handler.datastore['Payload'] = mod.refname
-            handler.share_datastore(mod.datastore)
             handler.exploit_simple(handler_opts)
             job_id = handler.job_id
 
