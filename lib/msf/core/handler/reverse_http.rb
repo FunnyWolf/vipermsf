@@ -270,9 +270,8 @@ module ReverseHttp
         @repetitive_resource = false
       else
         self.service.remove_resource((luri + "/").gsub("//", "/"))
-        if self.service.resources.empty?
-          Rex::ServiceManager.stop_service(self.service)
-        end
+        self.service.deref
+        self.service = nil
       end
     end
   end
