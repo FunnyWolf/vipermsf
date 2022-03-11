@@ -74,10 +74,6 @@ class Meterpreter < Rex::Post::Meterpreter::Client
       opts[:ssl_cert] = opts[:datastore]['HandlerSSLCert']
     end
 
-    if opts[:datastore] and opts[:datastore]['SessionTlvLogging']
-      opts[:tlv_log] = opts[:datastore]['SessionTlvLogging']
-    end
-
     # Don't pass the datastore into the init_meterpreter method
     opts.delete(:datastore)
 
@@ -135,6 +131,8 @@ class Meterpreter < Rex::Post::Meterpreter::Client
     session.encode_unicode = datastore['EnableUnicodeEncoding']
 
     session.init_ui(self.user_input, self.user_output)
+
+    initialize_tlv_logging(datastore['SessionTlvLogging']) unless datastore['SessionTlvLogging'].nil?
 
     verification_timeout = datastore['AutoVerifySessionTimeout']&.to_i || session.comm_timeout
     begin
@@ -765,4 +763,3 @@ end
 
 end
 end
-

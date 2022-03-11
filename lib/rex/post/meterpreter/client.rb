@@ -173,8 +173,6 @@ class Client
       end
     end
 
-    initialize_tlv_logging(opts[:tlv_log]) unless opts[:tlv_log].nil?
-
     # Protocol specific dispatch mixins go here, this may be neader with explicit Client classes
     opts[:dispatch_ext].each {|dx| self.extend(dx)} if opts[:dispatch_ext]
     initialize_passive_dispatcher if opts[:passive_dispatcher]
@@ -512,4 +510,3 @@ protected
 end
 
 end; end; end
-
