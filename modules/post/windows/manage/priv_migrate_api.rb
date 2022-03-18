@@ -173,7 +173,7 @@ class MetasploitModule < Msf::Post
     end
     to = (datastore['MIGRATE_TIMEOUT'].zero?) ? nil : datastore['MIGRATE_TIMEOUT']
     begin
-      flag = client.core.migrate(target_pid, writable_dir = nil, opts = {:timeout => to})
+      flag = client.core.migrate(target_pid, opts = {:timeout => to})
       # vprint_good("Successfully migrated to #{client.sys.process.open.name} (#{client.sys.process.open.pid}) as: #{client.sys.config.getuid}")
       return flag, target_pid
     rescue Exception => e
