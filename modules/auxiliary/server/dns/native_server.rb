@@ -25,9 +25,9 @@ class MetasploitModule < Msf::Auxiliary
       'Author'         => 'RageLtMan <rageltman[at]sempervictus>',
       'License'        => MSF_LICENSE,
       'References'     => [],
-      'Actions'     =>
+      'Actions'   =>
         [
-          [ 'Service', 'Description' => 'Serve DNS entries' ]
+          [ 'Service', 'Description' => 'Run DNS service' ]
         ],
       'PassiveActions' =>
         [
@@ -91,7 +91,7 @@ class MetasploitModule < Msf::Auxiliary
           service.cache.cache_record(ans)
         end unless service.cache.nil?
         # Merge the answers and use the upstream response
-        forward.instance_variable_set(:@question, (req.answer + forwarded.answer).uniq)
+        forward.instance_variable_set(:@answer, (req.answer + forwarded.answer).uniq)
         req = forwarded
       end
     end

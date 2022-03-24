@@ -5,7 +5,7 @@
 
 class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
-
+  include Msf::Exploit::Remote::SocketServer
   def initialize
     super(
             'Name'           => 'Socks5 Proxy Server',
@@ -52,12 +52,11 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run
-    opts         = {
-            'ServerHost'     => datastore['SRVHOST'],
-            'ServerPort'     => datastore['SRVPORT'],
-            'ServerUsername' => datastore['USERNAME'],
-            'ServerPassword' => datastore['PASSWORD'],
-            'Context'        => { 'Msf' => framework, 'MsfExploit' => self }
+    opts = {
+            'ServerHost' => bindhost,
+            'ServerPort' => bindport,
+            'Comm' => _determine_server_comm(bindhost),
+            'Context' => { 'Msf' => framework, 'MsfExploit' => self }
     }
     @socks_proxy = Rex::Proto::Proxy::Socks5::Server.new(opts)
 

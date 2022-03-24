@@ -1,4 +1,5 @@
 # -*- coding: binary -*-
+# toybox
 require 'set'
 require 'rex/post/meterpreter'
 require 'rex'

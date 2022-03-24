@@ -5,7 +5,7 @@
 
 class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
-
+  include Msf::Exploit::Remote::SocketServer
   def initialize
     super(
             'Name'           => 'Socks4a Proxy Server',
@@ -25,6 +25,7 @@ class MetasploitModule < Msf::Auxiliary
 
     register_options(
             [
+
                     OptString.new('SRVHOST', [true, "The address to listen on", '0.0.0.0']),
                     OptPort.new('SRVPORT', [true, "The port to listen on.", 1080])
             ])
@@ -49,9 +50,10 @@ class MetasploitModule < Msf::Auxiliary
 
   def run
     opts = {
-            'ServerHost' => datastore['SRVHOST'],
-            'ServerPort' => datastore['SRVPORT'],
-            'Context'    => { 'Msf' => framework, 'MsfExploit' => self }
+            'ServerHost' => bindhost,
+            'ServerPort' => bindport,
+            'Comm' => _determine_server_comm(bindhost),
+            'Context' => { 'Msf' => framework, 'MsfExploit' => self }
     }
 
     @socks4a = Rex::Proto::Proxy::Socks4a.new(opts)
