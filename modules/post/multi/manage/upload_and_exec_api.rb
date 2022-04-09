@@ -68,7 +68,7 @@ class MetasploitModule < Msf::Post
       # Handle absolute paths
       cmd = tmprpath.start_with?('/') ? tmprpath : "./#{tmprpath}"
     end
-    print_status_redis("Executing command: #{cmd}")
+    print_status_redis("Executing command: #{cmd} #{args}")
     output = cmd_exec(cmd, args, datastore['TIMEOUT'])
 
     if datastore['CLEANUP']
@@ -119,7 +119,8 @@ class MetasploitModule < Msf::Post
     else
       filename = datastore['RPATH']
     end
-    session.fs.dir.pwd + filename
+    rpath = File.join(session.fs.dir.pwd, filename)
+    rpath
   end
 
   def args
