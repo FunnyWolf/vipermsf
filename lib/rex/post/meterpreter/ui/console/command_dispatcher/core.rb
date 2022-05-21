@@ -1206,7 +1206,7 @@ class Console::CommandDispatcher::Core
 
     begin
       server = client.sys.process.open
-    rescue TimeoutError => e
+    rescue Rex::TimeoutError, ::Timeout::Error => e
       elog('Server Timeout', error: e)
     rescue RequestError => e
       elog('Request Error', error: e)
