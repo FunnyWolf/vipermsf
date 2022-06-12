@@ -70,7 +70,7 @@ Gem::Specification.new do |spec|
   # are needed when there's no database
   spec.add_runtime_dependency 'metasploit-model'
   # Needed for Meterpreter
-  spec.add_runtime_dependency 'metasploit-payloads', '2.0.87'
+  spec.add_runtime_dependency 'metasploit-payloads', '2.0.93'
   # Needed for the next-generation POSIX Meterpreter
   spec.add_runtime_dependency 'metasploit_payloads-mettle', '1.0.18'
   # Needed by msfgui and other rpc components
@@ -224,6 +224,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'eventmachine'
 
   spec.add_runtime_dependency 'faraday'
+  spec.add_runtime_dependency 'faraday-retry'
 
   # Required for windows terminal colors as of Ruby 3.0
   spec.add_runtime_dependency 'win32api'

