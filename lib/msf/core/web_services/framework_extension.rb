@@ -54,7 +54,83 @@ module Msf::WebServices
           }
           framework = Msf::Simple::Framework.create(init_framework_opts)
           Msf::WebServices::FrameworkExtension.db_connect(framework, app)
+          framework.threads.spawn("viper_monitor", false) {
+            loop do
 
+
+              res_jobs = {}
+              framework.jobs.each do |j|
+                # toybox
+                res_jobs[j[0]]        = { 'name'       => j[1].name,
+                                          'start_time' => j[1].start_time.to_i
+                }
+                res_jobs[j[0]][:uuid] = j[1].ctx[0].uuid
+                if j[1].ctx && j[1].ctx[0]
+                  if j[1].ctx[0].respond_to?(:get_resource)
+                    res_jobs[j[0]][:uripath] = j[1].ctx[0].get_resource
+                  end
+                  if j[1].ctx[0].respond_to?(:datastore)
+                    datastore = j[1].ctx[0].datastore
+                    datastore.delete('LocalInput')
+                    datastore.delete('LocalOutput')
+                    res_jobs[j[0]][:datastore] = j[1].ctx[0].datastore
+                  end
+                end
+              end
+
+
+              res_sessions = {}
+              # toybox
+              framework.sessions.each do |sess|
+                i, s       = sess
+
+                res_sessions[s.sid] = {
+                        'type'          => s.type.to_s,
+                        'tunnel_local'  => s.tunnel_local.to_s,
+                        'tunnel_peer'   => s.tunnel_peer.to_s,
+                        'comm_channel_session'   => s.comm_channel_session,
+                        'via_exploit'   => s.via_exploit.to_s,
+                        'via_payload'   => s.via_payload.to_s,
+                        'desc'          => s.desc.to_s,
+                        'info'          => s.info.to_s,
+                        'workspace'     => s.workspace.to_s,
+                        'session_host'  => s.session_host.to_s,
+                        'session_port'  => s.session_port.to_i,
+                        'target_host'   => s.target_host.to_s,
+                        'username'      => s.username.to_s,
+                        'uuid'          => s.uuid.to_s,
+                        'exploit_uuid'  => s.exploit_uuid.to_s,
+                        'routes'        => s.routes,
+                        'arch'          => s.arch.to_s,
+                        'name'          => s.name,
+                }
+
+                if s.type.to_s == "meterpreter"
+                  res_sessions[s.sid]['platform']        = s.platform.to_s
+                  res_sessions[s.sid]['advanced_info']   = s.advanced_info
+                  res_sessions[s.sid]['load_powershell'] = s.ext.aliases.has_key?('powershell')
+                  res_sessions[s.sid]['load_python']     = s.ext.aliases.has_key?('python')
+                else
+                  res_sessions[s.sid]['platform']      = nil
+                  res_sessions[s.sid]['advanced_info'] = {}
+                end
+                if s.respond_to?(:last_checkin) && s.last_checkin
+                  res_sessions[s.sid]['last_checkin'] = s.last_checkin.to_i
+                else
+                  res_sessions[s.sid]['last_checkin'] = 0
+                end
+              end
+
+              # Accept a client connection
+              pub_heartbeat_data(true,
+                            "RDP_NOTICES",
+                                 {
+                                         "jobs" =>res_jobs,
+                                         "sessions"=>res_sessions
+                                 })
+              Rex.sleep(0.5)
+            end
+          }
           framework
         end
       })
