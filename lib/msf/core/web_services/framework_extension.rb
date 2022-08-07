@@ -123,7 +123,7 @@ module Msf::WebServices
 
               # Accept a client connection
               pub_heartbeat_data(true,
-                            "RDP_NOTICES",
+                            "HEARTBEAT",
                                  {
                                          "jobs" =>res_jobs,
                                          "sessions"=>res_sessions

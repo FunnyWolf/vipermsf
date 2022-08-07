@@ -151,7 +151,7 @@ module Msf::RPC::JSON
     # @return [Hash or Array] Hash or Array representation of source
     def parse_json_request(source)
       begin
-	# toybox
+	      # toybox
         parser =Yajl::Parser.new(:symbolize_names => true)
         parser.parse(source)
       rescue
