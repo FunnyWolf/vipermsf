@@ -1,14 +1,11 @@
 # -*- coding: UTF-8 -*-
-require 'json'
-require 'yajl'
+require 'json/pure'
 require 'msf/core/post/windows/accounts'
-
 
 class MetasploitModule < Msf::Post
   include Msf::Post::Windows::Priv
   include Msf::Post::Windows::Accounts
   include Msf::Post::Linux::Priv
-
 
   def initialize(info = {})
     super(update_info(info,
@@ -33,16 +30,15 @@ class MetasploitModule < Msf::Post
 
   # Run Method for when run command is issued
   def run
-    @result = {:job_id => self.job_id, :uuid => self.uuid, :status => true, :message => nil, :data => nil, }
+    result        = { :job_id => self.job_id, :uuid => self.uuid, :status => true, :message => nil, :data => nil, }
     if session.type == "shell"
-      @result[:status]  = false
-      @result[:message] = 'Unsupport shell type'
-      json              = Yajl::Encoder.encode(result)
-      json              = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+      result[:status]  = false
+      result[:message] = 'Unsupport shell type'
+      json             = JSON.generate(result)
       print("#{json}")
       return
     end
-    info = {}
+    info          = {}
     if session.platform == "windows"
       # info about right
       if datastore['RIGHTINFO']
@@ -136,9 +132,8 @@ class MetasploitModule < Msf::Post
       info["PARCH"]     = nil
       info["PROCESSES"] = []
     end
-    @result[:data] = info
-    json           = Yajl::Encoder.encode(@result)
-    json           = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+    result[:data] = info
+    json             = JSON.generate(result)
     print("#{json}")
   end
 end

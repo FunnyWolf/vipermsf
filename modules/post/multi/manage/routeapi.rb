@@ -2,7 +2,8 @@
 # This module requires Metasploit: https://metasploit.com/download
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
-require 'yajl'
+require 'json/pure'
+
 class MetasploitModule < Msf::Post
 
   def initialize(info = {})
@@ -63,8 +64,7 @@ class MetasploitModule < Msf::Post
     unless session_good?
       result[:status]  = false
       result[:message] = 'Session is not already'
-      json = Yajl::Encoder.encode(result)
-      json = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+      json    = JSON.generate(result)
       print("#{json}")
       return
     end
@@ -75,8 +75,7 @@ class MetasploitModule < Msf::Post
       unless check_ip(ipaddress)
         result[:status]  = false
         result[:message] = "not a legitimate IP address"
-        json = Yajl::Encoder.encode(result)
-        json = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+        json    = JSON.generate(result)
         print("#{json}")
         return
       end
@@ -84,16 +83,14 @@ class MetasploitModule < Msf::Post
       result[:status]  = true
       result[:message] = nil
       result[:data]    = data
-      json = Yajl::Encoder.encode(result)
-      json = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+      json    = JSON.generate(result)
       print("#{json}")
     when :print
       routes           = print_routes
       result[:status]  = true
       result[:message] = nil
       result[:data]    = routes
-      json = Yajl::Encoder.encode(result)
-      json = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+      json    = JSON.generate(result)
       print("#{json}")
       return
     when :add
@@ -105,23 +102,20 @@ class MetasploitModule < Msf::Post
           result[:status]  = true
           result[:message] = msg
           result[:data] = routes
-          json = Yajl::Encoder.encode(result)
-          json = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+          json    = JSON.generate(result)
           print("#{json}")
           return
         else
           result[:status]  = false
           result[:message] = msg
-          json = Yajl::Encoder.encode(result)
-          json = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+          json    = JSON.generate(result)
           print("#{json}")
           return
         end
       else
         result[:status]  = false
         result[:message] = 'SUBNET and NETMASK not right'
-        json = Yajl::Encoder.encode(result)
-        json = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+        json    = JSON.generate(result)
         print("#{json}")
         return
       end
@@ -135,15 +129,13 @@ class MetasploitModule < Msf::Post
         if flag
           result[:status]  = true
           result[:message] = msg
-          json = Yajl::Encoder.encode(result)
-          json = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+          json    = JSON.generate(result)
           print("#{json}")
           return
         else
           result[:status]  = false
           result[:message] = msg
-          json = Yajl::Encoder.encode(result)
-          json = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+          json    = JSON.generate(result)
           print("#{json}")
           return
         end
@@ -307,8 +299,7 @@ class MetasploitModule < Msf::Post
     unless route_compatible?
       result[:status]  = false
       result[:message] = "Session do not has routing capabilities"
-      json = Yajl::Encoder.encode(result)
-      json = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+      json    = JSON.generate(result)
       print("#{json}")
       return
     end
@@ -336,8 +327,7 @@ class MetasploitModule < Msf::Post
     result[:status]  = true
     result[:message] = nil
     result[:data]    = routes
-    json = Yajl::Encoder.encode(result)
-    json = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+    json    = JSON.generate(result)
     print("#{json}")
 
     # if !autoadd_interface_routes && !found # Check interface list for more possible routes

@@ -1,30 +1,29 @@
 # toybox
 require 'json/pure'
-require 'yajl'
 
 module Msf::RPC::JSON
   class Dispatcher
-    JSON_RPC_VERSION = '2.0'
+    JSON_RPC_VERSION          = '2.0'
     JSON_RPC_REQUIRED_MEMBERS = %i(jsonrpc method)
-    JSON_RPC_MEMBER_TYPES = {
-        # A String specifying the version of the JSON-RPC protocol.
-        jsonrpc: [String],
-        # A String containing the name of the method to be invoked.
-        method: [String],
-        # If present, parameters for the rpc call MUST be provided as a Structured
-        # value. Either by-position through an Array or by-name through an Object.
-        # * by-position: params MUST be an Array, containing the values in the
-        #   Server expected order.
-        # * by-name: params MUST be an Object, with member names that match the
-        #   Server expected parameter names. The absence of expected names MAY
-        #   result in an error being generated. The names MUST match exactly,
-        #   including case, to the method's expected parameters.
-        params: [Array, Hash],
-        # An identifier established by the Client that MUST contain a String,
-        # Number, or NULL value if included. If it is not included it is assumed
-        # to be a notification. The value SHOULD normally not be Null [1] and
-        # Numbers SHOULD NOT contain fractional parts [2]
-        id: [Integer, String, NilClass]
+    JSON_RPC_MEMBER_TYPES     = {
+            # A String specifying the version of the JSON-RPC protocol.
+            jsonrpc: [String],
+            # A String containing the name of the method to be invoked.
+            method: [String],
+            # If present, parameters for the rpc call MUST be provided as a Structured
+            # value. Either by-position through an Array or by-name through an Object.
+            # * by-position: params MUST be an Array, containing the values in the
+            #   Server expected order.
+            # * by-name: params MUST be an Object, with member names that match the
+            #   Server expected parameter names. The absence of expected names MAY
+            #   result in an error being generated. The names MUST match exactly,
+            #   including case, to the method's expected parameters.
+            params: [Array, Hash],
+            # An identifier established by the Client that MUST contain a String,
+            # Number, or NULL value if included. If it is not included it is assumed
+            # to be a notification. The value SHOULD normally not be Null [1] and
+            # Numbers SHOULD NOT contain fractional parts [2]
+            id: [Integer, String, NilClass]
     }
 
     attr_reader :framework
@@ -34,7 +33,7 @@ module Msf::RPC::JSON
     # @param framework [Msf::Simple::Framework] Framework wrapper instance
     def initialize(framework)
       @framework = framework
-      @command = nil
+      @command   = nil
     end
 
     # Set the command.
@@ -96,7 +95,6 @@ module Msf::RPC::JSON
           response = self.class.create_error_response(InvalidRequest.new)
           return response
         end
-
         # dispatch method execution to command
         result = @command.execute(request[:method], request[:params])
 
@@ -129,18 +127,17 @@ module Msf::RPC::JSON
     def validate_rpc_request(request)
       # validate request is an object
       return false unless request.is_a?(Hash)
-
       # validate request contains required members
-      JSON_RPC_REQUIRED_MEMBERS.each { |member| return false unless request.key?(member) }
-
+      JSON_RPC_REQUIRED_MEMBERS.each do |member|
+        return false unless request.key?(member)
+      end
       return false if request[:jsonrpc] != JSON_RPC_VERSION
 
       # validate request members are correct types
       request.each do |member, value|
         return false if JSON_RPC_MEMBER_TYPES.key?(member) &&
-            !JSON_RPC_MEMBER_TYPES[member].one? { |type| value.is_a?(type) }
+                !JSON_RPC_MEMBER_TYPES[member].one? { |type| value.is_a?(type) }
       end
-
       true
     end
 
@@ -151,9 +148,8 @@ module Msf::RPC::JSON
     # @return [Hash or Array] Hash or Array representation of source
     def parse_json_request(source)
       begin
-	      # toybox
-        parser =Yajl::Parser.new(:symbolize_names => true)
-        parser.parse(source)
+        # toybox
+        result = JSON.parse(source, symbolize_names: true)
       rescue
         raise ParseError.new
       end
@@ -165,7 +161,7 @@ module Msf::RPC::JSON
     def self.to_json(data)
       return nil if data.nil?
       # toybox
-      json = Yajl::Encoder.encode(data)
+      json = JSON.generate(data)
       return json.to_s
     end
 
@@ -175,13 +171,13 @@ module Msf::RPC::JSON
     # @returns [Hash] JSON-RPC success response.
     def self.create_success_response(result, request = nil)
       response = {
-          # A String specifying the version of the JSON-RPC protocol.
-          jsonrpc: JSON_RPC_VERSION,
+              # A String specifying the version of the JSON-RPC protocol.
+              jsonrpc: JSON_RPC_VERSION,
 
-          # This member is REQUIRED on success.
-          # This member MUST NOT exist if there was an error invoking the method.
-          # The value of this member is determined by the method invoked on the Server.
-          result: result
+              # This member is REQUIRED on success.
+              # This member MUST NOT exist if there was an error invoking the method.
+              # The value of this member is determined by the method invoked on the Server.
+              result: result
       }
 
       self.add_response_id_member(response, request)
@@ -195,13 +191,13 @@ module Msf::RPC::JSON
     # @returns [Hash] JSON-RPC error response.
     def self.create_error_response(error, request = nil)
       response = {
-          # A String specifying the version of the JSON-RPC protocol.
-          jsonrpc: JSON_RPC_VERSION,
+              # A String specifying the version of the JSON-RPC protocol.
+              jsonrpc: JSON_RPC_VERSION,
 
-          # This member is REQUIRED on error.
-          # This member MUST NOT exist if there was no error triggered during invocation.
-          # The value for this member MUST be an Object as defined in section 5.1.
-          error: error.to_h
+              # This member is REQUIRED on error.
+              # This member MUST NOT exist if there was no error triggered during invocation.
+              # The value for this member MUST be an Object as defined in section 5.1.
+              error: error.to_h
       }
 
       self.add_response_id_member(response, request)

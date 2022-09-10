@@ -3,9 +3,9 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 require 'base64'
-require 'json'
 require 'open-uri'
-require 'yajl'
+require 'json/pure'
+
 class MetasploitModule < Msf::Post
   include Post::Windows::Priv
 
@@ -44,12 +44,11 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
 
   # Run Method for when run command is issued
   def run
-    result = {:status => true, :message => nil, :data => nil}
+    result    = { :status => true, :message => nil, :data => nil }
     unless session.platform == "windows"
       result[:status]  = false
       result[:message] = 'linux did not have registry'
-      json             = Yajl::Encoder.encode(result)
-      json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+      json             = JSON.generate(result)
       print("#{json}")
       return
     end
@@ -63,62 +62,52 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
     if operation == 'registry_createkey'
       opeartion_result = registry_createkey(key, view)
       result[:data]    = opeartion_result
-      json             = Yajl::Encoder.encode(result)
-      json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+      json             = JSON.generate(result)
       print("#{json}")
     elsif operation == 'registry_deletekey'
       opeartion_result = registry_deletekey(key, view)
       result[:data]    = opeartion_result
-      json             = Yajl::Encoder.encode(result)
-      json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+      json             = JSON.generate(result)
       print("#{json}")
     elsif operation == 'registry_enumkeys'
       opeartion_result = registry_enumkeys(key, view)
       result[:data]    = opeartion_result
-      json             = Yajl::Encoder.encode(result)
-      json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+      json             = JSON.generate(result)
       print("#{json}")
     elsif operation == 'registry_key_exist'
       opeartion_result = registry_key_exist?(key)
       result[:data]    = opeartion_result
-      json             = Yajl::Encoder.encode(result)
-      json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+      json             = JSON.generate(result)
       print("#{json}")
     elsif operation == 'registry_enumvals'
       opeartion_result = registry_enumvals(key, view)
       result[:data]    = opeartion_result
-      json             = Yajl::Encoder.encode(result)
-      json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+      json             = JSON.generate(result)
       print("#{json}")
     elsif operation == 'registry_deleteval'
       opeartion_result = registry_deleteval(key, valname, view)
       result[:data]    = opeartion_result
-      json             = Yajl::Encoder.encode(result)
-      json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+      json             = JSON.generate(result)
       print("#{json}")
     elsif operation == 'registry_getvaldata'
       opeartion_result = registry_getvaldata(key, valname, view)
       result[:data]    = opeartion_result
-      json             = Yajl::Encoder.encode(result)
-      json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+      json             = JSON.generate(result)
       print("#{json}")
     elsif operation == 'registry_getvalinfo'
       opeartion_result = registry_getvalinfo(key, valname, view)
       result[:data]    = opeartion_result
-      json             = Yajl::Encoder.encode(result)
-      json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+      json             = JSON.generate(result)
       print("#{json}")
     elsif operation == 'registry_setvaldata'
       opeartion_result = registry_setvaldata(key, valname, data, type, view)
       result[:data]    = opeartion_result
-      json             = Yajl::Encoder.encode(result)
-      json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+      json             = JSON.generate(result)
       print("#{json}")
     else
       result[:status]  = false
       result[:message] = 'unknown operation'
-      json             = Yajl::Encoder.encode(result)
-      json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+      json             = JSON.generate(result)
       print("#{json}")
     end
   end

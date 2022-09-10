@@ -2,7 +2,7 @@
 # This module requires Metasploit: https://metasploit.com/download
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
-require 'yajl'
+require 'json/pure'
 class MetasploitModule < Msf::Post
 
   def initialize(info = {})
@@ -64,10 +64,10 @@ class MetasploitModule < Msf::Post
   #
   # @return [void] A useful return value is not expected here
   def run
-    @result = {:status => false, :message => nil, :data => nil}
+    result = { :status => false, :message => nil, :data => nil }
     unless session_good?
-      @result[:message] = "Session is not already"
-      json              = Yajl::Encoder.encode(@result).encode('UTF-8', :invalid => :replace, :replace => "?")
+      result[:message] = "Session is not already"
+      json             = JSON.generate(result)
       print(json)
       return
     end
@@ -106,36 +106,36 @@ class MetasploitModule < Msf::Post
         # direction  = 'Reverse' if opts['Reverse'] == true
         if opts['Reverse'] == true
           # LocalHost,LocalPort,PeerHost,PeerPort
-          list_route << {:index     => cnt + 1,
-                         :type      => 'Reverse',
-                         :rhost     => lhost,
-                         :rport     => lport,
-                         :lhost     => rhost,
-                         :lport     => rport,
-                         :sessionid => opts['SessionID'],
+          list_route << { :index     => cnt + 1,
+                          :type      => 'Reverse',
+                          :rhost     => lhost,
+                          :rport     => lport,
+                          :lhost     => rhost,
+                          :lport     => rport,
+                          :sessionid => opts['SessionID'],
           }
         else
-          list_route << {:index     => cnt + 1,
-                         :type      => 'Forward',
-                         :rhost     => rhost,
-                         :rport     => rport,
-                         :lhost     => lhost,
-                         :lport     => lport,
-                         :sessionid => opts['SessionID'], }
+          list_route << { :index     => cnt + 1,
+                          :type      => 'Forward',
+                          :rhost     => rhost,
+                          :rport     => rport,
+                          :lhost     => lhost,
+                          :lport     => lport,
+                          :sessionid => opts['SessionID'], }
         end
         cnt += 1
       }
-      @result[:status] = true
-      @result[:data]   = list_route
-      json             = Yajl::Encoder.encode(@result).encode('UTF-8', :invalid => :replace, :replace => "?")
+      result[:status] = true
+      result[:data]   = list_route
+      json            = JSON.generate(result)
       print(json)
     when :add
 
       if reverse
         # Validate parameters
         unless lport && lhost && rport
-          @result[:message] = "You must supply a local port, local host, and remote port."
-          json              = Yajl::Encoder.encode(@result).encode('UTF-8', :invalid => :replace, :replace => "?")
+          result[:message] = "You must supply a local port, local host, and remote port."
+          json             = JSON.generate(result)
           print(json)
           return
         end
@@ -156,16 +156,16 @@ class MetasploitModule < Msf::Post
                                           'MeterpreterRelay' => true,
                                           'SessionID'        => sessionid)
         rescue Exception, Rex::AddressInUse => e
-          @result[:message] = "Failed to create relay: #{e.to_s}"
-          json              = Yajl::Encoder.encode(@result).encode('UTF-8', :invalid => :replace, :replace => "?")
+          result[:message] = "Failed to create relay: #{e.to_s}"
+          json             = JSON.generate(result)
           print(json)
           return
         end
       else
         # Validate parameters
         unless lport && rhost && rport
-          @result[:message] = "You must supply a local port, remote host, and remote port."
-          json              = Yajl::Encoder.encode(@result).encode('UTF-8', :invalid => :replace, :replace => "?")
+          result[:message] = "You must supply a local port, remote host, and remote port."
+          json             = JSON.generate(result)
           print(json)
           return
         end
@@ -180,20 +180,20 @@ class MetasploitModule < Msf::Post
                                   'OnLocalConnection' => Proc.new { |relay, lfd| create_tcp_channel(relay) }
           )
         rescue Exception, Rex::AddressInUse, Rex::BindFailed => e
-          @result[:message] = "Failed to create relay: #{e.to_s}"
-          json              = Yajl::Encoder.encode(@result).encode('UTF-8', :invalid => :replace, :replace => "?")
+          result[:message] = "Failed to create relay: #{e.to_s}"
+          json             = JSON.generate(result)
           print(json)
           return
         end
       end
-      @result[:status] = true
-      @result[:data]   = {:rhost     => rhost,
+      result[:status] = true
+      result[:data]   = { :rhost     => rhost,
                           :rport     => rport,
                           :lhost     => lhost,
                           :lport     => lport,
                           :sessionid => sessionid,
       }
-      json             = Yajl::Encoder.encode(@result).encode('UTF-8', :invalid => :replace, :replace => "?")
+      json            = JSON.generate(result)
       print(json)
     when :flush
 
@@ -203,14 +203,14 @@ class MetasploitModule < Msf::Post
         next if (opts['MeterpreterRelay'] == nil)
         if opts['Reverse'] == true
           if service.stop_reverse_tcp_relay(lport, opts['SessionID'])
-            list_route << {:lport => lport, }
+            list_route << { :lport => lport, }
           else
             vprint_error("Failed to stop TCP relay on #{lport}")
             next
           end
         else
           if service.stop_tcp_relay(lport, lhost)
-            list_route << {:lport => lport, :lhost => lhost || '0.0.0.0'}
+            list_route << { :lport => lport, :lhost => lhost || '0.0.0.0' }
           else
             vprint_error("Failed to stop TCP relay on #{lhost || '0.0.0.0'}:#{lport}")
             next
@@ -218,13 +218,13 @@ class MetasploitModule < Msf::Post
         end
         counter += 1
       end
-      @result[:status] = true
-      @result[:data]   = list_route
-      json             = Yajl::Encoder.encode(@result).encode('UTF-8', :invalid => :replace, :replace => "?")
+      result[:status] = true
+      result[:data]   = list_route
+      json            = JSON.generate(result)
       print(json)
     when :delete
 
-      found     = false
+      found = false
       unless index.nil?
         counter = 1
         service.each_tcp_relay do |lh, lp, rh, rp, opts|
@@ -240,52 +240,47 @@ class MetasploitModule < Msf::Post
 
         unless found
           vprint_error("Invalid index:  #{index}")
-
-          # @result[:message] = "Invalid index: #{index}"
-          # json              = Yajl::Encoder.encode(@result).encode('UTF-8', :invalid => :replace, :replace => "?")
-          # print(json)
-          # return
         end
       end
 
       if reverse
         # No remote port, no love.
         unless rport
-          @result[:message] = 'You must supply a remote port.'
-          json              = Yajl::Encoder.encode(@result).encode('UTF-8', :invalid => :replace, :replace => "?")
+          result[:message] = 'You must supply a remote port.'
+          json             = JSON.generate(result)
           print(json)
           return
         end
         sessionid = datastore['SESSION']
         if service.stop_reverse_tcp_relay(rport, sessionid)
-          @result[:status] = true
-          @result[:data]   = {:rport => rport, }
-          json             = Yajl::Encoder.encode(@result).encode('UTF-8', :invalid => :replace, :replace => "?")
+          result[:status] = true
+          result[:data]   = { :rport => rport, }
+          json            = JSON.generate(result)
           print(json)
         else
-          @result[:message] = "Failed to stop reverse TCP relay on #{rport}"
-          @result[:data]    = {:rport => rport, }
-          json              = Yajl::Encoder.encode(@result).encode('UTF-8', :invalid => :replace, :replace => "?")
+          result[:message] = "Failed to stop reverse TCP relay on #{rport}"
+          result[:data]    = { :rport => rport, }
+          json             = JSON.generate(result)
           print(json)
         end
       else
         # No local port, no love.
         unless lport
-          @result[:message] = 'You must supply a local port.'
-          json              = Yajl::Encoder.encode(@result).encode('UTF-8', :invalid => :replace, :replace => "?")
+          result[:message] = 'You must supply a local port.'
+          json             = JSON.generate(result)
           print(json)
           return
         end
         # Stop the service
         if service.stop_tcp_relay(lport, lhost)
-          @result[:status] = true
-          @result[:data]   = {:lhost => lhost || '0.0.0.0', :lport => lport, }
-          json             = Yajl::Encoder.encode(@result).encode('UTF-8', :invalid => :replace, :replace => "?")
+          result[:status] = true
+          result[:data]   = { :lhost => lhost || '0.0.0.0', :lport => lport, }
+          json            = JSON.generate(result)
           print(json)
         else
-          @result[:message] = "Failed to stop TCP relay on #{lhost || '0.0.0.0'}:#{lport}"
-          @result[:data]    = {:lhost => lhost || '0.0.0.0', :lport => lport, }
-          json              = Yajl::Encoder.encode(@result).encode('UTF-8', :invalid => :replace, :replace => "?")
+          result[:message] = "Failed to stop TCP relay on #{lhost || '0.0.0.0'}:#{lport}"
+          result[:data]    = { :lhost => lhost || '0.0.0.0', :lport => lport, }
+          json             = JSON.generate(result)
           print(json)
         end
       end

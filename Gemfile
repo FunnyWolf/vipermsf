@@ -4,7 +4,6 @@ source 'https://rubygems.org'
 gemspec name: 'metasploit-framework'
 
 # toybox
-gem 'yajl-ruby'
 gem 'uuid'
 gem 'redis'
 # separate from test as simplecov is not run on travis-ci

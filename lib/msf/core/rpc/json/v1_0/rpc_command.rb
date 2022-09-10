@@ -131,9 +131,8 @@ module Msf::RPC::JSON
       # @returns [Hash] a new hash with strings for the keys.
       def stringify_names(hash)
         # toybox
-        encoder = Yajl::Encoder.new(:symbolize_names => false)
-        parser  = Yajl::Parser.new(:symbolize_names => false)
-        parser.parse(encoder.encode(hash))
+        result = JSON.parse(JSON.generate(hash))
+        result
       end
 
       # Perform custom post processing of the execute result data.

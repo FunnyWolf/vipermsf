@@ -2,9 +2,8 @@
 # This module requires Metasploit: https://metasploit.com/download
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
-require 'json'
 require 'zlib'
-require 'yajl'
+require 'json/pure'
 # require 'rex/post/meterpreter/extensions/powershell/powershell'
 class MetasploitModule < Msf::Post
   include Msf::Post::File
@@ -43,13 +42,12 @@ class MetasploitModule < Msf::Post
   end
 
   def run
-    result = {:status => true, :message => nil, :data => nil, :endflag => nil}
+    result = { :status => true, :message => nil, :data => nil, :endflag => nil }
     if session.type == "shell"
       result[:status]  = false
       result[:message] = 'Unsupport shell type'
       if datastore['OUTFORMAT'] == 'json'
-        json = Yajl::Encoder.encode(result)
-        json = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+        json = JSON.generate(result)
         print("#{json}")
       else
         print_error("Unsupport shell type")
@@ -65,8 +63,7 @@ class MetasploitModule < Msf::Post
       result[:status]  = false
       result[:message] = "#{datastore['SCRIPT']} not found"
       if datastore['OUTFORMAT'] == 'json'
-        json = Yajl::Encoder.encode(result)
-        json = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+        json = JSON.generate(result)
         print("#{json}")
       else
         print_error("script not found")
@@ -78,8 +75,7 @@ class MetasploitModule < Msf::Post
       result[:status]  = false
       result[:message] = 'linux did not have powershell extensions'
       if datastore['OUTFORMAT'] == 'json'
-        json = Yajl::Encoder.encode(result)
-        json = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+        json = JSON.generate(result)
         print("#{json}")
       else
         print_error("linux did not have powershell extensions")
@@ -87,17 +83,15 @@ class MetasploitModule < Msf::Post
       return
     end
 
-
     session.load_powershell
     if session.ext.aliases.has_key?('powershell')
       ps_ext = session.ext.aliases['powershell']
       if datastore['CHECK_FUNCTION']
-        checkcode = {code: "Get-Command -Name " + datastore['EXECUTE_STRING']}
+        checkcode = { code: "Get-Command -Name " + datastore['EXECUTE_STRING'] }
 
         psresult = ps_ext.execute_string(checkcode)
         if psresult.include? "CommandNotFoundException" or psresult.include? "ERROR: Get-Command"
-          opts = {file: script_path}
-
+          opts = { file: script_path }
 
           begin
             loadResult = ps_ext.import_file(opts, datastore['TIMEOUT'])
@@ -105,8 +99,7 @@ class MetasploitModule < Msf::Post
             result[:status]  = false
             result[:message] = 'run script timeout,please set timeout bigger'
             if datastore['OUTFORMAT'] == 'json'
-              json = Yajl::Encoder.encode(result)
-              json = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+              json = JSON.generate(result)
               print("#{json}")
             else
               print_error("run script timeout,please set timeout bigger")
@@ -115,15 +108,14 @@ class MetasploitModule < Msf::Post
           end
         end
       else
-        opts = {file: script_path}
+        opts = { file: script_path }
         begin
           loadResult = ps_ext.import_file(opts, datastore['TIMEOUT'])
         rescue ::Timeout::Error, Rex::TimeoutError
           result[:status]  = false
           result[:message] = 'run script timeout,please set timeout bigger'
           if datastore['OUTFORMAT'] == 'json'
-            json = Yajl::Encoder.encode(result)
-            json = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+            json = JSON.generate(result)
             print("#{json}")
           else
             print_error("run script timeout,please set timeout bigger")
@@ -135,15 +127,14 @@ class MetasploitModule < Msf::Post
       if datastore['LARGEOUTPUT']
         filename = get_env('TEMP') + '\\' + Time.now.to_i.to_s
 
-        code = {code: datastore['EXECUTE_STRING'] + "| Out-File " + filename}
+        code     = { code: datastore['EXECUTE_STRING'] + "| Out-File " + filename }
         begin
           psresult = ps_ext.execute_string(code, datastore['TIMEOUT'])
         rescue ::Timeout::Error, Rex::TimeoutError
           result[:status]  = false
           result[:message] = 'run script timeout,please set timeout bigger'
           if datastore['OUTFORMAT'] == 'json'
-            json = Yajl::Encoder.encode(result)
-            json = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+            json = JSON.generate(result)
             print("#{json}")
           else
             print_error("run script timeout,please set timeout bigger")
@@ -153,15 +144,14 @@ class MetasploitModule < Msf::Post
         psresult = read_file(filename)
         # register_file_for_cleanup(filename)
       else
-        code = {code: datastore['EXECUTE_STRING']}
+        code = { code: datastore['EXECUTE_STRING'] }
         begin
           psresult = ps_ext.execute_string(code, datastore['TIMEOUT'])
         rescue ::Timeout::Error, Rex::TimeoutError
           result[:status]  = false
           result[:message] = 'run script timeout,please set timeout bigger'
           if datastore['OUTFORMAT'] == 'json'
-            json = Yajl::Encoder.encode(result)
-            json = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+            json = JSON.generate(result)
             print("#{json}")
           else
             print_error("run script timeout,please set timeout bigger")
@@ -185,8 +175,7 @@ class MetasploitModule < Msf::Post
         if datastore['OUTFORMAT'] == 'json'
           result[:status]  = true
           result[:message] = 'there are no output for script!'
-          json             = Yajl::Encoder.encode(result)
-          json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+          json             = JSON.generate(result)
           print("#{json}")
         else
           print_warning("there are no output for script")
@@ -196,8 +185,7 @@ class MetasploitModule < Msf::Post
       if datastore['OUTFORMAT'] == 'json'
         result[:status]  = false
         result[:message] = 'powershell extensions load failed!'
-        json             = Yajl::Encoder.encode(result)
-        json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+        json             = JSON.generate(result)
         print("#{json}")
       else
         print_error('powershell extensions load failed!')

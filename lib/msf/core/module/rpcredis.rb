@@ -1,9 +1,8 @@
 # -*- coding: binary -*-
 require "redis"
-require 'yajl'
 require 'net/http'
 require 'uri'
-
+require 'json/pure'
 module Msf::Module::Rpcredis
   attr_accessor :redis_client
 
@@ -34,9 +33,9 @@ module Msf::Module::Rpcredis
     result[:status]  = status
     result[:message] = message
     result[:data]    = data
-    json             = Yajl::Encoder.encode(result)
-    json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
-    flag             = @@redis_client.publish "MSF_RPC_RESULT_CHANNEL", json
+    json             = JSON.generate(result)
+
+    flag = @@redis_client.publish "MSF_RPC_RESULT_CHANNEL", json
     print("#{json}")
   end
 
@@ -46,8 +45,7 @@ module Msf::Module::Rpcredis
     result[:status]  = status
     result[:message] = message
     result[:data]    = data
-    json             = Yajl::Encoder.encode(result)
-    json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+    json             = JSON.generate(result)
     flag             = @@redis_client.publish "MSF_RPC_DATA_CHANNEL", json
   end
 
@@ -56,8 +54,7 @@ module Msf::Module::Rpcredis
     result[:status] = status
     result[:type]   = type
     result[:data]   = data
-    json            = Yajl::Encoder.encode(result)
-    json            = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+    json            = JSON.generate(result)
     flag            = @@redis_client.publish "MSF_RPC_HEARTBEAT_CHANNEL", json
   end
 
@@ -65,46 +62,41 @@ module Msf::Module::Rpcredis
     result           = {}
     result[:prompt]  = prompt
     result[:message] = message
-    json             = Yajl::Encoder.encode(result)
-    json             = json.encode('UTF-8', :invalid => :replace, :replace => "?")
+    json             = JSON.generate(result)
     flag             = @@redis_client.publish "MSF_RPC_CONSOLE_PRINT", json
   end
 
   def print_good_redis(content)
-    log           = {}
-    log[:level]   = 0
-    log[:content] = content
-    json          = Yajl::Encoder.encode(log)
-    json          = json.encode('UTF-8', :invalid => :replace, :replace => "?")
-    flag          = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
+    result           = {}
+    result[:level]   = 0
+    result[:content] = content
+    json             = JSON.generate(result)
+    flag             = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
 
   end
 
   def print_status_redis(content)
-    log           = {}
-    log[:level]   = 1
-    log[:content] = content
-    json          = Yajl::Encoder.encode(log)
-    json          = json.encode('UTF-8', :invalid => :replace, :replace => "?")
-    flag          = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
+    result           = {}
+    result[:level]   = 1
+    result[:content] = content
+    json             = JSON.generate(result)
+    flag             = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
   end
 
   def print_warning_redis(content)
-    log           = {}
-    log[:level]   = 2
-    log[:content] = content
-    json          = Yajl::Encoder.encode(log)
-    json          = json.encode('UTF-8', :invalid => :replace, :replace => "?")
-    flag          = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
+    result           = {}
+    result[:level]   = 2
+    result[:content] = content
+    json             = JSON.generate(result)
+    flag             = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
   end
 
   def print_error_redis(content)
-    log           = {}
-    log[:level]   = 3
-    log[:content] = content
-    json          = Yajl::Encoder.encode(log)
-    json          = json.encode('UTF-8', :invalid => :replace, :replace => "?")
-    flag          = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
+    result           = {}
+    result[:level]   = 3
+    result[:content] = content
+    json             = JSON.generate(result)
+    flag             = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
   end
 
   def redis_rpc_call(method_name, timeout = 0.5, **kwargs)
@@ -112,7 +104,8 @@ module Msf::Module::Rpcredis
     function_call   = { 'function' => method_name.to_s, 'kwargs' => kwargs }
     response_queue  = @@message_queue + ':rpc:' + Rex::Text.rand_text_alpha(32)
     rpc_request     = { 'function_call' => function_call, 'response_queue' => response_queue }
-    rpc_raw_request = Yajl::Encoder.encode(rpc_request).encode('UTF-8', :invalid => :replace, :replace => "?")
+    rpc_raw_request = JSON.generate(rpc_request)
+
     # transport
     @@redis_client.rpush @@message_queue, rpc_raw_request
     # message_queue, rpc_raw_response = @@redis_client.blpop response_queue, @@timeout
@@ -122,8 +115,7 @@ module Msf::Module::Rpcredis
       return
     end
     # response handling
-    parser       = Yajl::Parser.new
-    rpc_response = parser.parse(rpc_raw_response)
+    rpc_response = JSON.parse(rpc_raw_response)
     return rpc_response
   end
 

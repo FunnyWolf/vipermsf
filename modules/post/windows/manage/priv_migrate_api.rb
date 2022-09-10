@@ -2,7 +2,7 @@
 # This module requires Metasploit: https://metasploit.com/download
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
-require 'yajl'
+require 'json/pure'
 class MetasploitModule < Msf::Post
   include Msf::Post::Windows::Priv
 
@@ -41,10 +41,10 @@ class MetasploitModule < Msf::Post
   end
 
   def run
-    @result = {:status => true, :message => nil, :data => nil, :endflag => nil}
+    result = {:status => true, :message => nil, :data => nil, :endflag => nil}
     if session.type == "shell"
-      @result = {:status => false, :message => 'Unsupport shell type', :data => nil}
-      json    = Yajl::Encoder.encode(result).encode('UTF-8', :invalid => :replace, :replace => "?")
+      result = {:status => false, :message => 'Unsupport shell type', :data => nil}
+      json    = JSON.generate(result)
       print("#{json}")
       return
     end
@@ -65,7 +65,7 @@ class MetasploitModule < Msf::Post
       if admin_targets.include? @original_name
         vprint_good("Session is already in target process: #{@original_name}.")
         result = {:status => true, :message => nil, :data => {:pid => @original_pid, :pname => @original_name}}
-        json   = Yajl::Encoder.encode(result).encode('UTF-8', :invalid => :replace, :replace => "?")
+        json   = JSON.generate(result)
         print("#{json}")
         return
       end
@@ -82,45 +82,15 @@ class MetasploitModule < Msf::Post
           client.update_session_info
           kill(@original_pid, @original_name)
           result = {:status => true, :message => nil, :data => {:pid => target_pid, :pname => target_name}}
-          json   = Yajl::Encoder.encode(result).encode('UTF-8', :invalid => :replace, :replace => "?")
+          json   = JSON.generate(result)
           print("#{json}")
           return
         end
       end
     end
     result = {:status => false, :message => nil, :data => nil}
-    json   = Yajl::Encoder.encode(result).encode('UTF-8', :invalid => :replace, :replace => "?")
+    json   = JSON.generate(result)
     print("#{json}")
-    # if datastore['NOFAIL']
-    #   # Populate Target Array and Downcase all Targets
-    #   user_targets = DEFAULT_USER_TARGETS.dup
-    #   user_targets.unshift(datastore['NAME']) if datastore['NAME']
-    #   user_targets.map!(&:downcase)
-    #
-    #   vprint_status("Will attempt to migrate to a User level process.")
-    #
-    #   # Try to migrate to user level processes in the list.  If it does not exist or cannot migrate, try spawning it then migrating.
-    #   user_targets.each do |target_name|
-    #     flag, target_pid = migrate(get_pid(target_name), target_name, @original_pid)
-    #     if flag
-    #       result = {:status => true, :message => nil, :data => {:pid => target_pid, :pname => target_name}}
-    #       json   = Yajl::Encoder.encode(result).encode('UTF-8', :invalid => :replace, :replace => "?")
-    #       print("#{json}")
-    #       return
-    #     end
-    #     flag, target_pid = migrate(spawn(target_name), target_name, @original_pid)
-    #     if flag
-    #       result = {:status => true, :message => nil, :data => {:pid => target_pid, :pname => target_name}}
-    #       json   = Yajl::Encoder.encode(result).encode('UTF-8', :invalid => :replace, :replace => "?")
-    #       print("#{json}")
-    #       return
-    #     end
-    #   end
-    #   result = {:status => false, :message => nil, :data => nil}
-    #   json   = Yajl::Encoder.encode(result).encode('UTF-8', :invalid => :replace, :replace => "?")
-    #   print("#{json}")
-    # end
-
   end
 
   # This function returns the first process id of a process with the name provided.

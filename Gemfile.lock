@@ -500,7 +500,6 @@ GEM
       activesupport (>= 4.2, < 8.0)
     xmlrpc (0.3.2)
       webrick
-    yajl-ruby (1.4.3)
     yard (0.9.28)
       webrick (~> 1.7.0)
     zeitwerk (2.6.0)
@@ -525,7 +524,6 @@ DEPENDENCIES
   simplecov (= 0.18.2)
   timecop
   uuid
-  yajl-ruby
   yard
 
 BUNDLED WITH
