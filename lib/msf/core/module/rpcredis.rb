@@ -1,8 +1,8 @@
 # -*- coding: binary -*-
-require "redis"
+require 'redis'
 require 'net/http'
 require 'uri'
-require 'json/pure'
+require 'oj'
 module Msf::Module::Rpcredis
   attr_accessor :redis_client
 
@@ -33,7 +33,7 @@ module Msf::Module::Rpcredis
     result[:status]  = status
     result[:message] = message
     result[:data]    = data
-    json             = JSON.generate(result)
+    json             = Oj.generate(result)
 
     flag = @@redis_client.publish "MSF_RPC_RESULT_CHANNEL", json
     print("#{json}")
@@ -45,7 +45,7 @@ module Msf::Module::Rpcredis
     result[:status]  = status
     result[:message] = message
     result[:data]    = data
-    json             = JSON.generate(result)
+    json             = Oj.generate(result)
     flag             = @@redis_client.publish "MSF_RPC_DATA_CHANNEL", json
   end
 
@@ -54,7 +54,7 @@ module Msf::Module::Rpcredis
     result[:status] = status
     result[:type]   = type
     result[:data]   = data
-    json            = JSON.generate(result)
+    json            = Oj.generate(result)
     flag            = @@redis_client.publish "MSF_RPC_HEARTBEAT_CHANNEL", json
   end
 
@@ -62,7 +62,7 @@ module Msf::Module::Rpcredis
     result           = {}
     result[:prompt]  = prompt
     result[:message] = message
-    json             = JSON.generate(result)
+    json             = Oj.generate(result)
     flag             = @@redis_client.publish "MSF_RPC_CONSOLE_PRINT", json
   end
 
@@ -70,7 +70,7 @@ module Msf::Module::Rpcredis
     result           = {}
     result[:level]   = 0
     result[:content] = content
-    json             = JSON.generate(result)
+    json             = Oj.generate(result)
     flag             = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
 
   end
@@ -79,7 +79,7 @@ module Msf::Module::Rpcredis
     result           = {}
     result[:level]   = 1
     result[:content] = content
-    json             = JSON.generate(result)
+    json             = Oj.generate(result)
     flag             = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
   end
 
@@ -87,7 +87,7 @@ module Msf::Module::Rpcredis
     result           = {}
     result[:level]   = 2
     result[:content] = content
-    json             = JSON.generate(result)
+    json             = Oj.generate(result)
     flag             = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
   end
 
@@ -95,7 +95,7 @@ module Msf::Module::Rpcredis
     result           = {}
     result[:level]   = 3
     result[:content] = content
-    json             = JSON.generate(result)
+    json             = Oj.generate(result)
     flag             = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
   end
 
@@ -104,7 +104,7 @@ module Msf::Module::Rpcredis
     function_call   = { 'function' => method_name.to_s, 'kwargs' => kwargs }
     response_queue  = @@message_queue + ':rpc:' + Rex::Text.rand_text_alpha(32)
     rpc_request     = { 'function_call' => function_call, 'response_queue' => response_queue }
-    rpc_raw_request = JSON.generate(rpc_request)
+    rpc_raw_request = Oj.generate(rpc_request)
 
     # transport
     @@redis_client.rpush @@message_queue, rpc_raw_request
@@ -115,7 +115,7 @@ module Msf::Module::Rpcredis
       return
     end
     # response handling
-    rpc_response = JSON.parse(rpc_raw_response)
+    rpc_response = Oj.load(rpc_raw_response)
     return rpc_response
   end
 

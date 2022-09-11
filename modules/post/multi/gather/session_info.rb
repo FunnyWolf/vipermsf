@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-require 'json/pure'
+require 'oj'
 require 'msf/core/post/windows/accounts'
 
 class MetasploitModule < Msf::Post
@@ -34,7 +34,7 @@ class MetasploitModule < Msf::Post
     if session.type == "shell"
       result[:status]  = false
       result[:message] = 'Unsupport shell type'
-      json             = JSON.generate(result)
+      json             = Oj.generate(result)
       print("#{json}")
       return
     end
@@ -133,7 +133,7 @@ class MetasploitModule < Msf::Post
       info["PROCESSES"] = []
     end
     result[:data] = info
-    json             = JSON.generate(result)
+    json             = Oj.generate(result)
     print("#{json}")
   end
 end

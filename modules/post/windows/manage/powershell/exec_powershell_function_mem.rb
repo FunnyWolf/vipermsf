@@ -3,7 +3,7 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 require 'zlib'
-require 'json/pure'
+require 'oj'
 # require 'rex/post/meterpreter/extensions/powershell/powershell'
 class MetasploitModule < Msf::Post
   include Msf::Post::File
@@ -47,7 +47,7 @@ class MetasploitModule < Msf::Post
       result[:status]  = false
       result[:message] = 'Unsupport shell type'
       if datastore['OUTFORMAT'] == 'json'
-        json = JSON.generate(result)
+        json = Oj.generate(result)
         print("#{json}")
       else
         print_error("Unsupport shell type")
@@ -63,7 +63,7 @@ class MetasploitModule < Msf::Post
       result[:status]  = false
       result[:message] = "#{datastore['SCRIPT']} not found"
       if datastore['OUTFORMAT'] == 'json'
-        json = JSON.generate(result)
+        json = Oj.generate(result)
         print("#{json}")
       else
         print_error("script not found")
@@ -75,7 +75,7 @@ class MetasploitModule < Msf::Post
       result[:status]  = false
       result[:message] = 'linux did not have powershell extensions'
       if datastore['OUTFORMAT'] == 'json'
-        json = JSON.generate(result)
+        json = Oj.generate(result)
         print("#{json}")
       else
         print_error("linux did not have powershell extensions")
@@ -99,7 +99,7 @@ class MetasploitModule < Msf::Post
             result[:status]  = false
             result[:message] = 'run script timeout,please set timeout bigger'
             if datastore['OUTFORMAT'] == 'json'
-              json = JSON.generate(result)
+              json = Oj.generate(result)
               print("#{json}")
             else
               print_error("run script timeout,please set timeout bigger")
@@ -115,7 +115,7 @@ class MetasploitModule < Msf::Post
           result[:status]  = false
           result[:message] = 'run script timeout,please set timeout bigger'
           if datastore['OUTFORMAT'] == 'json'
-            json = JSON.generate(result)
+            json = Oj.generate(result)
             print("#{json}")
           else
             print_error("run script timeout,please set timeout bigger")
@@ -134,7 +134,7 @@ class MetasploitModule < Msf::Post
           result[:status]  = false
           result[:message] = 'run script timeout,please set timeout bigger'
           if datastore['OUTFORMAT'] == 'json'
-            json = JSON.generate(result)
+            json = Oj.generate(result)
             print("#{json}")
           else
             print_error("run script timeout,please set timeout bigger")
@@ -151,7 +151,7 @@ class MetasploitModule < Msf::Post
           result[:status]  = false
           result[:message] = 'run script timeout,please set timeout bigger'
           if datastore['OUTFORMAT'] == 'json'
-            json = JSON.generate(result)
+            json = Oj.generate(result)
             print("#{json}")
           else
             print_error("run script timeout,please set timeout bigger")
@@ -166,7 +166,7 @@ class MetasploitModule < Msf::Post
           result[:message] = ""
           result[:data]    = psresult
 
-          print("#{JSON.generate(result)}")
+          print("#{Oj.generate(result)}")
         else
 
           print("#{psresult}")
@@ -175,7 +175,7 @@ class MetasploitModule < Msf::Post
         if datastore['OUTFORMAT'] == 'json'
           result[:status]  = true
           result[:message] = 'there are no output for script!'
-          json             = JSON.generate(result)
+          json             = Oj.generate(result)
           print("#{json}")
         else
           print_warning("there are no output for script")
@@ -185,7 +185,7 @@ class MetasploitModule < Msf::Post
       if datastore['OUTFORMAT'] == 'json'
         result[:status]  = false
         result[:message] = 'powershell extensions load failed!'
-        json             = JSON.generate(result)
+        json             = Oj.generate(result)
         print("#{json}")
       else
         print_error('powershell extensions load failed!')

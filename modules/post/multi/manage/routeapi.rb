@@ -2,8 +2,8 @@
 # This module requires Metasploit: https://metasploit.com/download
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
-require 'json/pure'
 
+require 'oj'
 class MetasploitModule < Msf::Post
 
   def initialize(info = {})
@@ -64,7 +64,7 @@ class MetasploitModule < Msf::Post
     unless session_good?
       result[:status]  = false
       result[:message] = 'Session is not already'
-      json    = JSON.generate(result)
+      json    = Oj.generate(result)
       print("#{json}")
       return
     end
@@ -75,7 +75,7 @@ class MetasploitModule < Msf::Post
       unless check_ip(ipaddress)
         result[:status]  = false
         result[:message] = "not a legitimate IP address"
-        json    = JSON.generate(result)
+        json    = Oj.generate(result)
         print("#{json}")
         return
       end
@@ -83,14 +83,14 @@ class MetasploitModule < Msf::Post
       result[:status]  = true
       result[:message] = nil
       result[:data]    = data
-      json    = JSON.generate(result)
+      json    = Oj.generate(result)
       print("#{json}")
     when :print
       routes           = print_routes
       result[:status]  = true
       result[:message] = nil
       result[:data]    = routes
-      json    = JSON.generate(result)
+      json    = Oj.generate(result)
       print("#{json}")
       return
     when :add
@@ -102,20 +102,20 @@ class MetasploitModule < Msf::Post
           result[:status]  = true
           result[:message] = msg
           result[:data] = routes
-          json    = JSON.generate(result)
+          json    = Oj.generate(result)
           print("#{json}")
           return
         else
           result[:status]  = false
           result[:message] = msg
-          json    = JSON.generate(result)
+          json    = Oj.generate(result)
           print("#{json}")
           return
         end
       else
         result[:status]  = false
         result[:message] = 'SUBNET and NETMASK not right'
-        json    = JSON.generate(result)
+        json    = Oj.generate(result)
         print("#{json}")
         return
       end
@@ -129,13 +129,13 @@ class MetasploitModule < Msf::Post
         if flag
           result[:status]  = true
           result[:message] = msg
-          json    = JSON.generate(result)
+          json    = Oj.generate(result)
           print("#{json}")
           return
         else
           result[:status]  = false
           result[:message] = msg
-          json    = JSON.generate(result)
+          json    = Oj.generate(result)
           print("#{json}")
           return
         end
@@ -299,7 +299,7 @@ class MetasploitModule < Msf::Post
     unless route_compatible?
       result[:status]  = false
       result[:message] = "Session do not has routing capabilities"
-      json    = JSON.generate(result)
+      json    = Oj.generate(result)
       print("#{json}")
       return
     end
@@ -327,7 +327,7 @@ class MetasploitModule < Msf::Post
     result[:status]  = true
     result[:message] = nil
     result[:data]    = routes
-    json    = JSON.generate(result)
+    json    = Oj.generate(result)
     print("#{json}")
 
     # if !autoadd_interface_routes && !found # Check interface list for more possible routes

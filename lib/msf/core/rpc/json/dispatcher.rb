@@ -1,5 +1,5 @@
 # toybox
-require 'json/pure'
+require 'oj'
 
 module Msf::RPC::JSON
   class Dispatcher
@@ -151,7 +151,7 @@ module Msf::RPC::JSON
     def parse_json_request(source)
       begin
         # toybox
-        result = JSON.parse(source, symbolize_names: true)
+        result = Oj.load(source, symbolize_names: true)
       rescue
         raise ParseError.new
       end
@@ -163,7 +163,7 @@ module Msf::RPC::JSON
     def self.to_json(data)
       return nil if data.nil?
       # toybox
-      json = JSON.generate(data)
+      json = Oj.generate(data)
       return json.to_s
     end
 

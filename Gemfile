@@ -6,6 +6,7 @@ gemspec name: 'metasploit-framework'
 # toybox
 gem 'uuid'
 gem 'redis'
+gem 'oj'
 # separate from test as simplecov is not run on travis-ci
 group :coverage do
   # code coverage for tests

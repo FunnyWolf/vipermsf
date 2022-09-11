@@ -1,4 +1,4 @@
-require 'json'
+require 'oj'
 
 module Metasploit
   class << self
@@ -77,7 +77,7 @@ module Metasploit
     end
 
     def rpc_send(req)
-      puts JSON.generate(req)
+      puts Oj.generate(req)
       $stdout.flush
     end
   end

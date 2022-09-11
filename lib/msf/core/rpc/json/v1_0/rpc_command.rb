@@ -1,5 +1,5 @@
 require 'base64'
-
+require 'oj'
 # toybox
 module Msf::RPC::JSON
   module V1_0
@@ -131,7 +131,7 @@ module Msf::RPC::JSON
       # @returns [Hash] a new hash with strings for the keys.
       def stringify_names(hash)
         # toybox
-        result = JSON.parse(JSON.generate(hash))
+        result = Oj.load(Oj.generate(hash))
         result
       end
 

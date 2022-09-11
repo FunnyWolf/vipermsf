@@ -3,9 +3,8 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 require 'base64'
-require 'json/pure'
 require 'open-uri'
-
+require 'oj'
 
 class MetasploitModule < Msf::Post
 
@@ -38,7 +37,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
     if session.type == "shell"
       result[:status]  = false
       result[:message] = 'Unsupport shell type'
-      json             = JSON.generate(result)
+      json             = Oj.generate(result)
       print("#{json}")
       return
     end
@@ -89,7 +88,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       client.fs.file.update_file(sessionfile, buf)
       result[:status]  = true
       result[:message] = "update finish"
-      json             = JSON.generate(result)
+      json             = Oj.generate(result)
       print("#{json}")
     end
   end
@@ -118,7 +117,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
     result[:status]  = true
     result[:message] = 'pwd finish'
     result[:data]    = { :path => remotepath.gsub(/\\/, '/'), :entries => result_list }
-    json             = JSON.generate(result)
+    json = Oj.generate(result)
     print("#{json}")
 
   end
@@ -142,7 +141,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       result[:status]  = true
       result[:message] = 'show mount finish'
       result[:data]    = { :path => '/', :entries => result_list }
-      json             = JSON.generate(result)
+      json             = Oj.generate(result)
       print("#{json}")
     else
       client.fs.dir.entries_with_info('/').each do |p|
@@ -161,7 +160,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       result[:status]  = true
       result[:message] = 'show mount finish'
       result[:data]    = { :path => '/', :entries => result_list }
-      json             = JSON.generate(result)
+      json             = Oj.generate(result)
       print("#{json}")
     end
   end
@@ -186,7 +185,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       result[:status]  = true
       result[:message] = 'List finish'
       result[:data]    = { :path => '/', :entries => result_list }
-      json             = JSON.generate(result)
+      json             = Oj.generate(result)
       print("#{json}")
       return
     end
@@ -207,7 +206,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
     result[:status]  = true
     result[:message] = 'List finish'
     result[:data]    = { :path => remotepath, :entries => result_list }
-    json             = JSON.generate(result)
+    json             = Oj.generate(result)
     print("#{json}")
   end
 
@@ -217,11 +216,11 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       client.fs.file.rm(remotepath)
       result[:status]  = true
       result[:message] = 'remove finish'
-      json             = JSON.generate(result)
+      json             = Oj.generate(result)
     rescue ::Exception
       result[:status]  = false
       result[:message] = $!
-      json             = JSON.generate(result)
+      json             = Oj.generate(result)
     end
     print("#{json}")
   end
@@ -235,11 +234,11 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
 
       result[:status]  = true
       result[:message] = 'remove finish'
-      json             = JSON.generate(result)
+      json             = Oj.generate(result)
     rescue ::Exception
       result[:status]  = false
       result[:message] = $!
-      json             = JSON.generate(result)
+      json             = Oj.generate(result)
     end
     print("#{json}")
   end
@@ -254,16 +253,16 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       if res
         result[:status]  = true
         result[:message] = 'create dir  finish'
-        json             = JSON.generate(result)
+        json             = Oj.generate(result)
       else
         result[:status]  = false
         result[:message] = 'create dir  failed'
-        json             = JSON.generate(result)
+        json             = Oj.generate(result)
       end
     rescue ::Exception
       result[:status]  = false
       result[:message] = $!
-      json             = JSON.generate(result)
+      json             = Oj.generate(result)
     end
     print("#{json}")
 
@@ -281,7 +280,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
     end
     result[:status]  = true
     result[:message] = "upload finish"
-    json             = JSON.generate(result)
+    json             = Oj.generate(result)
     pub_json_result(true,
                     nil,
                     nil,
@@ -305,11 +304,11 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       # client.fs.file.download_file(localpath, remotepath, opts)
       result[:status]  = true
       result[:message] = 'Download finish'
-      json             = JSON.generate(result)
+      json             = Oj.generate(result)
       print("#{json}")
     rescue Rex::Post::Meterpreter::RequestError => re
       result = { :status => false, :message => re.to_s, :data => nil, :endflag => nil }
-      json   = JSON.generate(result)
+      json   = Oj.generate(result)
       print("#{json}")
 
     end
@@ -324,11 +323,11 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       client.sys.process.execute(remotepath, args, opts = { 'Hidden' => true, 'Subshell' => true })
       result[:status]  = true
       result[:message] = 'Execute finish'
-      json             = JSON.generate(result)
+      json             = Oj.generate(result)
       print("#{json}")
     rescue Rex::Post::Meterpreter::RequestError => re
       result = { :status => false, :message => re.to_s, :data => nil, :endflag => nil }
-      json   = JSON.generate(result)
+      json   = Oj.generate(result)
       print("#{json}")
     end
   end
@@ -354,7 +353,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       result[:message] = 'cat finish'
       result[:data]    = Rex::Text.encode_base64(data)
     end
-    json   = JSON.generate(result)
+    json   = Oj.generate(result)
     print("#{json}")
   end
 
@@ -366,7 +365,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       (client.fs.file.stat(remotepath).size >= 1024 * 100)
       result = { :status => false, :message => "is a file", :data => nil, :endflag => nil }
     end
-    json = JSON.generate(result)
+    json = Oj.generate(result)
     print("#{json}")
   end
 end
