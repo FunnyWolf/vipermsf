@@ -24,6 +24,10 @@ module Interactive
     # A nil is passed in the case of non-stream interactive sessions (Meterpreter)
     if rstream
       self.rstream = rstream
+      begin
+        @peer_info = rstream.peerinfo
+      rescue ::Exception
+      end
     end
     super()
   end
@@ -43,7 +47,8 @@ module Interactive
     return @local_info if @local_info
     begin
       @local_info = rstream.localinfo
-    rescue ::Exception
+    rescue ::Exception => e
+      elog('Interactive#tunnel_local error', error: e)
       @local_info = '127.0.0.1'
     end
   end
@@ -55,7 +60,8 @@ module Interactive
     return @peer_info if @peer_info
     begin
       @peer_info = rstream.peerinfo
-    rescue ::Exception
+    rescue ::Exception => e
+      elog('Interactive#tunnel_peer error', error: e)
       @peer_info = "#{rstream.peerhost}:#{rstream.peerport}"
     end
   end
@@ -64,14 +70,6 @@ module Interactive
     return @comm_info if @comm_info
     if rstream.respond_to?(:channel) && rstream.channel.respond_to?(:client)
       @comm_info = "via session #{rstream.channel.client.sid}" if rstream.channel.client.respond_to?(:sid)
-    end
-  end
-
-
-  def comm_channel_session
-    return @comm_session if @comm_session
-    if rstream.respond_to?(:channel) && rstream.channel.respond_to?(:client)
-      @comm_session = rstream.channel.client.sid if rstream.channel.client.respond_to?(:sid)
     end
   end
 
