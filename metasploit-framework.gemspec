@@ -44,7 +44,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^spec/})
   spec.require_paths = ["lib"]
 
-  spec.required_ruby_version = '>= 2.6'
+  spec.required_ruby_version = '>= 2.7'
 
   # Database support
   spec.add_runtime_dependency 'activerecord', *Metasploit::Framework::RailsVersionConstraint::RAILS_VERSION
@@ -70,7 +70,7 @@ Gem::Specification.new do |spec|
   # are needed when there's no database
   spec.add_runtime_dependency 'metasploit-model'
   # Needed for Meterpreter
-  spec.add_runtime_dependency 'metasploit-payloads', '2.0.97'
+  spec.add_runtime_dependency 'metasploit-payloads', '2.0.108'
   # Needed for the next-generation POSIX Meterpreter
   spec.add_runtime_dependency 'metasploit_payloads-mettle', '1.0.20'
   # Needed by msfgui and other rpc components
@@ -120,8 +120,10 @@ Gem::Specification.new do |spec|
   end
   # Gem for handling Cookies
   spec.add_runtime_dependency 'http-cookie'
-   # Needed for some modules (polkit_auth_bypass.rb)
+  # Needed for some modules (polkit_auth_bypass.rb)
   spec.add_runtime_dependency 'unix-crypt'
+  # Needed for Kerberos structure parsing
+  spec.add_runtime_dependency 'rasn1'
 
   #
   # File Parsing Libraries
@@ -205,8 +207,6 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'xdr'
   # Needed for ::Msf...CertProvider
   spec.add_runtime_dependency 'faker'
-  # Pinned as a dependency of i18n to the last working version
-  spec.add_runtime_dependency 'concurrent-ruby','1.0.5'
   # SSH server library with ed25519
   spec.add_runtime_dependency 'hrr_rb_ssh-ed25519'
   # Needed for irb internal command

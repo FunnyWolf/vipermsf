@@ -467,7 +467,6 @@ class RPC_Module < RPC_Base
     res
   end
 
-
   # Executes a module.
   #
   # @param [String] mtype Module type. Supported types include (case-sensitive):
@@ -906,4 +905,3 @@ private
 end
 end
 end
-

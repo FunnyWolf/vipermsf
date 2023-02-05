@@ -448,7 +448,6 @@ class Console::CommandDispatcher::Stdapi::Net
         print_line
 
       when 'add'
-
         if reverse
           # Validate parameters
           unless lport && lhost && rport
@@ -456,9 +455,14 @@ class Console::CommandDispatcher::Stdapi::Net
             return
           end
 
+          unless rhost.nil?
+            print_warning('The remote host (-r) option is ignored for reverse port forwards.')
+          end
+
           begin
             channel = client.net.socket.create(
               Rex::Socket::Parameters.new(
+                'LocalHost' => '', # see: #17282, always bind to all interfaces
                 'LocalPort' => rport,
                 'Proto'     => 'tcp',
                 'Server'    => true
@@ -468,6 +472,7 @@ class Console::CommandDispatcher::Stdapi::Net
             sessionid = client.sid
             # Start the local TCP reverse relay in association with this stream
             relay = service.start_reverse_tcp_relay(channel,
+              'LocalHost'         => channel.params.localhost,
               'LocalPort'         => channel.params.localport,
               'PeerHost'          => lhost,
               'PeerPort'          => lport,
@@ -479,6 +484,7 @@ class Console::CommandDispatcher::Stdapi::Net
             return false
           end
 
+          print_status("Reverse TCP relay created: (remote) #{netloc(rhost, rport)} -> (local) #{netloc(channel.params.localhost, channel.params.localport)}")
         else
           # Validate parameters
           unless lport && rhost && rport
@@ -494,10 +500,9 @@ class Console::CommandDispatcher::Stdapi::Net
             'MeterpreterRelay'  => true,
             'OnLocalConnection' => Proc.new { |relay, lfd| create_tcp_channel(relay) })
           lport = relay.opts['LocalPort']
+
+          print_status("Forward TCP relay created: (local) #{netloc(lhost, lport)} -> (remote) #{netloc(rhost, rport)}")
         end
-
-        print_status("Local TCP relay created: #{lhost}:#{lport} <-> #{rhost}:#{rport}")
-
       # Delete local port forwards
       when 'delete', 'remove', 'del', 'rm'
 
@@ -543,9 +548,9 @@ class Console::CommandDispatcher::Stdapi::Net
 
           # Stop the service
           if service.stop_tcp_relay(lport, lhost)
-            print_status("Successfully stopped TCP relay on #{lhost || '0.0.0.0'}:#{lport}")
+            print_status("Successfully stopped TCP relay on #{netloc(lhost || '0.0.0.0', lport)}")
           else
-            print_error("Failed to stop TCP relay on #{lhost || '0.0.0.0'}:#{lport}")
+            print_error("Failed to stop TCP relay on #{netloc(lhost || '0.0.0.0', lport)}")
           end
         end
 
@@ -565,9 +570,9 @@ class Console::CommandDispatcher::Stdapi::Net
             end
           else
             if service.stop_tcp_relay(lport, lhost)
-              print_status("Successfully stopped TCP relay on #{lhost || '0.0.0.0'}:#{lport}")
+              print_status("Successfully stopped TCP relay on #{netloc(lhost || '0.0.0.0', lport)}")
             else
-              print_error("Failed to stop TCP relay on #{lhost || '0.0.0.0'}:#{lport}")
+              print_error("Failed to stop TCP relay on #{netloc(lhost || '0.0.0.0', lport)}")
               next
             end
           end
@@ -676,6 +681,10 @@ protected
     )
   end
 
+  def netloc(host, port)
+    host = "[#{host}]" if Rex::Socket.is_ipv6?(host)
+    "#{host}:#{port}"
+  end
 end
 
 end

@@ -51,7 +51,7 @@ module NTP::Modes
     bit3   :version
     bit3   :mode, initial_value: 6
     bit1   :response
-    bit1   :error
+    #bit1   :error
     bit1   :more
     bit5   :operation
     uint16 :sequence
@@ -83,7 +83,7 @@ module NTP::Modes
     bit7   :sequence
     uint8  :implementation
     uint8  :request_code
-    bit4   :error
+    #bit4   :error
     bit12  :record_count
     bit4   :mbz
     bit12  :record_size

@@ -290,97 +290,47 @@ class File < Rex::Post::Meterpreter::Extensions::Stdapi::Fs::IO
   # If a block is given, it will be called before each file is uploaded and
   # again when each upload is complete.
   #
-  def File.upload(destination, *src_files, &stat)
+  def File.upload(dest, *src_files, &stat)
     src_files.each { |src|
-      dest = destination
-
-      stat.call('uploading', src, dest) if (stat)
-      if (self.basename(destination) != ::File.basename(src))
-        dest += self.separator + ::File.basename(src)
+      if (self.basename(dest) != ::File.basename(src))
+        dest += self.separator unless dest.end_with?(self.separator)
+        dest += ::File.basename(src)
       end
+      stat.call('Uploading', src, dest) if (stat)
 
       upload_file(dest, src)
-      stat.call('uploaded', src, dest) if (stat)
+      stat.call('Completed', src, dest) if (stat)
     }
   end
 
   #
   # Upload a single file.
   #
-  def File.upload_file(dest_file, src_file,opts = {}, &stat)
+  def File.upload_file(dest_file, src_file, &stat)
     # Open the file on the remote side for writing and read
     # all of the contents of the local file
-
-    adaptive = opts["adaptive"]
-    block_size = opts["block_size"] || 1024 * 1024
-    continue = opts["continue"]
-    tries_no = opts["tries_no"]
-    tries = opts["tries"]
-
-    stat.call('uploading', src_file, dest_file) if stat
+    stat.call('Uploading', src_file, dest_file) if stat
+    dest_fd = nil
+    src_fd = nil
+    buf_size = 8 * 1024 * 1024
 
     begin
       dest_fd = client.fs.file.new(dest_file, "wb")
       src_fd = ::File.open(src_file, "rb")
       src_size = src_fd.stat.size
-      if tries
-        seek_back = false
-        adjust_block = false
-        tries_cnt = 0
-        begin # while
-          begin # exception
-            if seek_back
-              in_pos = dest_fd.pos
-              src_fd.seek(in_pos)
-              seek_back = false
-              stat.call("Resuming at #{Filesize.new(in_pos).pretty} of #{src_size}", src_file, dest_file)
-            else
-              # succesfully read and wrote - reset the counter
-              tries_cnt = 0
-            end
-            adjust_block = true
-            data = src_fd.read(block_size)
-            adjust_block = false
-          rescue Rex::TimeoutError
-            # timeout encountered - either seek back and retry or quit
-            if (tries && (tries_no == 0 || tries_cnt < tries_no))
-              tries_cnt += 1
-              seek_back = true
-              # try a smaller block size for the next round
-              if adaptive && adjust_block
-                block_size = [block_size >> 1, MIN_BLOCK_SIZE].max
-                adjust_block = false
-                msg = "Error uploading, block size set to #{block_size} - retry # #{tries_cnt}"
-                stat.call(msg, src_file, dest_file)
-              else
-                stat.call("Error uploading - retry # #{tries_cnt}", src_file, dest_file)
-              end
-              retry
-            else
-              stat.call('Error uploading - giving up', src_file, dest_file)
-              raise
-            end
-          end
-          dest_fd.write(data) if (data != nil)
-          percent = src_fd.pos.to_f / src_size.to_f * 100.0
-          msg = "Uploaded #{Filesize.new(src_fd.pos).pretty} of #{src_size} (#{percent.round(2)}%)"
-          stat.call(msg, src_file, dest_file)
-        end while (data != nil)
-      else
-        while (data = src_fd.read(block_size))
-          dest_fd.write(data)
-          percent = src_fd.pos.to_f / src_size.to_f * 100.0
-          msg = "Uploaded #{Filesize.new(src_fd.pos).pretty} of #{Filesize.new(src_size).pretty} (#{percent.round(2)}%)"
-          stat.call(msg, src_file, dest_file) if stat
-        end
+      while (buf = src_fd.read(buf_size))
+        dest_fd.write(buf)
+        percent = dest_fd.pos.to_f / src_size.to_f * 100.0
+        msg = "Uploaded #{Filesize.new(dest_fd.pos).pretty} of " \
+          "#{Filesize.new(src_size).pretty} (#{percent.round(2)}%)"
+        stat.call(msg, src_file, dest_file) if stat
       end
     ensure
       src_fd.close unless src_fd.nil?
       dest_fd.close unless dest_fd.nil?
     end
-    stat.call('uploaded', src_file, dest_file) if stat
+    stat.call('Completed', src_file, dest_file) if stat
   end
-
   # toybox
   # update  file.
   def File.update_file(dest_file, data)
@@ -414,7 +364,8 @@ class File < Rex::Post::Meterpreter::Extensions::Stdapi::Fs::IO
       if (::File.basename(dest) != File.basename(src))
         # The destination when downloading is a local file so use this
         # system's separator
-        dest += ::File::SEPARATOR + File.basename(src)
+        dest += ::File::SEPARATOR unless dest.end_with?(::File::SEPARATOR)
+        dest += File.basename(src)
       end
 
       # XXX: dest can be the same object as src, so we use += instead of <<
@@ -448,7 +399,7 @@ class File < Rex::Post::Meterpreter::Extensions::Stdapi::Fs::IO
       dst_stat = ::File.stat(dest_file)
       if src_stat.size == dst_stat.size && src_stat.mtime == dst_stat.mtime
         src_fd.close
-        return 'skipped'
+        return 'Skipped'
       end
     end
 
@@ -491,7 +442,7 @@ class File < Rex::Post::Meterpreter::Extensions::Stdapi::Fs::IO
               seek_back = false
               stat.call("Resuming at #{Filesize.new(in_pos).pretty} of #{src_size}", src_file, dest_file)
             else
-              # succesfully read and wrote - reset the counter
+              # successfully read and wrote - reset the counter
               tries_cnt = 0
             end
             adjust_block = true
@@ -539,7 +490,7 @@ class File < Rex::Post::Meterpreter::Extensions::Stdapi::Fs::IO
 
     # Clone the times from the remote file
     ::File.utime(src_stat.atime, src_stat.mtime, dest_file)
-    return 'download'
+    return 'Completed'
   end
 
   #
