@@ -73,7 +73,7 @@ module Interactive
     end
   end
 
-
+  # toybox
   def comm_channel_session
     return @comm_session if @comm_session
     if rstream.respond_to?(:channel) && rstream.channel.respond_to?(:client)

@@ -160,7 +160,7 @@ module Msf::RPC::JSON
     def self.to_json(data)
       return nil if data.nil?
       # toybox
-      json = Oj.generate(data)
+      json = Oj.dump(data)
       return json.to_s
     end
 
