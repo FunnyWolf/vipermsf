@@ -311,13 +311,18 @@ class Console::CommandDispatcher::Stdapi::Net
 
       when 'add'
         # Satisfy check to see that formatting is correct
-        unless Rex::Socket::RangeWalker.new(args[0]).length == 1
-          print_error "Invalid IP Address"
+        unless Rex::Socket.is_ip_addr?(args[0])
+          print_error "Invalid subnet: #{args[0]}"
           return false
         end
 
-        unless Rex::Socket::RangeWalker.new(args[1]).length == 1
-          print_error 'Invalid Subnet mask'
+        unless Rex::Socket.is_ip_addr?(args[1])
+          print_error "Invalid subnet mask: #{args[1]}"
+          return false
+        end
+
+        unless Rex::Socket.is_ip_addr?(args[2])
+          print_error "Invalid gateway address: #{args[2]}"
           return false
         end
 
@@ -326,13 +331,18 @@ class Console::CommandDispatcher::Stdapi::Net
         client.net.config.add_route(*args)
       when 'delete'
         # Satisfy check to see that formatting is correct
-        unless Rex::Socket::RangeWalker.new(args[0]).length == 1
-          print_error 'Invalid IP Address'
+        unless Rex::Socket.is_ip_addr?(args[0])
+          print_error "Invalid subnet: #{args[0]}"
           return false
         end
 
-        unless Rex::Socket::RangeWalker.new(args[1]).length == 1
-          print_error 'Invalid Subnet mask'
+        unless Rex::Socket.is_ip_addr?(args[1])
+          print_error "Invalid subnet mask: #{args[1]}"
+          return false
+        end
+
+        unless Rex::Socket.is_ip_addr?(args[2])
+          print_error "Invalid gateway address: #{args[2]}"
           return false
         end
 
@@ -429,11 +439,7 @@ class Console::CommandDispatcher::Stdapi::Net
           direction = 'Forward'
           direction = 'Reverse' if opts['Reverse'] == true
 
-          if opts['Reverse'] == true
-            table << [cnt + 1, "#{rhost}:#{rport}", "#{lhost}:#{lport}", 'Reverse']
-          else
-            table << [cnt + 1, "#{lhost}:#{lport}", "#{rhost}:#{rport}", 'Forward']
-          end
+          table << [cnt + 1, "#{netloc(rhost, rport)}", "#{netloc(lhost, lport)}", direction]
 
           cnt += 1
         }
@@ -478,13 +484,12 @@ class Console::CommandDispatcher::Stdapi::Net
               'PeerPort'          => lport,
               'MeterpreterRelay' => true,
               'SessionID'        => sessionid)
-            rport = relay.opts['LocalPort']
           rescue Exception => e
             print_error("Failed to create relay: #{e.to_s}")
             return false
           end
 
-          print_status("Reverse TCP relay created: (remote) #{netloc(rhost, rport)} -> (local) #{netloc(channel.params.localhost, channel.params.localport)}")
+          print_status("Reverse TCP relay created: (remote) #{netloc(channel.params.localhost, channel.params.localport)} -> (local) #{netloc(lhost, lport)}")
         else
           # Validate parameters
           unless lport && rhost && rport

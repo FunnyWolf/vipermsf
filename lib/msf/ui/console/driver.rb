@@ -161,7 +161,7 @@ class Driver < Msf::Ui::Driver
       self.framework.init_module_paths(module_paths: opts['ModulePath'])
     end
 
-    if framework.db && framework.db.active && framework.db.is_local? && !opts['DeferModuleLoads']
+    unless opts['DeferModuleLoads']
       framework.threads.spawn("ModuleCacheRebuild", true) do
         framework.modules.refresh_cache_from_module_files
       end
@@ -381,7 +381,7 @@ class Driver < Msf::Ui::Driver
                 "then restore the removed files from quarantine or reinstall the framework.\e[0m"\
                 "\n\n"
 
-      $stderr.puts(Msf::Serializer::ReadableText.word_wrap(avdwarn, 0, 80))
+      $stderr.puts(Rex::Text.wordwrap(avdwarn, 0, 80))
   end
 
   #

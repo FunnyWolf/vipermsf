@@ -3,13 +3,14 @@ require 'uri'
 require 'open3'
 require 'optparse'
 require 'did_you_mean'
+require 'kramdown'
 require_relative './navigation'
 
 # This build module was used to migrate the old Metasploit wiki https://github.com/rapid7/metasploit-framework/wiki into a format
 # supported by Jekyll. Jekyll was chosen as it was written in Ruby, which should reduce the barrier to entry for contributions.
 #
 # The build script took the flatlist of markdown files from the wiki, and converted them into the hierarchical folder structure
-# for nested documentation. This configuration is defiend in `navigation.rb`
+# for nested documentation. This configuration is defined in `navigation.rb`
 #
 # In the future a different site generator could be used, but it should be possible to use this build script again to migrate to a new format
 #
@@ -158,6 +159,10 @@ module Build
       @links = {}
     end
 
+    def syntax_errors_for(markdown)
+      MarkdownLinkSyntaxVerifier.errors_for(markdown)
+    end
+
     def extract(markdown)
       extracted_absolute_wiki_links = extract_absolute_wiki_links(markdown)
       @links = @links.merge(extracted_absolute_wiki_links)
@@ -176,7 +181,7 @@ module Build
         new_markdown.gsub!(link[:full_match], link[:replacement])
       end
 
-      fix_github_username_links(new_markdown)
+      new_markdown
     end
 
     attr_reader :links
@@ -295,74 +300,66 @@ module Build
 
       matched_pages.first.fetch(:new_path)
     end
+  end
 
-    def fix_github_username_links(content)
-      known_github_names = [
-        '@0a2940',
-        '@ChrisTuncer',
-        '@TomSellers',
-        '@asoto-r7',
-        '@busterb',
-        '@bwatters-r7',
-        '@jbarnett-r7',
-        '@jlee-r7',
-        '@jmartin-r7',
-        '@mcfakepants',
-        '@Op3n4M3',
-        '@gwillcox-r7',
-        '@red0xff',
-        '@mkienow-r7',
-        '@pbarry-r7',
-        '@schierlm',
-        '@timwr',
-        '@zerosteiner',
-        '@zeroSteiner',
-        '@harmj0y',
-      ]
-      # These tags look like Github/Twitter handles, but are actually ruby/java code snippets
-      ignored_tags = [
-        '@spid',
-        '@adf3',
-        '@LDAP-DC3',
-        '@harmj0yDescription',
-        '@phpsessid',
-        '@http_client',
-        '@abstract',
-        '@accepts_all_logins',
-        '@addresses',
-        '@aliases',
-        '@channel',
-        '@client',
-        '@dep',
-        '@handle',
-        '@instance',
-        '@param',
-        '@pid',
-        '@process',
-        '@return',
-        '@scanner',
-        '@yieldparam',
-        '@yieldreturn',
-        '@compressed',
-        '@content',
-        '@path',
-        '@sha1',
-        '@type',
-        '@git_repo_uri',
-        '@git_addr',
-        '@git_objs',
-        '@refs',
-      ]
+  # Verifies that markdown links are not relative. Instead the Github wiki flavored syntax should be used.
+  #
+  # Example bad: `[Human readable text](./some-documentation-link)`
+  # Example good: `[[Human readable text|./some-documentation-link]]`
+  class MarkdownLinkSyntaxVerifier
+    # Detects the usage of bad syntax and returns an array of detected errors
+    #
+    # @param [String] markdown The markdown
+    # @return [Array<String>] An array of human readable errors that should be resolved
+    def self.errors_for(markdown)
+      document = Kramdown::Document.new(markdown)
+      document.to_validated_wiki_page
+      warnings = document.warnings.select { |warning| warning.start_with?(Kramdown::Converter::ValidatedWikiPage::WARNING_PREFIX) }
+      warnings
+    end
 
-      # Replace any dangling github usernames, i.e. `@foo` - but not `[@foo](http://...)` or `email@example.com`
-      content.gsub(/(?<![\[|\w])@[\w-]+/) do |username|
-        if known_github_names.include? username
-          "[#{username}](https://www.github.com/#{username.gsub('@', '')})"
-        elsif ignored_tags.include? username
-          username
-        else
-          raise "Unexpected username: '#{username}'"
+    # Implementation detail: There doesn't seem to be a generic AST visitor pattern library for Ruby; We instead implement
+    # Kramdown's Markdown to HTML Converter API, override the link converter method, and warn on any invalid links that are identified.
+    # The {MarkdownLinkVerifier} will ignore the HTML result, and return any detected errors instead.
+    #
+    # https://kramdown.gettalong.org/rdoc/Kramdown/Converter/Html.html
+    class Kramdown::Converter::ValidatedWikiPage < Kramdown::Converter::Html
+      WARNING_PREFIX = '[WikiLinkValidation]'
+
+      def convert_a(el, indent)
+        link_href = el.attr['href']
+        if relative_link?(link_href)
+          link_text = el.children.map { |child| convert(child) }.join
+          warning "Invalid docs link syntax found on line #{el.options[:location]}: Invalid relative link #{link_href} found. Please use the syntax [[#{link_text}|#{link_href}]] instead"
         end
+
+        if absolute_docs_link?(link_href)
+          begin
+            example_path = ".#{URI.parse(link_href).path}"
+          rescue URI::InvalidURIError
+            example_path = "./path-to-markdown-file"
+          end
+
+          link_text = el.children.map { |child| convert(child) }.join
+          warning "Invalid docs link syntax found on line #{el.options[:location]}: Invalid absolute link #{link_href} found. Please use relative links instead, i.e. [[#{link_text}|#{example_path}]] instead"
+        end
+
+        super
+      end
+
+      private
+
+      def warning(text)
+        super "#{WARNING_PREFIX} #{text}"
+      end
+
+      def relative_link?(link_path)
+        !(link_path.start_with?('http:') || link_path.start_with?('https:') || link_path.start_with?('mailto:') || link_path.start_with?('#'))
+      end
+
+      # @return [TrueClass, FalseClass] True if the link is to a Metasploit docs page that isn't either the root home page or the API site, otherwise false
+      def absolute_docs_link?(link_path)
+        link_path.include?('docs.metasploit.com') && !link_path.include?('docs.metasploit.com/api') && !(link_path == 'https://docs.metasploit.com/')
       end
     end
   end
@@ -461,11 +458,23 @@ module Build
 
     def link_corrector_for(config)
       link_corrector = LinkCorrector.new(config)
+      errors = []
       config.each do |page|
         unless page[:path].nil?
           content = File.read(File.join(WIKI_PATH, page[:path]), encoding: Encoding::UTF_8)
+          syntax_errors = link_corrector.syntax_errors_for(content)
+          errors << { path: page[:path], messages: syntax_errors } if syntax_errors.any?
+
           link_corrector.extract(content)
         end
+      end
+
+      if errors.any?
+        errors.each do |error|
+          $stderr.puts "[!] Error #{File.join(WIKI_PATH, error[:path])}:\n#{error[:messages].map { |message| "\t- #{message}\n" }.join}"
+        end
+
+        raise "Errors found in markdown syntax"
       end
 
       link_corrector

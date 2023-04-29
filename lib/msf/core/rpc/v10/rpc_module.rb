@@ -224,6 +224,7 @@ class RPC_Module < RPC_Base
     res['platform'] = m.platform.platforms.map { |x| x.to_s }
     res['authors'] = m.author.map { |a| a.to_s }
     res['privileged'] = m.privileged?
+    res['check'] = m.has_check?
 
     res['references'] = []
     m.references.each do |r|
@@ -750,6 +751,10 @@ class RPC_Module < RPC_Base
 
 private
 
+  # @param [String] mtype The module type
+  # @param [String] mname The module name
+  # @return [Msf::Module] The module if found
+  # @raise [Msf::RPC::Exception] An exception is raised if the module is not found
   def _find_module(mtype,mname)
 
     if mname !~ /^(exploit|payload|nop|encoder|auxiliary|post|evasion)\//
@@ -765,6 +770,9 @@ private
   end
   # toybox
   def _run_exploit(mod, opts, runasjob = true)
+    if opts['PAYLOAD'].blank?
+      opts['PAYLOAD'] = Msf::Payload.choose_payload(mod)
+    end
     if runasjob
       Msf::Simple::Exploit.exploit_rpc(mod, {
               'Payload'  => opts['PAYLOAD'],

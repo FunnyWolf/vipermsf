@@ -120,7 +120,7 @@ module Msf::WebServices
               end
 
               # Accept a client connection
-              pub_heartbeat_data(true,
+              Msf::Module::Rpcredis.pub_heartbeat_data(true,
                                  "HEARTBEAT",
                                  {
                                    "jobs" => res_jobs,

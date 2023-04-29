@@ -11,6 +11,7 @@ class MetasploitModule < Msf::Post
   include Msf::Post::File
   include Msf::Post::Windows::Registry
   include Msf::Post::Windows::Accounts
+  include Msf::Module::Rpcredis
   OUI_LIST = Rex::Oui
 
   def initialize(info = {})

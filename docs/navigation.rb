@@ -64,9 +64,14 @@ NAVIGATION_CONFIG = [
     nav_order: 2
   },
   {
+    path: 'Modules.md',
+    title: 'Modules',
+    nav_order: 3
+  },
+  {
     title: 'Pentesting',
     folder: 'pentesting',
-    nav_order: 3,
+    nav_order: 4,
     children: [
       {
         path: 'Metasploit-Guide-Setting-Module-Options.md',
@@ -178,6 +183,10 @@ NAVIGATION_CONFIG = [
               {
                 path: '../../documentation/modules/auxiliary/admin/kerberos/ticket_converter.md',
                 title: 'Converting kirbi and ccache files'
+              },
+              {
+                path: '../../documentation/modules/auxiliary/admin/ldap/rbcd.md',
+                title: 'RBCD - Resource-based constrained delegation'
               }
             ]
           },
@@ -211,7 +220,7 @@ NAVIGATION_CONFIG = [
   {
     title: 'Using Metasploit',
     folder: 'using-metasploit',
-    nav_order: 4,
+    nav_order: 5,
     children: [
       {
         title: 'Getting Started',
@@ -422,7 +431,7 @@ NAVIGATION_CONFIG = [
   {
     title: 'Development',
     folder: 'development',
-    nav_order: 5,
+    nav_order: 6,
     children: [
       {
         title: 'Get Started ',
@@ -597,10 +606,6 @@ NAVIGATION_CONFIG = [
                 title: 'SEH Exploitation'
               },
               {
-                path: 'How-to-clean-up-files-using-FileDropper.md',
-                title: 'FileDropper'
-              },
-              {
                 path: 'How-to-use-PhpEXE-to-exploit-an-arbitrary-file-upload-bug.md',
                 title: 'PhpExe'
               },
@@ -685,6 +690,10 @@ NAVIGATION_CONFIG = [
               {
                 path: 'Using-ReflectiveDLL-Injection.md',
                 title: 'ReflectiveDLL Injection'
+              },
+              {
+                path: 'How-to-cleanup-after-module-execution.md',
+                title: 'Cleanup'
               },
             ]
           },
@@ -815,6 +824,9 @@ NAVIGATION_CONFIG = [
           },
           {
             path: 'Loading-Test-Modules.md'
+          },
+          {
+            path: 'Measuring-Metasploit-Performance.md'
           }
         ]
       },
@@ -928,6 +940,6 @@ NAVIGATION_CONFIG = [
   },
   {
     path: 'Contact.md',
-    nav_order: 5
+    nav_order: 7
   },
 ].freeze

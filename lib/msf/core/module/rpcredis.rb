@@ -7,11 +7,11 @@ module Msf::Module::Rpcredis
   attr_accessor :redis_client
 
   def self.init
-    @@redis_client  = self.redis_client
+    @@redis_client  = self.init_redis_client
     @@message_queue = "rpcviper"
   end
 
-  def redis_client
+  def self.init_redis_client
     file = "/root/.msf4/redis.yml"
 
     begin
@@ -49,7 +49,7 @@ module Msf::Module::Rpcredis
     flag             = @@redis_client.publish "MSF_RPC_DATA_CHANNEL", json
   end
 
-  def pub_heartbeat_data(status = nil, type = nil, data = nil)
+  def self.pub_heartbeat_data(status = nil, type = nil, data = nil)
     result          = {}
     result[:status] = status
     result[:type]   = type
