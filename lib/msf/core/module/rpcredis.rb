@@ -19,7 +19,7 @@ module Msf::Module::Rpcredis
         redis_conf   = YAML.load(::File.read(file))
         redis_client = Redis.new(path: redis_conf['redis_sock'], password: redis_conf['redis_password'], db: 5)
       else
-        redis_client = Redis.new(host: "127.0.0.1", password: 'foobared', port: 60004, db: 5)
+        redis_client = Redis.new(host: "127.0.0.1", password: 'foobared', port: 6379, db: 5)
       end
       return redis_client
     rescue => e
