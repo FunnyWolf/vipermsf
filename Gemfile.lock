@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    metasploit-framework (6.3.15)
+    metasploit-framework (6.3.16)
       actionpack (~> 7.0)
       activerecord (~> 7.0)
       activesupport (~> 7.0)
@@ -35,7 +35,7 @@ PATH
       metasploit_data_models
       metasploit_payloads-mettle (= 1.0.20)
       mqtt
-      msgpack
+      msgpack (~> 1.6.0)
       nessus_rest
       net-ldap
       net-smtp
@@ -161,7 +161,6 @@ GEM
     chunky_png (1.4.0)
     coderay (1.1.3)
     concurrent-ruby (1.2.2)
-    connection_pool (2.4.0)
     cookiejar (0.3.3)
     crass (1.0.6)
     daemons (1.4.1)
@@ -273,7 +272,7 @@ GEM
     mini_portile2 (2.8.1)
     minitest (5.18.0)
     mqtt (0.6.0)
-    msgpack (1.7.0)
+    msgpack (1.6.1)
     multi_json (1.15.0)
     mustermann (3.0.0)
       ruby2_keywords (~> 0.0.1)
@@ -301,7 +300,7 @@ GEM
     packetfu (1.1.13)
       pcaprub
     parallel (1.23.0)
-    parser (3.2.2.0)
+    parser (3.2.2.1)
       ast (~> 2.4.1)
     patch_finder (1.0.2)
     pcaprub (0.13.1)
@@ -427,17 +426,17 @@ GEM
     rspec-rerun (1.1.0)
       rspec (~> 3.0)
     rspec-support (3.12.0)
-    rubocop (1.48.0)
+    rubocop (1.50.2)
       json (~> 2.3)
       parallel (~> 1.10)
       parser (>= 3.2.0.0)
       rainbow (>= 2.2.2, < 4.0)
       regexp_parser (>= 1.8, < 3.0)
       rexml (>= 3.2.5, < 4.0)
-      rubocop-ast (>= 1.26.0, < 2.0)
+      rubocop-ast (>= 1.28.0, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 2.4.0, < 3.0)
-    rubocop-ast (1.27.0)
+    rubocop-ast (1.28.0)
       parser (>= 3.2.1.0)
     ruby-macho (3.0.0)
     ruby-prof (1.4.2)
@@ -542,4 +541,4 @@ DEPENDENCIES
   yard
 
 BUNDLED WITH
-   2.2.33
+   2.1.4
