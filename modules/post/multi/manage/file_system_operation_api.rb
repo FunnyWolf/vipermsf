@@ -270,12 +270,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
 
   def upload(localpath, remotepath)
     result = { :status => true, :message => nil, :data => nil, :endflag => nil }
-    opts   = {
-            :block_size => 256 * 1024,
-            :tries      => true,
-            :tries_no   => 10,
-    }
-    client.fs.file.upload_file(remotepath, localpath, opts) do |step, src, dst|
+    client.fs.file.upload_file(remotepath, localpath) do |step, src, dst|
       print_status_redis("#{step.ljust(11)}: #{src} -> #{dst}")
     end
     result[:status]  = true
