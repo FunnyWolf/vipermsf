@@ -137,7 +137,6 @@ if get_script_param('max_threads') is not None:
 if get_script_param('time_out') is not None:
     TIME_OUT = get_script_param('time_out')
 ipstr = get_script_param('ipstr')
-ipstr = ipstr.encode("utf-8")
 port_list = get_script_param('port_list')
 # 开始运行
 main(ipstr, port_list)
