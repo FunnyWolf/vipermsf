@@ -749,7 +749,7 @@ protected
         break if nhost
       end
 
-      if !nhost
+      if !nhost or nhost == "127.0.0.1" or nhost == "::1"
         # No internal address matches what we see externally and no
         # interface has a default route. Fall back to the first
         # non-loopback address

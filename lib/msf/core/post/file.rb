@@ -49,7 +49,7 @@ module Msf::Post::File
     if session.type == 'meterpreter'
       session.fs.dir.chdir(e_path)
     elsif session.type == 'powershell'
-      cmd_exec("Set-Location -Path \"#{e_path}\"")
+      cmd_exec("Set-Location -Path \"#{e_path}\";[System.IO.Directory]::SetCurrentDirectory($(Get-Location))")
     else
       session.shell_command_token("cd \"#{e_path}\"")
     end
@@ -305,7 +305,7 @@ module Msf::Post::File
       end
       return !!stat
     elsif session.type == 'powershell'
-      return cmd_exec("[System.IO.File]::Exists( \"#{path}\")")&.include?('True')
+      return cmd_exec("Test-Path \"#{path}\"")&.include?('True')
     else
       if session.platform == 'windows'
         f = cmd_exec("cmd.exe /C IF exist \"#{path}\" ( echo true )")
@@ -831,13 +831,14 @@ protected
   def _read_file_meterpreter(file_name)
     fd = session.fs.file.new(file_name, 'rb')
 
-    data = fd.read
+    data = ''.b
+    data << fd.read
     data << fd.read until fd.eof?
 
     data
   rescue EOFError
     # Sometimes fd isn't marked EOF in time?
-    ''
+    data
   rescue ::Rex::Post::Meterpreter::RequestError => e
     print_error("Failed to open file: #{file_name}: #{e}")
     return nil

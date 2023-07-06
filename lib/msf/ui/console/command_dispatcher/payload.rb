@@ -61,11 +61,22 @@ module Msf
 
             handler.share_datastore(mod.datastore)
             # toybox
-            handler.datastore['Payload'] = mod.refname
-            handler.exploit_simple(handler_opts)
-            job_id = handler.job_id
+	    handler.datastore['Payload'] = mod.refname
+            replicant_handler = nil
+            handler.exploit_simple(handler_opts) do |yielded_replicant_handler|
+              replicant_handler = yielded_replicant_handler
+            end
 
-            print_status "Payload Handler Started as Job #{job_id}"
+            if replicant_handler.nil?
+              print_error('Failed to run module')
+              return
+            end
+
+            if replicant_handler.error.nil?
+              job_id = handler.job_id
+
+              print_status "Payload Handler Started as Job #{job_id}"
+            end
           end
 
           alias cmd_exploit cmd_to_handler
