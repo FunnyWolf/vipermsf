@@ -96,11 +96,11 @@ module Session
     # Fallback to the tunnel_peer (contains port)
     peer = self.tunnel_peer
     return if not peer
-
+    # toybox
     # Pop off the trailing port number
-    bits = peer.split(':')
-    bits.pop
-    bits.join(':')
+    # bits = peer.split(':')
+    # bits.pop
+    # bits.join(':')
   end
 
   #
