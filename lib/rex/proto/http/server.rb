@@ -379,7 +379,7 @@ protected
       elog("Failed to find handler for resource: #{request.resource}", LogSource)
       # toybox
       # focus close client for 404
-      send_e404(cli, request)
+      # send_e404(cli, request)
 
       close_client(cli)
     end

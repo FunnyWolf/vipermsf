@@ -181,7 +181,7 @@ module ReverseTcp
   end
 
   def wrap_aes_socket(sock)
-    if datastore["PAYLOAD"] !~ %r{java/} || (datastore["AESPassword"] || "") == ""
+    if datastore["PAYLOAD"] !~ %r{java/} || (datastore["AESPassword"] || "") == "" # only for java payload
       return sock
     end
 

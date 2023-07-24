@@ -182,11 +182,12 @@ class Meterpreter < Rex::Post::Meterpreter::Client
         session.load_session_info
       end
 
-      # only load priv on native windows
-      # TODO: abstract this too, to remove windows stuff
-      if session.platform == 'windows' && [ARCH_X86, ARCH_X64].include?(session.arch)
-        session.load_priv rescue nil
-      end
+    end
+
+    # only load priv on native windows
+    # TODO: abstract this too, to remove windows stuff
+    if session.platform == 'windows' && [ARCH_X86, ARCH_X64].include?(session.arch)
+      session.load_priv rescue nil
     end
 
     # TODO: abstract this a little, perhaps a "post load" function that removes

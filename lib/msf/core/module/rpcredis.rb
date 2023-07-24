@@ -108,7 +108,6 @@ module Msf::Module::Rpcredis
 
     # transport
     @@redis_client.rpush @@message_queue, rpc_raw_request
-    # message_queue, rpc_raw_response = @@redis_client.blpop response_queue, @@timeout
     message_queue, rpc_raw_response = @@redis_client.blpop response_queue, timeout
     if rpc_raw_response.nil?
       @@redis_client.lrem @@message_queue, 0, rpc_raw_request
