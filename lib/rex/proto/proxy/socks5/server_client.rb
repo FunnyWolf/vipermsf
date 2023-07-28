@@ -60,7 +60,11 @@ module Socks5
           end
 
           if closed
-            @relay_client.stop
+            begin
+              @relay_client.stop
+            rescue
+              wlog("SOCKS5 @relay_client.stop - #{$!}")
+            end
             ::Thread.exit
           end
         end
