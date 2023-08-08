@@ -11,7 +11,7 @@ module Msf::RPC::JSON
     def self.create(version, framework)
       case version
       when :v1, :v1_0, :v10
-        return Msf::RPC::JSON::V1_0::RpcCommand.new(framework)
+        return Msf::RPC::JSON::V1_0::RpcCommand.new(framework, execute_timeout: 120)
       when :v2, :v2_0
         return RpcCommandFactory.create_rpc_command_v2_0(framework)
       else
