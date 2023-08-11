@@ -1,4 +1,5 @@
 # -*- coding: binary -*-
+# toybox
 require 'rex'
 module Msf
 

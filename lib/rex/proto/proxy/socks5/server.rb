@@ -82,7 +82,7 @@ module Socks5
         clients = @clients.dup
         clients.each do | client |
           begin
-            client.stop
+            client.shutdown
           rescue
             wlog("SOCKS5 clients stop - #{$!}")
           end

@@ -61,7 +61,7 @@ module Socks5
 
           if closed
             begin
-              @relay_client.stop
+              @relay_client.shutdown
             rescue
               wlog("SOCKS5 @relay_client.stop - #{$!}")
             end

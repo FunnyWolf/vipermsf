@@ -1,3 +1,4 @@
+# toybox
 require 'msf/core/rpc/json/v1_0/rpc_command'
 require 'msf/core/rpc/json/v2_0/rpc_test'
 
