@@ -36,7 +36,6 @@ module Msf::Module::Rpcredis
     json = Oj.generate(result)
 
     flag = @@redis_client.publish "MSF_RPC_RESULT_CHANNEL", json
-    print("#{json}")
   end
 
   def pub_json_data(status = nil, message = nil, data = nil, uuid = nil)
