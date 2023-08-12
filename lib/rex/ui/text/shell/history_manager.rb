@@ -125,7 +125,7 @@ class HistoryManager
     write_history_file(history_file, cmds)
   end
 
-  def switch_context(new_context, old_context = nil)
+  def switch_context(new_context, old_context=nil)
     if old_context && old_context[:history_file]
       store_history_file(old_context[:history_file])
     end

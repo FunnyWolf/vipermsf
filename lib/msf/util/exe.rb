@@ -871,24 +871,24 @@ require 'digest/sha1'
     mo
   end
 
-# self.to_osx_aarch64_macho
-#
-# @param framework  [Msf::Framework]  The framework of you want to use
-# @param code       [String]
-# @param opts       [Hash]
-# @option           [String] :template
-# @return           [String]
-def self.to_osx_aarch64_macho(framework, code, opts = {})
+  # self.to_osx_aarch64_macho
+  #
+  # @param framework  [Msf::Framework]  The framework of you want to use
+  # @param code       [String]
+  # @param opts       [Hash]
+  # @option           [String] :template
+  # @return           [String]
+  def self.to_osx_aarch64_macho(framework, code, opts = {})
 
-  # Allow the user to specify their own template
-  set_template_default(opts, "template_aarch64_darwin.bin")
+    # Allow the user to specify their own template
+    set_template_default(opts, "template_aarch64_darwin.bin")
 
-  mo = self.get_file_contents(opts[:template])
-  bo = self.find_payload_tag(mo, "Invalid OSX Aarch64 Mach-O template: missing \"PAYLOAD:\" tag")
-  mo[bo, code.length] = code
-  Payload::MachO.new(mo).sign
-  mo
-end
+    mo = self.get_file_contents(opts[:template])
+    bo = self.find_payload_tag(mo, "Invalid OSX Aarch64 Mach-O template: missing \"PAYLOAD:\" tag")
+    mo[bo, code.length] = code
+    Payload::MachO.new(mo).sign
+    mo
+  end
 
   # self.to_osx_ppc_macho
   #
@@ -2161,8 +2161,8 @@ end
           to_osx_arm_macho(framework, code, exeopts)
         when ARCH_PPC
           to_osx_ppc_macho(framework, code, exeopts)
-                when ARCH_AARCH64
-                  to_osx_aarch64_macho(framework, code, exeopts)
+        when ARCH_AARCH64
+          to_osx_aarch64_macho(framework, code, exeopts)
         end
       end
       fmt == 'osx-app' ? Msf::Util::EXE.to_osx_app(macho) : macho

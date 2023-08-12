@@ -20,9 +20,9 @@ class Msf::Ui::Console::CommandDispatcher::Developer
   )
 
   @@_historymanager_opts = Rex::Parser::Arguments.new(
-    '-h' => [false, 'Help menu.'],
-    ['-l', '--list'] => [true, 'View the current history manager contexts.'],
-    ['-d', '--debug'] => [true, 'Debug the current history manager contexts.']
+    '-h' => [false, 'Help menu.'             ],
+    ['-l', '--list'] => [true,  'View the current history manager contexts.'],
+    ['-d', '--debug'] => [true,  'Debug the current history manager contexts.']
   )
 
   def initialize(driver)
@@ -426,8 +426,8 @@ class Msf::Ui::Console::CommandDispatcher::Developer
 
     if opts[:list]
       table = Rex::Text::Table.new(
-        'Header' => 'History contexts',
-        'Indent' => 1,
+        'Header'  => 'History contexts',
+        'Indent'  => 1,
         'Columns' => ['Id', 'File', 'Name']
       )
       Rex::Ui::Text::Shell::HistoryManager.instance._contexts.each.with_index do |context, id|

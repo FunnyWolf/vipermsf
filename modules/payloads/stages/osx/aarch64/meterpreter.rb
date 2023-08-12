@@ -15,14 +15,14 @@ module MetasploitModule
         'Description' => 'Inject the mettle server payload (staged)',
         'Platform' => 'osx',
         'Author' => [
-          'parchedmind', # osx_runbin
-          'nologic', # shellcc
-          'timwr', # metasploit integration
-          'usiegl00' # aarch64
+          'parchedmind',  # osx_runbin
+          'nologic',      # shellcc
+          'timwr',        # metasploit integration
+          'usiegl00'      # aarch64
         ],
         'References' => [
-          ['URL', 'https://github.com/CylanceVulnResearch/osx_runbin'],
-          ['URL', 'https://github.com/nologic/shellcc']
+          [ 'URL', 'https://github.com/CylanceVulnResearch/osx_runbin' ],
+          [ 'URL', 'https://github.com/nologic/shellcc' ]
         ],
         'Arch' => ARCH_AARCH64,
         'License' => MSF_LICENSE,

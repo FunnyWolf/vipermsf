@@ -64,20 +64,20 @@ class Msf::Payload::MachO
     code_signature = raw_data[code_signature_index..]
     s_magic, s_length, s_count, code_indexes = code_signature.unpack("N3a*")
     raise "Invalid kSecCodeMagicEmbeddedSignature magic for macho" if s_magic != 0xfade0cc0
-    indexes = code_indexes.unpack("N#{s_count * 2}a*")
+    indexes = code_indexes.unpack("N#{s_count*2}a*")
     code_directory = indexes.pop
     magic, length, version, flags, hash_offset, ident_offset, n_special_slots, n_code_slots, code_limit, hash_size, hash_type, platform, page_size, spare2, hash_list = code_directory.unpack("N9C4Na*")
     raise "Invalid kSecCodeMagicCodeDirectory magic for macho" if magic != 0xfade0c02
-    pagesize = 2 ** page_size
+    pagesize = 2**page_size
     page_index = 0
     raw_data.bytes.each_slice(pagesize) do |page|
-      break if page_index >= (length - hash_offset) / (hash_size)
-      if (page_index + 1) * pagesize > code_signature_index
-        page = page[0..(pagesize - ((page_index + 1) * pagesize - code_signature_index)) - 1]
+      break if page_index >= (length-hash_offset)/(hash_size)
+      if (page_index+1)*pagesize > code_signature_index
+        page = page[0..(pagesize-((page_index+1)*pagesize-code_signature_index))-1]
       end
       new_digest = Digest::SHA256.digest(page.pack("C*"))
-      old_digest_index = code_signature.index(code_directory[hash_offset + (hash_size * page_index)...])
-      code_signature[old_digest_index..old_digest_index + hash_size - 1] = new_digest
+      old_digest_index = code_signature.index(code_directory[hash_offset+(hash_size*page_index)...])
+      code_signature[old_digest_index..old_digest_index+hash_size-1] = new_digest
       page_index += 1
     end
     raw_data[code_signature_index..] = code_signature

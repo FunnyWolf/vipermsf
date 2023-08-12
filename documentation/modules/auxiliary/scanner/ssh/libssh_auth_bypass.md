@@ -16,8 +16,7 @@ additional code paths to be followed.
 
 ### Docker (Vulhub)
 
-A prebuilt [vulhub](https://github.com/vulhub/vulhub) target is available for testing. This target does _not_ work with
-the `Shell` action, only the `Execute` action. To test that scenario, use the `Docker (Custom)` steps below.
+A prebuilt [vulhub](https://github.com/vulhub/vulhub) target is available for testing. This target does _not_ work with the `Shell` action, only the `Execute` action. To test that scenario, use the `Docker (Custom)` steps below.
 
 ```
 docker run -it -p 3333:22 vulhub/libssh:0.8.1
@@ -25,9 +24,7 @@ docker run -it -p 3333:22 vulhub/libssh:0.8.1
 
 ### Docker (Custom)
 
-In an empty folder create a new `Dockerfile` with the below file contents. Note that this Dockerfile is based
-on [vulhub/libssh:0.8.1](https://github.com/vulhub/vulhub/tree/4b1954c5c95140d99a4b94a7005707dd041196f6/base/libssh/0.8.1)
-with changes to work with the `Shell` target:
+In an empty folder create a new `Dockerfile` with the below file contents. Note that this Dockerfile is based on [vulhub/libssh:0.8.1](https://github.com/vulhub/vulhub/tree/4b1954c5c95140d99a4b94a7005707dd041196f6/base/libssh/0.8.1) with changes to work with the `Shell` target:
 
 ```Dockerfile
 FROM buildpack-deps:stable-scm

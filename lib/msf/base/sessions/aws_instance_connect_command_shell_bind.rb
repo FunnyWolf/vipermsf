@@ -24,7 +24,7 @@ module Msf::Sessions
     #
     include Msf::Session::Provider::SingleCommandShell
 
-    def shell_command_token_unix(cmd, timeout = 10)
+    def shell_command_token_unix(cmd, timeout=10)
       res = shell_command_token_base(cmd, timeout, "\n")
 
       res.gsub!("\r\n", "\n") if res

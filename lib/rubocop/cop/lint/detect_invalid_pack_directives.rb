@@ -53,7 +53,7 @@ module RuboCop
                 end
               end.join
 
-              # elsif single line arguments are passed
+            # elsif single line arguments are passed
             elsif arg.type == :str
               pack_directive = arg.children.first
             end
@@ -201,7 +201,7 @@ module RuboCop
               adjusted_index += leading_whitespace_size
               range_start = indexed_arg.loc.expression.begin_pos + (adjusted_index + newline_adjustment)
             end
-            # Logic for single line strings
+          # Logic for single line strings
           else
             newline_adjustment = arg.children.first[0..p].scan(/[\n\t]/).count
             range_start = arg.loc.begin.end_pos + (p + newline_adjustment)

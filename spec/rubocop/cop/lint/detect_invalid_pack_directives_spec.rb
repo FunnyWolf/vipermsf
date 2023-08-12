@@ -7,8 +7,8 @@ RSpec.describe RuboCop::Cop::Lint::DetectInvalidPackDirectives do
   let(:config) { RuboCop::Config.new(empty_rubocop_config) }
   let(:pack_directive) { "Q<" }
   let(:pack_amount) { 2 }
-  let(:endian) { :little }
-  let(:packstr) { (endian == :little) ? 'v' : 'n' }
+  let(:endian) {:little}
+  let(:packstr) {(endian == :little) ? 'v' : 'n'}
 
   context 'when passed an unknown pack/unpacks directive' do
     it 'detects the invalid directive' do

@@ -1443,12 +1443,12 @@ module Msf
 
             @module_search_results.each do |m|
               tbl << [
-                count += 1,
-                m.fullname,
-                m.disclosure_date.nil? ? '' : m.disclosure_date.strftime("%Y-%m-%d"),
-                m.rank,
-                m.check ? 'Yes' : 'No',
-                m.name,
+                  count += 1,
+                  m.fullname,
+                  m.disclosure_date.nil? ? '' : m.disclosure_date.strftime("%Y-%m-%d"),
+                  m.rank,
+                  m.check ? 'Yes' : 'No',
+                  m.name,
               ]
             end
 
