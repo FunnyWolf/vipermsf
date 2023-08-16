@@ -53,7 +53,7 @@ module Msf::Module::Rpcredis
     result[:status] = status
     result[:type] = type
     result[:data] = data
-    json = Oj.generate(result)
+    json = Oj.generate(result, mode: :compat)
     flag = @@redis_client.publish "MSF_RPC_HEARTBEAT_CHANNEL", json
     dlog("pub_heartbeat_data num: #{flag}")
     flag
