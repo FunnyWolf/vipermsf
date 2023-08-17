@@ -160,8 +160,8 @@ module Msf::RPC::JSON
     def self.to_json(data)
       return nil if data.nil?
       # toybox
-      json = Oj.dump(data)
-      return json.to_s
+      json = Oj.generate(data, mode: :compat)
+      return json
     end
 
     # Create a JSON-RPC success response.
