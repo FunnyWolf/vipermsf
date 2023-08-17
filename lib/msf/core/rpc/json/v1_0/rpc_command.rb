@@ -131,7 +131,7 @@ module Msf::RPC::JSON
       # @return [Hash] a new hash with strings for the keys.
       def stringify_names(hash)
         # toybox
-        result = Oj.load(Oj.generate(hash))
+        result = Oj.load(Oj.generate(hash), mode: :compat)
         result
       end
 

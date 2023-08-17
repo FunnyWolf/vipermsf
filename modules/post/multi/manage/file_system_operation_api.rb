@@ -37,7 +37,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
     if session.type == "shell"
       result[:status] = false
       result[:message] = 'Unsupport shell type'
-      json = Oj.generate(result)
+      json = Oj.generate(result, mode: :compat)
       print("#{json}")
       return
     end
@@ -88,7 +88,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       client.fs.file.update_file(sessionfile, buf)
       result[:status] = true
       result[:message] = "update finish"
-      json = Oj.generate(result)
+      json = Oj.generate(result, mode: :compat)
       print("#{json}")
     end
   end
@@ -117,7 +117,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
     result[:status] = true
     result[:message] = 'pwd finish'
     result[:data] = { :path => remotepath.gsub(/\\/, '/'), :entries => result_list }
-    json = Oj.generate(result)
+    json = Oj.generate(result, mode: :compat)
     print("#{json}")
 
   end
@@ -141,7 +141,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       result[:status] = true
       result[:message] = 'show mount finish'
       result[:data] = { :path => '/', :entries => result_list }
-      json = Oj.generate(result)
+      json = Oj.generate(result, mode: :compat)
       print("#{json}")
     else
       client.fs.dir.entries_with_info('/').each do |p|
@@ -160,7 +160,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       result[:status] = true
       result[:message] = 'show mount finish'
       result[:data] = { :path => '/', :entries => result_list }
-      json = Oj.generate(result)
+      json = Oj.generate(result, mode: :compat)
       print("#{json}")
     end
   end
@@ -185,7 +185,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       result[:status] = true
       result[:message] = 'List finish'
       result[:data] = { :path => '/', :entries => result_list }
-      json = Oj.generate(result)
+      json = Oj.generate(result, mode: :compat)
       print("#{json}")
       return
     end
@@ -206,7 +206,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
     result[:status] = true
     result[:message] = 'List finish'
     result[:data] = { :path => remotepath, :entries => result_list }
-    json = Oj.generate(result)
+    json = Oj.generate(result, mode: :compat)
     print("#{json}")
   end
 
@@ -216,11 +216,11 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       client.fs.file.rm(remotepath)
       result[:status] = true
       result[:message] = 'remove finish'
-      json = Oj.generate(result)
+      json = Oj.generate(result, mode: :compat)
     rescue ::Exception
       result[:status] = false
       result[:message] = $!
-      json = Oj.generate(result)
+      json = Oj.generate(result, mode: :compat)
     end
     print("#{json}")
   end
@@ -234,11 +234,11 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
 
       result[:status] = true
       result[:message] = 'remove finish'
-      json = Oj.generate(result)
+      json = Oj.generate(result, mode: :compat)
     rescue ::Exception
       result[:status] = false
       result[:message] = $!
-      json = Oj.generate(result)
+      json = Oj.generate(result, mode: :compat)
     end
     print("#{json}")
   end
@@ -253,16 +253,16 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       if res
         result[:status] = true
         result[:message] = 'create dir  finish'
-        json = Oj.generate(result)
+        json = Oj.generate(result, mode: :compat)
       else
         result[:status] = false
         result[:message] = 'create dir  failed'
-        json = Oj.generate(result)
+        json = Oj.generate(result, mode: :compat)
       end
     rescue ::Exception
       result[:status] = false
       result[:message] = $!
-      json = Oj.generate(result)
+      json = Oj.generate(result, mode: :compat)
     end
     print("#{json}")
 
@@ -275,7 +275,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
     end
     result[:status] = true
     result[:message] = "upload finish"
-    json = Oj.generate(result)
+    json = Oj.generate(result, mode: :compat)
     pub_json_result(true,
                     nil,
                     nil,
@@ -299,11 +299,11 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
 
       result[:status] = true
       result[:message] = 'Download finish'
-      json = Oj.generate(result)
+      json = Oj.generate(result, mode: :compat)
       print("#{json}")
     rescue Rex::Post::Meterpreter::RequestError => re
       result = { :status => false, :message => re.to_s, :data => nil, :endflag => nil }
-      json = Oj.generate(result)
+      json = Oj.generate(result, mode: :compat)
       print("#{json}")
 
     end
@@ -318,11 +318,11 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       client.sys.process.execute(remotepath, args, opts = { 'Hidden' => true, 'Subshell' => true })
       result[:status] = true
       result[:message] = 'Execute finish'
-      json = Oj.generate(result)
+      json = Oj.generate(result, mode: :compat)
       print("#{json}")
     rescue Rex::Post::Meterpreter::RequestError => re
       result = { :status => false, :message => re.to_s, :data => nil, :endflag => nil }
-      json = Oj.generate(result)
+      json = Oj.generate(result, mode: :compat)
       print("#{json}")
     end
   end
@@ -348,7 +348,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       result[:message] = 'cat finish'
       result[:data] = Rex::Text.encode_base64(data)
     end
-    json = Oj.generate(result)
+    json = Oj.generate(result, mode: :compat)
     print("#{json}")
   end
 

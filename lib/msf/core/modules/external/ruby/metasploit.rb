@@ -77,7 +77,7 @@ module Metasploit
     end
 
     def rpc_send(req)
-      puts Oj.generate(req)
+      puts Oj.generate(req, mode: :compat)
       $stdout.flush
     end
   end

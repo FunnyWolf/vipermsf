@@ -33,7 +33,7 @@ module Msf::Module::Rpcredis
     result[:status] = status
     result[:message] = message
     result[:data] = data
-    json = Oj.generate(result)
+    json = Oj.generate(result, mode: :compat)
 
     flag = @@redis_client.publish "MSF_RPC_RESULT_CHANNEL", json
   end
@@ -44,7 +44,7 @@ module Msf::Module::Rpcredis
     result[:status] = status
     result[:message] = message
     result[:data] = data
-    json = Oj.generate(result)
+    json = Oj.generate(result, mode: :compat)
     flag = @@redis_client.publish "MSF_RPC_DATA_CHANNEL", json
   end
 
@@ -63,7 +63,7 @@ module Msf::Module::Rpcredis
     result = {}
     result[:prompt] = prompt
     result[:message] = message
-    json = Oj.generate(result)
+    json = Oj.generate(result, mode: :compat)
     flag = @@redis_client.publish "MSF_RPC_CONSOLE_PRINT", json
   end
 
@@ -71,7 +71,7 @@ module Msf::Module::Rpcredis
     result = {}
     result[:level] = 0
     result[:content] = content
-    json = Oj.generate(result)
+    json = Oj.generate(result, mode: :compat)
     flag = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
 
   end
@@ -80,7 +80,7 @@ module Msf::Module::Rpcredis
     result = {}
     result[:level] = 1
     result[:content] = content
-    json = Oj.generate(result)
+    json = Oj.generate(result, mode: :compat)
     flag = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
   end
 
@@ -88,7 +88,7 @@ module Msf::Module::Rpcredis
     result = {}
     result[:level] = 2
     result[:content] = content
-    json = Oj.generate(result)
+    json = Oj.generate(result, mode: :compat)
     flag = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
   end
 
@@ -96,7 +96,7 @@ module Msf::Module::Rpcredis
     result = {}
     result[:level] = 3
     result[:content] = content
-    json = Oj.generate(result)
+    json = Oj.generate(result, mode: :compat)
     flag = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
   end
 
@@ -105,7 +105,7 @@ module Msf::Module::Rpcredis
     function_call = { 'function' => method_name.to_s, 'kwargs' => kwargs }
     response_queue = @@message_queue + ':rpc:' + Rex::Text.rand_text_alpha(32)
     rpc_request = { 'function_call' => function_call, 'response_queue' => response_queue }
-    rpc_raw_request = Oj.generate(rpc_request)
+    rpc_raw_request = Oj.generate(rpc_request, mode: :compat)
 
     # transport
     @@redis_client.rpush @@message_queue, rpc_raw_request

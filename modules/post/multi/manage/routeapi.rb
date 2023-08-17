@@ -64,7 +64,7 @@ class MetasploitModule < Msf::Post
     unless session_good?
       result[:status]  = false
       result[:message] = 'Session is not already'
-      json    = Oj.generate(result)
+      json = Oj.generate(result, mode: :compat)
       print("#{json}")
       return
     end
@@ -75,7 +75,7 @@ class MetasploitModule < Msf::Post
       unless check_ip(ipaddress)
         result[:status]  = false
         result[:message] = "not a legitimate IP address"
-        json    = Oj.generate(result)
+        json = Oj.generate(result, mode: :compat)
         print("#{json}")
         return
       end
@@ -83,14 +83,14 @@ class MetasploitModule < Msf::Post
       result[:status]  = true
       result[:message] = nil
       result[:data]    = data
-      json    = Oj.generate(result)
+      json = Oj.generate(result, mode: :compat)
       print("#{json}")
     when :print
       routes           = print_routes
       result[:status]  = true
       result[:message] = nil
       result[:data]    = routes
-      json    = Oj.generate(result)
+      json = Oj.generate(result, mode: :compat)
       print("#{json}")
       return
     when :add
@@ -102,20 +102,20 @@ class MetasploitModule < Msf::Post
           result[:status]  = true
           result[:message] = msg
           result[:data] = routes
-          json    = Oj.generate(result)
+          json = Oj.generate(result, mode: :compat)
           print("#{json}")
           return
         else
           result[:status]  = false
           result[:message] = msg
-          json    = Oj.generate(result)
+          json = Oj.generate(result, mode: :compat)
           print("#{json}")
           return
         end
       else
         result[:status]  = false
         result[:message] = 'SUBNET and NETMASK not right'
-        json    = Oj.generate(result)
+        json = Oj.generate(result, mode: :compat)
         print("#{json}")
         return
       end
@@ -129,13 +129,13 @@ class MetasploitModule < Msf::Post
         if flag
           result[:status]  = true
           result[:message] = msg
-          json    = Oj.generate(result)
+          json = Oj.generate(result, mode: :compat)
           print("#{json}")
           return
         else
           result[:status]  = false
           result[:message] = msg
-          json    = Oj.generate(result)
+          json = Oj.generate(result, mode: :compat)
           print("#{json}")
           return
         end
@@ -299,7 +299,7 @@ class MetasploitModule < Msf::Post
     unless route_compatible?
       result[:status]  = false
       result[:message] = "Session do not has routing capabilities"
-      json    = Oj.generate(result)
+      json = Oj.generate(result, mode: :compat)
       print("#{json}")
       return
     end
@@ -327,7 +327,7 @@ class MetasploitModule < Msf::Post
     result[:status]  = true
     result[:message] = nil
     result[:data]    = routes
-    json    = Oj.generate(result)
+    json = Oj.generate(result, mode: :compat)
     print("#{json}")
 
     # if !autoadd_interface_routes && !found # Check interface list for more possible routes

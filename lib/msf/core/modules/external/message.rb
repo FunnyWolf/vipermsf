@@ -34,7 +34,7 @@ class Msf::Modules::External::Message
       else
         self.params.to_h
       end
-    Oj.generate({jsonrpc: '2.0', id: self.id, method: self.method, params: params})
+    Oj.generate({ jsonrpc: '2.0', id: self.id, method: self.method, params: params }, mode: :compat)
   end
 
   protected
