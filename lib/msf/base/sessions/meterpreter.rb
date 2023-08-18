@@ -723,7 +723,6 @@ protected
     # Try to match our visible IP to a real interface
     found = !!(ifaces.find { |i| i.addrs.find { |a| a == session_host } })
     nhost = nil
-
     # If the host has no address that matches what we see, then one of
     # us is behind NAT so we have to look harder.
     if !found
@@ -740,7 +739,7 @@ protected
             bits = Rex::Socket.net2bitmask( netmask )
             range = Rex::Socket::RangeWalker.new("#{addr}/#{bits}") rescue nil
 
-            !!(range && range.valid? && range.include?(route.gateway))
+            !!(range && range.valid? && range.include?(route.gateway) && addr != "127.0.0.1" && addr != "::1")
           end
           if addr_and_mask
             nhost = addr_and_mask[0]
@@ -750,11 +749,11 @@ protected
         break if nhost
       end
 
-      if !nhost or nhost == "127.0.0.1" or nhost == "::1"
+      if !nhost
         # No internal address matches what we see externally and no
         # interface has a default route. Fall back to the first
         # non-loopback address
-        non_loopback = ifaces.find { |i| i.ip != "127.0.0.1" && i.ip != "::1" }
+        non_loopback = ifaces.find { |i| i.ip && i.ip != "127.0.0.1" && i.ip != "::1" && i.ip.nil? }
         if non_loopback
           nhost = non_loopback.ip
         end
