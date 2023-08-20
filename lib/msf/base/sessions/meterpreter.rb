@@ -723,6 +723,7 @@ protected
     # Try to match our visible IP to a real interface
     found = !!(ifaces.find { |i| i.addrs.find { |a| a == session_host } })
     nhost = nil
+
     # If the host has no address that matches what we see, then one of
     # us is behind NAT so we have to look harder.
     if !found
