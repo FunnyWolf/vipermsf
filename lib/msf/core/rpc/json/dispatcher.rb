@@ -148,7 +148,7 @@ module Msf::RPC::JSON
     def parse_json_request(source)
       begin
         # toybox
-        result = Oj.load(source, symbolize_names: true)
+        result = Oj.load(source, symbolize_names: true, allow_invalid_unicode: true)
       rescue
         raise ParseError.new
       end
@@ -160,7 +160,7 @@ module Msf::RPC::JSON
     def self.to_json(data)
       return nil if data.nil?
       # toybox
-      json = Oj.dump(data, allow_invalid_unicode: true)
+      json = Oj.dump(data, mode: :custom, allow_invalid_unicode: true)
       json = json.encode("UTF-8", invalid: :replace, undef: :replace)
       return json
     end
