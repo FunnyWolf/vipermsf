@@ -34,7 +34,9 @@ class Msf::Modules::External::Message
       else
         self.params.to_h
       end
-    Oj.generate({ jsonrpc: '2.0', id: self.id, method: self.method, params: params }, mode: :compat)
+    json = Oj.dump({ jsonrpc: '2.0', id: self.id, method: self.method, params: params }, allow_invalid_unicode: true)
+    json = json.encode("UTF-8", invalid: :replace, undef: :replace)
+    json
   end
 
   protected

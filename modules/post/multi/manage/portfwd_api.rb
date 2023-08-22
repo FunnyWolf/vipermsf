@@ -68,7 +68,7 @@ class MetasploitModule < Msf::Post
     result = { :status => false, :message => nil, :data => nil }
     unless session_good?
       result[:message] = "Session is not already"
-      json = Oj.generate(result, mode: :compat)
+      json = json_dump(result)
       print(json)
       return
     end
@@ -128,7 +128,7 @@ class MetasploitModule < Msf::Post
       }
       result[:status] = true
       result[:data]   = list_route
-      json = Oj.generate(result, mode: :compat)
+      json = json_dump(result)
       print(json)
     when :add
 
@@ -136,7 +136,7 @@ class MetasploitModule < Msf::Post
         # Validate parameters
         unless lport && lhost && rport
           result[:message] = "You must supply a local port, local host, and remote port."
-          json = Oj.generate(result, mode: :compat)
+          json = json_dump(result)
           print(json)
           return
         end
@@ -158,7 +158,7 @@ class MetasploitModule < Msf::Post
                                           'SessionID'        => sessionid)
         rescue Exception, Rex::AddressInUse => e
           result[:message] = "Failed to create relay: #{e.to_s}"
-          json = Oj.generate(result, mode: :compat)
+          json = json_dump(result)
           print(json)
           return
         end
@@ -166,7 +166,7 @@ class MetasploitModule < Msf::Post
         # Validate parameters
         unless lport && rhost && rport
           result[:message] = "You must supply a local port, remote host, and remote port."
-          json = Oj.generate(result, mode: :compat)
+          json = json_dump(result)
           print(json)
           return
         end
@@ -182,7 +182,7 @@ class MetasploitModule < Msf::Post
           )
         rescue Exception, Rex::AddressInUse, Rex::BindFailed => e
           result[:message] = "Failed to create relay: #{e.to_s}"
-          json = Oj.generate(result, mode: :compat)
+          json = json_dump(result)
           print(json)
           return
         end
@@ -194,7 +194,7 @@ class MetasploitModule < Msf::Post
                           :lport     => lport,
                           :sessionid => sessionid,
       }
-      json = Oj.generate(result, mode: :compat)
+      json = json_dump(result)
       print(json)
     when :flush
 
@@ -221,7 +221,7 @@ class MetasploitModule < Msf::Post
       end
       result[:status] = true
       result[:data]   = list_route
-      json = Oj.generate(result, mode: :compat)
+      json = json_dump(result)
       print(json)
     when :delete
 
@@ -248,7 +248,7 @@ class MetasploitModule < Msf::Post
         # No remote port, no love.
         unless rport
           result[:message] = 'You must supply a remote port.'
-          json = Oj.generate(result, mode: :compat)
+          json = json_dump(result)
           print(json)
           return
         end
@@ -256,19 +256,19 @@ class MetasploitModule < Msf::Post
         if service.stop_reverse_tcp_relay(rport, sessionid)
           result[:status] = true
           result[:data]   = { :rport => rport, }
-          json = Oj.generate(result, mode: :compat)
+          json = json_dump(result)
           print(json)
         else
           result[:message] = "Failed to stop reverse TCP relay on #{rport}"
           result[:data]    = { :rport => rport, }
-          json = Oj.generate(result, mode: :compat)
+          json = json_dump(result)
           print(json)
         end
       else
         # No local port, no love.
         unless lport
           result[:message] = 'You must supply a local port.'
-          json = Oj.generate(result, mode: :compat)
+          json = json_dump(result)
           print(json)
           return
         end
@@ -276,12 +276,12 @@ class MetasploitModule < Msf::Post
         if service.stop_tcp_relay(lport, lhost)
           result[:status] = true
           result[:data]   = { :lhost => lhost || '0.0.0.0', :lport => lport, }
-          json = Oj.generate(result, mode: :compat)
+          json = json_dump(result)
           print(json)
         else
           result[:message] = "Failed to stop TCP relay on #{lhost || '0.0.0.0'}:#{lport}"
           result[:data]    = { :lhost => lhost || '0.0.0.0', :lport => lport, }
-          json = Oj.generate(result, mode: :compat)
+          json = json_dump(result)
           print(json)
         end
       end

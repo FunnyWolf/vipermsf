@@ -44,7 +44,7 @@ class MetasploitModule < Msf::Post
     result = {:status => true, :message => nil, :data => nil, :endflag => nil}
     if session.type == "shell"
       result = {:status => false, :message => 'Unsupport shell type', :data => nil}
-      json = Oj.generate(result, mode: :compat)
+      json = json_dump(result)
       print("#{json}")
       return
     end
@@ -65,7 +65,7 @@ class MetasploitModule < Msf::Post
       if admin_targets.include? @original_name
         vprint_good("Session is already in target process: #{@original_name}.")
         result = {:status => true, :message => nil, :data => {:pid => @original_pid, :pname => @original_name}}
-        json = Oj.generate(result, mode: :compat)
+        json = json_dump(result)
         print("#{json}")
         return
       end
@@ -82,14 +82,14 @@ class MetasploitModule < Msf::Post
           client.update_session_info
           kill(@original_pid, @original_name)
           result = {:status => true, :message => nil, :data => {:pid => target_pid, :pname => target_name}}
-          json = Oj.generate(result, mode: :compat)
+          json = json_dump(result)
           print("#{json}")
           return
         end
       end
     end
     result = {:status => false, :message => nil, :data => nil}
-    json = Oj.generate(result, mode: :compat)
+    json = json_dump(result)
     print("#{json}")
   end
 

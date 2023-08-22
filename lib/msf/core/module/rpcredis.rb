@@ -27,13 +27,25 @@ module Msf::Module::Rpcredis
     end
   end
 
+  def self.json_dump(data)
+    json = Oj.dump(data, allow_invalid_unicode: true)
+    json = json.encode("UTF-8", invalid: :replace, undef: :replace)
+    json
+  end
+
+  def json_dump(data)
+    json = Oj.dump(data, allow_invalid_unicode: true)
+    json = json.encode("UTF-8", invalid: :replace, undef: :replace)
+    json
+  end
+
   def pub_json_result(status = nil, message = nil, data = nil, uuid = nil)
     result = {}
     result[:uuid] = uuid
     result[:status] = status
     result[:message] = message
     result[:data] = data
-    json = Oj.generate(result, mode: :compat)
+    json = Msf::Module::Rpcredis.json_dump(result)
 
     flag = @@redis_client.publish "MSF_RPC_RESULT_CHANNEL", json
   end
@@ -44,7 +56,7 @@ module Msf::Module::Rpcredis
     result[:status] = status
     result[:message] = message
     result[:data] = data
-    json = Oj.generate(result, mode: :compat)
+    json = Msf::Module::Rpcredis.json_dump(result)
     flag = @@redis_client.publish "MSF_RPC_DATA_CHANNEL", json
   end
 
@@ -53,8 +65,7 @@ module Msf::Module::Rpcredis
     result[:status] = status
     result[:type] = type
     result[:data] = data
-    json = Oj.dump(result, allow_invalid_unicode: true)
-    json = json.encode("UTF-8", invalid: :replace, undef: :replace)
+    json = Msf::Module::Rpcredis.json_dump(result)
     flag = @@redis_client.publish "MSF_RPC_HEARTBEAT_CHANNEL", json
     dlog("pub_heartbeat_data num: #{flag}")
     flag
@@ -64,7 +75,7 @@ module Msf::Module::Rpcredis
     result = {}
     result[:prompt] = prompt
     result[:message] = message
-    json = Oj.generate(result, mode: :compat)
+    json = Msf::Module::Rpcredis.json_dump(result)
     flag = @@redis_client.publish "MSF_RPC_CONSOLE_PRINT", json
   end
 
@@ -72,7 +83,7 @@ module Msf::Module::Rpcredis
     result = {}
     result[:level] = 0
     result[:content] = content
-    json = Oj.generate(result, mode: :compat)
+    json = Msf::Module::Rpcredis.json_dump(result)
     flag = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
 
   end
@@ -81,7 +92,7 @@ module Msf::Module::Rpcredis
     result = {}
     result[:level] = 1
     result[:content] = content
-    json = Oj.generate(result, mode: :compat)
+    json = Msf::Module::Rpcredis.json_dump(result)
     flag = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
   end
 
@@ -89,7 +100,7 @@ module Msf::Module::Rpcredis
     result = {}
     result[:level] = 2
     result[:content] = content
-    json = Oj.generate(result, mode: :compat)
+    json = Msf::Module::Rpcredis.json_dump(result)
     flag = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
   end
 
@@ -97,7 +108,7 @@ module Msf::Module::Rpcredis
     result = {}
     result[:level] = 3
     result[:content] = content
-    json = Oj.generate(result, mode: :compat)
+    json = Msf::Module::Rpcredis.json_dump(result)
     flag = @@redis_client.publish "MSF_RPC_LOG_CHANNEL", json
   end
 
@@ -106,8 +117,7 @@ module Msf::Module::Rpcredis
     function_call = { 'function' => method_name.to_s, 'kwargs' => kwargs }
     response_queue = @@message_queue + ':rpc:' + Rex::Text.rand_text_alpha(32)
     rpc_request = { 'function_call' => function_call, 'response_queue' => response_queue }
-    rpc_raw_request = Oj.generate(rpc_request, mode: :compat)
-
+    rpc_raw_request = Msf::Module::Rpcredis.json_dump(rpc_request)
     # transport
     @@redis_client.rpush @@message_queue, rpc_raw_request
     message_queue, rpc_raw_response = @@redis_client.blpop response_queue, timeout
@@ -116,7 +126,8 @@ module Msf::Module::Rpcredis
       return
     end
     # response handling
-    rpc_response = Oj.load(rpc_raw_response)
+    rpc_raw_response = rpc_raw_response.encode("UTF-8", invalid: :replace, undef: :replace)
+    rpc_response = Oj.load(rpc_raw_response, allow_invalid_unicode: true)
     return rpc_response
   end
 

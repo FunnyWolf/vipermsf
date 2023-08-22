@@ -160,7 +160,8 @@ module Msf::RPC::JSON
     def self.to_json(data)
       return nil if data.nil?
       # toybox
-      json = Oj.generate(data, mode: :compat)
+      json = Oj.dump(data, allow_invalid_unicode: true)
+      json = json.encode("UTF-8", invalid: :replace, undef: :replace)
       return json
     end
 
