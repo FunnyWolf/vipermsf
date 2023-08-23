@@ -34,7 +34,7 @@ module Msf::Module::Rpcredis
   end
 
   def json_dump(data)
-    json = Oj.dump(data,mode: :custom, allow_invalid_unicode: true)
+    json = Oj.dump(data, mode: :custom, allow_invalid_unicode: true)
     json = json.encode("UTF-8", invalid: :replace, undef: :replace)
     json
   end
@@ -113,6 +113,7 @@ module Msf::Module::Rpcredis
   end
 
   def redis_rpc_call(method_name, timeout = 0.5, **kwargs)
+    dlog("redis_rpc_call #{method_name}")
     # request setup
     function_call = { 'function' => method_name.to_s, 'kwargs' => kwargs }
     response_queue = @@message_queue + ':rpc:' + Rex::Text.rand_text_alpha(32)
