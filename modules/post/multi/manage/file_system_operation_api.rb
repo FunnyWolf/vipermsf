@@ -49,11 +49,6 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
     args = datastore['ARGS']
     file_data = datastore['FILE_DATA']
     if operation == 'upload'
-      # if session.platform == "windows"
-      #   sessionuploadfile = sessiondir + '\\' + msffile.delete('/\\')
-      # else
-      #   sessionuploadfile = File.join(sessiondir, msffile.delete('/\\'))
-      # end
       msffilepath = File.join(Msf::Config.loot_directory, msffile.delete('/\\'))
       sessionuploadfile = File.join(sessiondir, msffile.delete('/\\'))
       upload(msffilepath, sessionuploadfile)
@@ -271,7 +266,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
   def upload(localpath, remotepath)
     result = { :status => true, :message => nil, :data => nil, :endflag => nil }
     client.fs.file.upload_file(remotepath, localpath) do |step, src, dst|
-      print_status_redis("#{step.ljust(11)}: #{src} -> #{dst}")
+      print_status_redis("#{step.ljust(11)}: #{src.force_encoding("utf-8")} -> #{dst.force_encoding("utf-8")}")
     end
     result[:status] = true
     result[:message] = "upload finish"
@@ -294,7 +289,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
       }
 
       client.fs.file.download_file(localpath, remotepath, opts) do |step, src, dst|
-        print_status_redis("#{step}: #{src} -> #{dst}")
+        print_status_redis("#{step}: #{src.force_encoding("utf-8")} -> #{dst.force_encoding("utf-8")}")
       end
 
       result[:status] = true
@@ -312,8 +307,6 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
 
   def execute(remotepath, args)
     result = { :status => true, :message => nil, :data => nil, :endflag => nil }
-    # cmd    = "#{remotepath} #{args}"
-
     begin
       client.sys.process.execute(remotepath, args, opts = { 'Hidden' => true, 'Subshell' => true })
       result[:status] = true

@@ -33,7 +33,7 @@ class Logging
         Msf::LogSource,
         'base',
       ].each { |src|
-        register_log_source(src, log_sink, 0)
+        register_log_source(src, log_sink, 3)
       }
     end
   end
