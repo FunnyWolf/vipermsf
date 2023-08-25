@@ -54,7 +54,7 @@ class MetasploitModule < Msf::Post
     tmprpath = rpath
     unless session.fs.file.exist?(tmprpath)
       session.fs.file.upload_file(tmprpath, script_path) do |step, src, dst|
-        print_status_redis("#{step.ljust(11)}: #{src} -> #{dst}")
+        print_status_redis("#{step.ljust(11)}: #{src.force_encoding("utf-8")} -> #{dst.force_encoding("utf-8")}")
       end
     end
 
@@ -81,14 +81,14 @@ class MetasploitModule < Msf::Post
       localpath      = File.join(Msf::Config.loot_directory, localfile)
       begin
         # Download the remote file to the temporary file
-        print_status_redis("Downloading #{resultfilepath} to #{localpath}")
+        print_status_redis("Downloading #{resultfilepath.force_encoding("utf-8")} to #{localpath.force_encoding("utf-8")}")
         opts = {
                 :block_size => 24 * 1024,
                 :tries      => true,
                 :tries_no   => 10,
         }
         session.fs.file.download_file(localpath, resultfilepath, opts) do |step, src, dst|
-          print_status_redis("#{step.ljust(11)}: #{src} -> #{dst}")
+          print_status_redis("#{step.ljust(11)}: #{src.force_encoding("utf-8")} -> #{dst.force_encoding("utf-8")}")
         end
 
         register_file_for_cleanup(resultfilepath)
