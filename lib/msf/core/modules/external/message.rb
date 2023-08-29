@@ -1,4 +1,5 @@
 # -*- coding: binary -*-
+# toybox
 require 'base64'
 require 'oj'
 require 'securerandom'

@@ -138,7 +138,6 @@ module Msf::WebServices
               rescue
                 elog("Error send heartbeat data.", error: e)
               end
-              # Accept a client connection
 
               Rex.sleep(0.5)
             end

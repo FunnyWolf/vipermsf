@@ -1,3 +1,4 @@
+# toybox
 require 'oj'
 
 module Metasploit
