@@ -958,9 +958,13 @@ class Transport(object):
         try:
             pkt = self.decrypt_packet(self._get_packet())
         except:
+            if self.communication_has_expired:
+                self.request_retire = True
             debug_traceback()
             return None
         if pkt is None:
+            if self.communication_has_expired:
+                self.request_retire = True
             return None
         self.communication_last = time.time()
         return pkt
@@ -1168,6 +1172,7 @@ class TcpTransport(Transport):
     def _get_packet(self):
         first = self._first_packet
         self._first_packet = False
+        self.socket.settimeout(30)
         if not select.select([self.socket], [], [], 0.5)[0]:
             return bytes()
         packet = self.socket.recv(PACKET_HEADER_SIZE)
@@ -1199,14 +1204,18 @@ class TcpTransport(Transport):
         # Read the rest of the packet
         rest = bytes()
         while len(rest) < pkt_length:
-            rest += self.socket.recv(pkt_length - len(rest))
+
+            recv_data = self.socket.recv(pkt_length - len(rest))
             if len(rest) == 0:
                 self.request_retire = True
                 return None
+            else:
+                rest += recv_data
         # return the whole packet, as it's decoded separately
         return packet + rest
 
     def _send_packet(self, packet):
+        self.socket.settimeout(30)
         self.socket.send(packet)
 
     @classmethod
