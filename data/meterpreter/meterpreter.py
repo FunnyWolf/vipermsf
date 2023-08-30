@@ -967,7 +967,6 @@ class Transport(object):
             if self.communication_has_expired:
                 debug_print("get_packet pkt none expired")
                 self.request_retire = True
-            debug_print("get_packet pkt is None pass")
             return None
         self.communication_last = time.time()
         return pkt
@@ -1140,7 +1139,7 @@ class TcpTransport(Transport):
     def _activate(self):
         address, port = self.url[6:].rsplit(':', 1)
         port = int(port.rstrip('/'))
-        timeout = max(self.communication_timeout, 30)
+        timeout = 60
         if address in ('', '0.0.0.0', '::'):
             try:
                 server_sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
@@ -1176,8 +1175,8 @@ class TcpTransport(Transport):
         first = self._first_packet
         self._first_packet = False
         if not select.select([self.socket], [], [], 0.5)[0]:
-            debug_print("select.select pass")
             return bytes()
+        self.socket.settimeout(60)
         packet = self.socket.recv(PACKET_HEADER_SIZE)
         if len(packet) == 0:  # remote is closed
             self.request_retire = True
@@ -1187,13 +1186,9 @@ class TcpTransport(Transport):
                 received = 0
                 header = packet[:4]
                 pkt_length = struct.unpack('>I', header)[0]
-                self.socket.settimeout(max(self.communication_timeout, 30))
+                self.socket.settimeout(60)
                 while received < pkt_length:
-                    new_received = len(self.socket.recv(pkt_length - received))
-                    if new_received == 0:
-                        self.request_retire = True
-                        return None
-                    received += new_received
+                    received += len(self.socket.recv(pkt_length - received))
                 self.socket.settimeout(None)
                 return self._get_packet()
             return None
@@ -1209,15 +1204,15 @@ class TcpTransport(Transport):
         while len(rest) < pkt_length:
             recv_data = self.socket.recv(pkt_length - len(rest))
             if len(recv_data) == 0:
-                debug_print("recv_data len 0 retire")
-                self.request_retire = True
-                return None
+                debug_print("recv finish")
+                break
             else:
                 rest += recv_data
         # return the whole packet, as it's decoded separately
         return packet + rest
 
     def _send_packet(self, packet):
+        self.socket.settimeout(60)
         self.socket.send(packet)
 
     @classmethod
