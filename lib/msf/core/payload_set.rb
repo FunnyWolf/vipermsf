@@ -189,7 +189,7 @@ class PayloadSet < ModuleSet
     if ((stager_platform) and
       (stage_platform) and
       (stager_platform & stage_platform).empty?)
-      dlog("Stager #{stager_name} and stage #{stage_name} have incompatible platforms: #{stager_platform.names} - #{stage_platform.names}", 'core', LEV_2)
+      # dlog("Stager #{stager_name} and stage #{stage_name} have incompatible platforms: #{stager_platform.names} - #{stage_platform.names}", 'core', LEV_2)
       return false
     end
 
@@ -197,14 +197,14 @@ class PayloadSet < ModuleSet
     if ((stager_arch) and
       (stage_arch) and
       ((stager_arch & stage_arch).empty?))
-      dlog("Stager #{stager_name} and stage #{stage_name} have incompatible architectures: #{stager_arch.join} - #{stage_arch.join}", 'core', LEV_2)
+      # dlog("Stager #{stager_name} and stage #{stage_name} have incompatible architectures: #{stager_arch.join} - #{stage_arch.join}", 'core', LEV_2)
       return false
     end
 
     # If the stage has a convention, make sure it's compatible with
     # the stager's
     if ((stage_inst) and (stage_inst.compatible?(stager_inst) == false))
-      dlog("Stager #{stager_name} and stage #{stage_name} are incompatible.", 'core', LEV_2)
+      # dlog("Stager #{stager_name} and stage #{stage_name} are incompatible.", 'core', LEV_2)
       return false
     end
 
@@ -212,7 +212,7 @@ class PayloadSet < ModuleSet
     if ((stager_platform) and
       (stage_platform) and
       (stager_platform & stage_platform).empty?)
-      dlog("Stager #{stager_name} and stage #{stage_name} have incompatible platforms: #{stager_platform.names} - #{stage_platform.names}", 'core', LEV_2)
+      # dlog("Stager #{stager_name} and stage #{stage_name} have incompatible platforms: #{stager_platform.names} - #{stage_platform.names}", 'core', LEV_2)
       return false
     end
 
@@ -220,14 +220,14 @@ class PayloadSet < ModuleSet
     if ((stager_arch) and
       (stage_arch) and
       ((stager_arch & stage_arch).empty?))
-      dlog("Stager #{stager_name} and stage #{stage_name} have incompatible architectures: #{stager_arch.join} - #{stage_arch.join}", 'core', LEV_2)
+      # dlog("Stager #{stager_name} and stage #{stage_name} have incompatible architectures: #{stager_arch.join} - #{stage_arch.join}", 'core', LEV_2)
       return false
     end
 
     # If the stage has a convention, make sure it's compatible with
     # the stager's
     if ((stage_inst) and (stage_inst.compatible?(stager_inst) == false))
-      dlog("Stager #{stager_name} and stage #{stage_name} are incompatible.", 'core', LEV_2)
+      # dlog("Stager #{stager_name} and stage #{stage_name} are incompatible.", 'core', LEV_2)
       return false
     end
     true
@@ -496,7 +496,7 @@ class PayloadSet < ModuleSet
     # Add the singles hash
     singles[name] = p
 
-    dlog("Built single payload #{name}.", 'core', LEV_2)
+    # dlog("Built single payload #{name}.", 'core', LEV_2)
   end
 
   #
@@ -518,7 +518,7 @@ class PayloadSet < ModuleSet
     # Add it to this stage's stager hash
     stages[stage_name][handler_type] = p
 
-    dlog("Built staged payload #{full_name}.", 'core', LEV_2)
+    # dlog("Built staged payload #{full_name}.", 'core', LEV_2)
   end
 
   #

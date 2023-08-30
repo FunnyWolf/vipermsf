@@ -121,7 +121,7 @@ class Msf::Modules::Loader::Base
     file_changed = module_manager.file_changed?(module_path)
 
     unless force or file_changed
-      dlog("Cached module from #{module_path} has not changed.", 'core', LEV_2)
+      # dlog("Cached module from #{module_path} has not changed.", 'core', LEV_2)
 
       return false
     end
@@ -167,11 +167,11 @@ class Msf::Modules::Loader::Base
         return false
       end
 
-      if reload
-        ilog("Reloading #{type} module #{module_reference_name}. Ambiguous module warnings are safe to ignore", 'core', LEV_2)
-      else
-        ilog("Loaded #{type} module #{module_reference_name} under #{parent_path}", 'core', LEV_2)
-      end
+      # if reload
+      #   ilog("Reloading #{type} module #{module_reference_name}. Ambiguous module warnings are safe to ignore", 'core', LEV_2)
+      # else
+      #   ilog("Loaded #{type} module #{module_reference_name} under #{parent_path}", 'core', LEV_2)
+      # end
 
       module_manager.module_load_error_by_path.delete(module_path)
 
