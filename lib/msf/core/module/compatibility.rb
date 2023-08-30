@@ -53,7 +53,7 @@ module Msf::Module::Compatibility
 
       sv.each do |x|
 
-        dlog("Checking compat [#{mod.refname} with #{self.refname}]: #{x} to #{mv.join(", ")}", 'core', LEV_3)
+        # dlog("Checking compat [#{mod.refname} with #{self.refname}]: #{x} to #{mv.join(", ")}", 'core', LEV_3)
 
         # Verify that any negate values are not matched
         if (x[0,1] == '-' and mv.include?(x[1, x.length-1]))
@@ -72,7 +72,7 @@ module Msf::Module::Compatibility
 
     end
 
-    dlog("Module #{mod.refname} is compatible with #{self.refname}", "core", LEV_1)
+    # dlog("Module #{mod.refname} is compatible with #{self.refname}", "core", LEV_1)
 
 
     # If we get here, we're compatible.
