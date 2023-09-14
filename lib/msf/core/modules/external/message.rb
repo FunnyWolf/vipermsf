@@ -35,8 +35,7 @@ class Msf::Modules::External::Message
       else
         self.params.to_h
       end
-    json = Oj.dump({ jsonrpc: '2.0', id: self.id, method: self.method, params: params },mode: :custom, allow_invalid_unicode: true)
-    json = json.encode("UTF-8", invalid: :replace, undef: :replace)
+    json = Msf::Module::Rpcredis.json_dump({ jsonrpc: '2.0', id: self.id, method: self.method, params: params })
     json
   end
 

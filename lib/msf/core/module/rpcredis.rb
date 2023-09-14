@@ -30,12 +30,16 @@ module Msf::Module::Rpcredis
   def self.json_dump(data)
     json = Oj.dump(data, mode: :custom, allow_invalid_unicode: true)
     json = json.encode("UTF-8", invalid: :replace, undef: :replace)
+    json = Oj.load(json, symbol_keys: false)
+    json = Oj.dump(json, mode: :custom, allow_invalid_unicode: true)
     json
   end
 
   def json_dump(data)
     json = Oj.dump(data, mode: :custom, allow_invalid_unicode: true)
     json = json.encode("UTF-8", invalid: :replace, undef: :replace)
+    json = Oj.load(json, symbol_keys: false)
+    json = Oj.dump(json, mode: :custom, allow_invalid_unicode: true)
     json
   end
 

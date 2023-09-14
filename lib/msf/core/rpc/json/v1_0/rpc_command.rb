@@ -133,7 +133,7 @@ module Msf::RPC::JSON
         # toybox
         json = Oj.dump(hash,mode: :custom, allow_invalid_unicode: true)
         json = json.encode("UTF-8", invalid: :replace, undef: :replace)
-        result = Oj.load(json, allow_invalid_unicode: true)
+        result = Oj.load(json, allow_invalid_unicode: true, symbol_keys: false)
         result
       end
 
