@@ -40,7 +40,7 @@ module Msf::Module::Compatibility
 
       # Reject a filled compat item on one side, but not the other
       if (v and not mval)
-        dlog("Module #{mod.refname} is incompatible with #{self.refname} for #{k}: limiter was #{v}")
+        # dlog("Module #{mod.refname} is incompatible with #{self.refname} for #{k}: limiter was #{v}")
         return false
       end
 
@@ -53,11 +53,11 @@ module Msf::Module::Compatibility
 
       sv.each do |x|
 
-        dlog("Checking compat [#{mod.refname} with #{self.refname}]: #{x} to #{mv.join(", ")}", 'core', LEV_3)
+        # dlog("Checking compat [#{mod.refname} with #{self.refname}]: #{x} to #{mv.join(", ")}", 'core', LEV_3)
 
         # Verify that any negate values are not matched
         if (x[0,1] == '-' and mv.include?(x[1, x.length-1]))
-          dlog("Module #{mod.refname} is incompatible with #{self.refname} for #{k}: limiter was #{x}, value was #{mval}", 'core', LEV_1)
+          # dlog("Module #{mod.refname} is incompatible with #{self.refname} for #{k}: limiter was #{x}, value was #{mval}", 'core', LEV_1)
           return false
         end
 
@@ -66,13 +66,13 @@ module Msf::Module::Compatibility
 
       # No values matched, reject this module
       if (mcnt == 0)
-        dlog("Module #{mod.refname} is incompatible with #{self.refname} for #{k}: limiter was #{v}, value was #{mval}", 'core', LEV_1)
+        # dlog("Module #{mod.refname} is incompatible with #{self.refname} for #{k}: limiter was #{v}, value was #{mval}", 'core', LEV_1)
         return false
       end
 
     end
 
-    dlog("Module #{mod.refname} is compatible with #{self.refname}", "core", LEV_1)
+    # dlog("Module #{mod.refname} is compatible with #{self.refname}", "core", LEV_1)
 
 
     # If we get here, we're compatible.

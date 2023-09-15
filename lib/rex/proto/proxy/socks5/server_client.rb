@@ -1,5 +1,5 @@
 # -*- coding: binary -*-
-
+# toybox
 require 'bindata'
 require 'rex/socket'
 require 'rex/proto/proxy/socks5/packet'
@@ -60,7 +60,11 @@ module Socks5
           end
 
           if closed
-            @relay_client.stop
+            begin
+              @relay_client.shutdown
+            rescue
+              wlog("SOCKS5 @relay_client.stop - #{$!}")
+            end
             ::Thread.exit
           end
         end

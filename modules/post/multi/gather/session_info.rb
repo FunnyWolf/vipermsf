@@ -34,7 +34,7 @@ class MetasploitModule < Msf::Post
     if session.type == "shell"
       result[:status]  = false
       result[:message] = 'Unsupport shell type'
-      json             = Oj.generate(result)
+      json = json_dump(result)
       print("#{json}")
       return
     end
@@ -133,7 +133,7 @@ class MetasploitModule < Msf::Post
       info["PROCESSES"] = []
     end
     result[:data] = info
-    json             = Oj.generate(result)
+    json = json_dump(result)
     print("#{json}")
   end
 end

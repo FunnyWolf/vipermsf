@@ -1,5 +1,5 @@
 # -*- coding: binary -*-
-
+# toybox
 require 'thread'
 require 'rex/socket'
 
@@ -81,7 +81,11 @@ module Socks5
         # stop any clients we have (create a new client array as client.stop will delete from @clients)
         clients = @clients.dup
         clients.each do | client |
-          client.stop
+          begin
+            client.shutdown
+          rescue
+            wlog("SOCKS5 clients stop - #{$!}")
+          end
         end
         # close the server socket
         @server.close if @server

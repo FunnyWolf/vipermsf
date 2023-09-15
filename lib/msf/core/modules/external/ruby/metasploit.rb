@@ -1,3 +1,4 @@
+# toybox
 require 'oj'
 
 module Metasploit
@@ -77,7 +78,7 @@ module Metasploit
     end
 
     def rpc_send(req)
-      puts Oj.generate(req)
+      puts json_dump(req)
       $stdout.flush
     end
   end

@@ -360,27 +360,29 @@ protected
         request.relative_resource = '/' + request.relative_resource if (request.relative_resource !~ /^\//)
       end
 
-
       # If we found the resource handler for this resource, call its
       # procedure.
       if (p[1] == true)
+        # there is a bug to use this code
         Rex::ThreadFactory.spawn("HTTPServerRequestHandler", false) {
           handler.on_request(cli, request)
+          # If keep-alive isn't enabled for this client, close the connection
+          if (cli.keepalive == false)
+            close_client(cli)
+          end
         }
       else
         handler.on_request(cli, request)
-      end
-      # toybox
-      # If keep-alive isn't enabled for this client, close the connection
-      if (cli.keepalive == false)
-        close_client(cli)
+        # If keep-alive isn't enabled for this client, close the connection
+        if (cli.keepalive == false)
+          close_client(cli)
+        end
       end
     else
       elog("Failed to find handler for resource: #{request.resource}", LogSource)
       # toybox
       # focus close client for 404
-      send_e404(cli, request)
-
+      # send_e404(cli, request)
       close_client(cli)
     end
 

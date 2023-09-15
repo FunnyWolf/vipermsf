@@ -79,8 +79,7 @@ class MetasploitModule < Msf::Post
       end
     end
 
-
-    print_status("Running module against #{sysinfo['Computer']}")
+    print_status("Running module against #{sysinfo['Computer'].force_encoding("utf-8")}")
 
     data = session.priv.sam_hashes
     pub_json_result(true,

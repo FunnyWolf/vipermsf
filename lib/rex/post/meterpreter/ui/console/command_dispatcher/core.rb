@@ -600,7 +600,7 @@ class Console::CommandDispatcher::Core
     if expressions.empty?
       print_status('Starting IRB shell...')
       print_status("You are in the \"client\" (session) object\n")
-      Rex::Ui::Text::Shell::HistoryManager.with_context(name: :irb) do
+      Rex::Ui::Text::Shell::HistoryManager.instance.with_context(name: :irb) do
         Rex::Ui::Text::IrbShell.new(client).run
       end
     else
@@ -640,7 +640,7 @@ class Console::CommandDispatcher::Core
     print_status("You are in the \"client\" (session) object\n")
 
     Pry.config.history_load = false
-    Rex::Ui::Text::Shell::HistoryManager.with_context(history_file: Msf::Config.pry_history, name: :pry) do
+    Rex::Ui::Text::Shell::HistoryManager.instance.with_context(history_file: Msf::Config.pry_history, name: :pry) do
       client.pry
     end
   end

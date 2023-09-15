@@ -74,17 +74,10 @@ class MetasploitModule < Msf::Post
               "INTERFACE"      => interfaceinfo,
       }
     end
-    begin
-      pub_json_result(true,
-                      nil,
-                      info,
-                      self.uuid)
-    rescue Exception => e
-      pub_json_result(false,
-                      'covert to json failed',
-                      e,
-                      self.uuid)
-    end
+    pub_json_result(true,
+                    nil,
+                    info,
+                    self.uuid)
   end
 
   def netstatinfo

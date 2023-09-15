@@ -182,11 +182,12 @@ class Meterpreter < Rex::Post::Meterpreter::Client
         session.load_session_info
       end
 
-      # only load priv on native windows
-      # TODO: abstract this too, to remove windows stuff
-      if session.platform == 'windows' && [ARCH_X86, ARCH_X64].include?(session.arch)
-        session.load_priv rescue nil
-      end
+    end
+
+    # only load priv on native windows
+    # TODO: abstract this too, to remove windows stuff
+    if session.platform == 'windows' && [ARCH_X86, ARCH_X64].include?(session.arch)
+      session.load_priv rescue nil
     end
 
     # TODO: abstract this a little, perhaps a "post load" function that removes
@@ -739,7 +740,7 @@ protected
             bits = Rex::Socket.net2bitmask( netmask )
             range = Rex::Socket::RangeWalker.new("#{addr}/#{bits}") rescue nil
 
-            !!(range && range.valid? && range.include?(route.gateway))
+            !!(range && range.valid? && range.include?(route.gateway) && addr != "127.0.0.1" && addr != "::1")
           end
           if addr_and_mask
             nhost = addr_and_mask[0]
@@ -749,11 +750,11 @@ protected
         break if nhost
       end
 
-      if !nhost or nhost == "127.0.0.1" or nhost == "::1"
+      if !nhost
         # No internal address matches what we see externally and no
         # interface has a default route. Fall back to the first
         # non-loopback address
-        non_loopback = ifaces.find { |i| i.ip != "127.0.0.1" && i.ip != "::1" }
+        non_loopback = ifaces.find { |i| i.ip && i.ip != "127.0.0.1" && i.ip != "::1" && i.ip.nil? }
         if non_loopback
           nhost = non_loopback.ip
         end

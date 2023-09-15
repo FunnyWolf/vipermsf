@@ -48,7 +48,7 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
     unless session.platform == "windows"
       result[:status]  = false
       result[:message] = 'linux did not have registry'
-      json             = Oj.generate(result)
+      json = json_dump(result)
       print("#{json}")
       return
     end
@@ -62,52 +62,52 @@ sometimes we need to use this func outside msf,so run it as module is comfortabl
     if operation == 'registry_createkey'
       opeartion_result = registry_createkey(key, view)
       result[:data]    = opeartion_result
-      json             = Oj.generate(result)
+      json = json_dump(result)
       print("#{json}")
     elsif operation == 'registry_deletekey'
       opeartion_result = registry_deletekey(key, view)
       result[:data]    = opeartion_result
-      json             = Oj.generate(result)
+      json = json_dump(result)
       print("#{json}")
     elsif operation == 'registry_enumkeys'
       opeartion_result = registry_enumkeys(key, view)
       result[:data]    = opeartion_result
-      json             = Oj.generate(result)
+      json = json_dump(result)
       print("#{json}")
     elsif operation == 'registry_key_exist'
       opeartion_result = registry_key_exist?(key)
       result[:data]    = opeartion_result
-      json             = Oj.generate(result)
+      json = json_dump(result)
       print("#{json}")
     elsif operation == 'registry_enumvals'
       opeartion_result = registry_enumvals(key, view)
       result[:data]    = opeartion_result
-      json             = Oj.generate(result)
+      json = json_dump(result)
       print("#{json}")
     elsif operation == 'registry_deleteval'
       opeartion_result = registry_deleteval(key, valname, view)
       result[:data]    = opeartion_result
-      json             = Oj.generate(result)
+      json = json_dump(result)
       print("#{json}")
     elsif operation == 'registry_getvaldata'
       opeartion_result = registry_getvaldata(key, valname, view)
       result[:data]    = opeartion_result
-      json             = Oj.generate(result)
+      json = json_dump(result)
       print("#{json}")
     elsif operation == 'registry_getvalinfo'
       opeartion_result = registry_getvalinfo(key, valname, view)
       result[:data]    = opeartion_result
-      json             = Oj.generate(result)
+      json = json_dump(result)
       print("#{json}")
     elsif operation == 'registry_setvaldata'
       opeartion_result = registry_setvaldata(key, valname, data, type, view)
       result[:data]    = opeartion_result
-      json             = Oj.generate(result)
+      json = json_dump(result)
       print("#{json}")
     else
       result[:status]  = false
       result[:message] = 'unknown operation'
-      json             = Oj.generate(result)
+      json = json_dump(result)
       print("#{json}")
     end
   end

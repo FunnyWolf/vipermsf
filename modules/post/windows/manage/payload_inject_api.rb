@@ -37,7 +37,7 @@ class MetasploitModule < Msf::Post
   def run
 
     # syinfo is only on meterpreter sessions
-    print_status("Running module against #{sysinfo['Computer']}") if not sysinfo.nil?
+    print_status("Running module against #{sysinfo['Computer'].force_encoding("utf-8")}") if not sysinfo.nil?
 
     if File.file?(File.join(Msf::Config.loot_directory, datastore['SHELLCODE_FILE']))
       @shellcode_path = File.join(Msf::Config.loot_directory, datastore['SHELLCODE_FILE'])
