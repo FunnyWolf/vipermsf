@@ -3,8 +3,10 @@
 
 import subprocess
 import sys
-
+import json
+import base64
 def main(num):
+    print("num: %s" % num)
     # 执行utmpdump命令并将输出重定向到/var/log/wtmp.file
     utmpdump_command = "utmpdump /var/log/wtmp >/var/log/wtmp.file"
     subprocess.call(utmpdump_command, shell=True)
@@ -24,7 +26,7 @@ def main(num):
     # 执行utmpdump -r命令以还原文件，并删除临时文件
     utmprestore_command = "utmpdump -r < /var/log/wtmp.file > /var/log/wtmp && rm -f /var/log/wtmp.file"
     subprocess.call(utmprestore_command, shell=True)
-    print("执行完成，当前最新last日志10行：\n")
+    print("Run finish,the last -10 output\n")
     checklast_command = "last -10"
     subprocess.call(checklast_command, shell=True)
 
@@ -43,6 +45,6 @@ def get_script_param(key):
 num = 1
 # 获取输入参数
 if get_script_param('NUM') is not None:
-    num = get_script_param('num')
+    num = get_script_param('NUM')
 # 开始运行
 main(num)
