@@ -11,6 +11,7 @@ module Msf
             [
               OptPath.new('HandlerSSLCert', [false, "Path to a SSL certificate in unified PEM format"]),
               Opt::SSLVersion,
+              OptString.new('SSLCipher', [false, 'String for SSL cipher spec - "DHE-RSA-AES256-SHA" or "ADH"']),
             ], Msf::Handler::Reverse::SSL)
 
         end

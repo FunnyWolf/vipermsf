@@ -223,7 +223,7 @@ module ReverseHttp
             'MsfExploit' => self,
           },
           comm,
-          (ssl?) ? datastore['HandlerSSLCert'] : nil, nil, nil, datastore['SSLVersion']
+                                                 (ssl?) ? datastore['HandlerSSLCert'] : nil, nil, datastore['SSLCipher'], datastore['SSLVersion']
         )
         local_addr = ip
       rescue
