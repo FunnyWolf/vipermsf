@@ -55,7 +55,7 @@ module Msf::WebServices
           framework = Msf::Simple::Framework.create(init_framework_opts)
           Msf::WebServices::FrameworkExtension.db_connect(framework, app)
           # toybox
-          framework.threads.spawn("viper_monitor", false) {
+          framework.threads.spawn("viper_monitor", true) {
             loop do
               res_jobs = {}
               framework.jobs.each do |k, j|
@@ -139,7 +139,7 @@ module Msf::WebServices
                 elog("Error send heartbeat data.", error: e)
               end
 
-              Rex.sleep(0.5)
+              ::IO.select(nil, nil, nil, 0.5)
             end
           }
           framework

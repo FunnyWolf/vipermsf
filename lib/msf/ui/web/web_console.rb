@@ -100,7 +100,7 @@ class WebConsole
     self.console.block_command('irb')
     self.console.block_command('edit')
     self.console.block_command('exit')
-    self.thread = framework.threads.spawn("WebConsoleShell", false) { self.console.run }
+    self.thread = framework.threads.spawn("WebConsoleShell", true) { self.console.run }
 
     update_access()
   end

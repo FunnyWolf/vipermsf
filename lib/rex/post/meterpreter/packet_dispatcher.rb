@@ -363,7 +363,10 @@ module PacketDispatcher
         # If the backlog is empty, we don't have old/stale
         # packets hanging around, so perform a blocking wait
         # for the next packet
-        backlog << @new_packet_queue.pop if backlog.length == 0
+        if @new_packet_queue.length == 0
+          ::IO.select(nil, nil, nil, 0.10)
+        end
+        # backlog << @new_packet_queue.pop if backlog.length == 0
         # At this point we either received a packet off the wire
         # or we had a backlog to process. In either case, we
         # perform a non-blocking queue dump to fill the backlog
