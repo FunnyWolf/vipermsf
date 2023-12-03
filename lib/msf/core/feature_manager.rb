@@ -18,6 +18,9 @@ module Msf
     DATASTORE_FALLBACKS = 'datastore_fallbacks'
     FULLY_INTERACTIVE_SHELLS = 'fully_interactive_shells'
     MANAGER_COMMANDS = 'manager_commands'
+    METASPLOIT_PAYLOAD_WARNINGS = 'metasploit_payload_warnings'
+    DEFER_MODULE_LOADS = 'defer_module_loads'
+    DNS_FEATURE = 'dns_feature'
     DEFAULTS = [
       {
         name: WRAPPED_TABLES,
@@ -39,6 +42,24 @@ module Msf
         description: 'When enabled you can consistently set username across modules, instead of setting SMBUser/FTPUser/BIND_DN/etc',
         requires_restart: true,
         default_value: true
+      }.freeze,
+      {
+        name: METASPLOIT_PAYLOAD_WARNINGS,
+        description: 'When enabled Metasploit will output warnings about missing Metasploit payloads, for instance if they were removed by antivirus etc',
+        requires_restart: true,
+        default_value: false
+      }.freeze,
+      {
+        name: DEFER_MODULE_LOADS,
+        description: 'When enabled will not eagerly load all modules',
+        requires_restart: true,
+        default_value: false
+      }.freeze,
+      {
+        name: DNS_FEATURE,
+        description: 'When enabled, allows configuration of DNS resolution behaviour in Metasploit',
+        requires_restart: false,
+        default_value: false
       }.freeze
     ].freeze
 

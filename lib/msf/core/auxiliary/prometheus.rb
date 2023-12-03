@@ -446,7 +446,7 @@ module Msf
               dns_sd_configs['basic_auth']['password_file'] = scrape.dig('basic_auth', 'password_file') if scrape.dig('basic_auth', 'password_file')
             end
 
-            # pass in the 'scheme' from a level above to propely build the URI
+            # pass in the 'scheme' from a level above to properly build the URI
             if dns_sd_configs['scheme'].nil? && scrape['scheme']
               dns_sd_configs['scheme'] = scrape['scheme']
             end
@@ -515,7 +515,6 @@ module Msf
           end
         elsif scrape['http_sd_configs']
           scrape['http_sd_configs']&.each do |http_sd_configs|
-            puts http_sd_configs
             process_http_sd_configs(scrape['job_name'], http_sd_configs)
           end
         elsif scrape['digitalocean_sd_configs']

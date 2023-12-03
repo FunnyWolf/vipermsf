@@ -260,7 +260,8 @@ class ClientCore < Extension
       end
 
       if library_image
-        request.add_tlv(TLV_TYPE_DATA, library_image, false, client.capabilities[:zlib])
+        decrypted_library_image = ::MetasploitPayloads::Crypto.decrypt(ciphertext: library_image)
+        request.add_tlv(TLV_TYPE_DATA, decrypted_library_image, false, client.capabilities[:zlib])
       else
         raise RuntimeError, "Failed to serialize library #{library_path}.", caller
       end
@@ -365,7 +366,12 @@ class ClientCore < Extension
         # Get us to the installation root and then into data/meterpreter, where
         # the file is expected to be
         modname = "ext_server_#{mod.downcase}"
-        path = MetasploitPayloads.meterpreter_path(modname, suffix, debug: client.debug_build)
+        begin
+          path = MetasploitPayloads.meterpreter_path(modname, suffix, debug: client.debug_build)
+        rescue ::StandardError => e
+          elog(e)
+          path = nil
+        end
 
         if opts['ExtensionPath']
           path = ::File.expand_path(opts['ExtensionPath'])

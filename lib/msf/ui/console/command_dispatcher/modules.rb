@@ -363,6 +363,7 @@ module Msf
             print_line
             print_line "Keywords:"
             {
+              'adapter'     => 'Modules with a matching adater reference name',
               'aka'         => 'Modules with a matching AKA (also-known-as) name',
               'author'      => 'Modules written by this author',
               'arch'        => 'Modules affecting this architecture',
@@ -381,6 +382,8 @@ module Msf
               'rank'        => 'Modules with a matching rank (Can be descriptive (ex: \'good\') or numeric with comparison operators (ex: \'gte400\'))',
               'ref'         => 'Modules with a matching ref',
               'reference'   => 'Modules with a matching reference',
+              'stage'       => 'Modules with a matching stage reference name',
+              'stager'      => 'Modules with a matching stager reference name',
               'target'      => 'Modules affecting this target',
               'type'        => 'Modules of a specific type (exploit, payload, auxiliary, encoder, evasion, post, or nop)',
             }.each_pair do |keyword, description|
@@ -1280,6 +1283,10 @@ module Msf
           #
           def tab_complete_module(str, words)
             res = []
+            module_metadata = Msf::Modules::Metadata::Cache.instance.get_metadata
+            module_metadata.each do |m|
+              res << "#{m.type}/#{m.ref_name}"
+            end
             framework.modules.module_types.each do |mtyp|
               mset = framework.modules.module_names(mtyp)
               mset.each do |mref|
@@ -1288,7 +1295,7 @@ module Msf
             end
 
             return dangerzone_modules_to_codenames(res.sort) if dangerzone_active?
-            return res.sort
+            return res.uniq.sort
           end
 
           def print_april_fools_module_use

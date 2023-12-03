@@ -72,7 +72,7 @@ Gem::Specification.new do |spec|
   # are needed when there's no database
   spec.add_runtime_dependency 'metasploit-model'
   # Needed for Meterpreter
-  spec.add_runtime_dependency 'metasploit-payloads', '2.0.148'
+  spec.add_runtime_dependency 'metasploit-payloads', '2.0.159'
   # Needed for the next-generation POSIX Meterpreter
   spec.add_runtime_dependency 'metasploit_payloads-mettle', '1.0.26'
   # Needed by msfgui and other rpc components
@@ -216,7 +216,7 @@ Gem::Specification.new do |spec|
   # SSH server library with ed25519
   spec.add_runtime_dependency 'hrr_rb_ssh-ed25519'
   # Needed for irb internal command
-  spec.add_runtime_dependency 'irb'
+  spec.add_runtime_dependency 'irb', '~> 1.7.4'
 
   # AWS enumeration modules
   spec.add_runtime_dependency 'aws-sdk-s3'

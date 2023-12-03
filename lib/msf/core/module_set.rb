@@ -17,12 +17,13 @@ class Msf::ModuleSet < Hash
   include Msf::Framework::Offspring
 
   # Wrapper that detects if a symbolic module is in use.  If it is, it creates an instance to demand load the module
-  # and then returns the now-loaded class afterwords.
+  # and then returns the now-loaded class afterwards.
   #
   # @param [String] name the module reference name
   # @return [Msf::Module] instance of the of the Msf::Module subclass with the given reference name
   def [](name)
-    if (super == Msf::SymbolicModule)
+    module_instance = super
+    if module_instance == Msf::SymbolicModule || module_instance.nil?
       create(name)
     end
 
