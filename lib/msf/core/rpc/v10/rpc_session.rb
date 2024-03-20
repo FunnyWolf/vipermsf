@@ -246,7 +246,7 @@ class RPC_Session < RPC_Base
     end
 
     data = s.user_output.dump_buffer
-    { "data" => data }
+    { "data" => Rex::Text.encode_base64(data) }
   end
 
 
