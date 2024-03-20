@@ -88,6 +88,36 @@ class Client
   # Cleans up the meterpreter instance, terminating the dispatcher thread.
   #
   def cleanup_meterpreter
+    # clean portfwd config
+    service = self.pfservice
+
+    # If we have any open port forwards, we need to close them down
+    # otherwise we'll end up with local listeners which aren't connected
+    # to valid channels in the migrated meterpreter instance.
+    existing_relays = []
+
+    if service
+      service.each_tcp_relay do |lhost, lport, rhost, rport, opts|
+        next unless opts['MeterpreterRelay']
+        if existing_relays.empty?
+          print_status('Removing existing TCP relays...')
+        end
+        if (service.stop_tcp_relay(lport, lhost))
+          print_status("Successfully stopped TCP relay on #{lhost || '0.0.0.0'}:#{lport}")
+          existing_relays << {
+            :lport => lport,
+            :opts => opts
+          }
+        else
+          print_error("Failed to stop TCP relay on #{lhost || '0.0.0.0'}:#{lport}")
+          next
+        end
+      end
+      unless existing_relays.empty?
+        print_status("#{existing_relays.length} TCP relay(s) removed.")
+      end
+    end
+
     if self.pivot_session
       self.pivot_session.remove_pivot_session(self.session_guid)
     end
