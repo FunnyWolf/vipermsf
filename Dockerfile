@@ -1,7 +1,8 @@
 FROM ruby:3.1.4-alpine3.18 AS builder
 LABEL maintainer="Rapid7"
 
-ARG BUNDLER_CONFIG_ARGS="set clean 'true' set no-cache 'true' set system 'true' set without 'development test coverage'"
+ARG BUNDLER_CONFIG_ARGS="set no-cache 'true' set system 'true' set without 'development test coverage'"
+ARG BUNDLER_FORCE_CLEAN="true"
 ENV APP_HOME=/usr/src/metasploit-framework
 ENV TOOLS_HOME=/usr/src/tools
 ENV BUNDLE_IGNORE_MESSAGES="true"
@@ -33,8 +34,11 @@ RUN apk add --no-cache \
       go \
     && echo "gem: --no-document" > /etc/gemrc \
     && gem update --system \
-    && bundle config $BUNDLER_ARGS \
+    && bundle config $BUNDLER_CONFIG_ARGS \
     && bundle install --jobs=8 \
+    && if [ "${BUNDLER_FORCE_CLEAN}" == "true" ]; then \
+         bundle clean --force; \
+       fi \
     # temp fix for https://github.com/bundler/bundler/issues/6680
     && rm -rf /usr/local/bundle/cache \
     # needed so non root users can read content of the bundle
@@ -51,6 +55,7 @@ RUN mkdir -p $TOOLS_HOME/bin && \
 
 FROM ruby:3.1.4-alpine3.18
 LABEL maintainer="Rapid7"
+ARG TARGETARCH
 
 ENV APP_HOME=/usr/src/metasploit-framework
 ENV TOOLS_HOME=/usr/src/tools
@@ -62,7 +67,13 @@ RUN addgroup -S $METASPLOIT_GROUP
 
 RUN apk add --no-cache bash sqlite-libs nmap nmap-scripts nmap-nselibs \
     postgresql-libs python3 py3-pip ncurses libcap su-exec alpine-sdk \
-    openssl-dev nasm mingw-w64-gcc
+    openssl-dev nasm
+RUN\
+    if [ "${TARGETARCH}" = "arm64" ];\
+	then apk add --no-cache gcc musl-dev python3-dev libffi-dev gcompat;\
+    else apk add --no-cache mingw-w64-gcc;\
+    fi
+
 
 RUN /usr/sbin/setcap cap_net_raw,cap_net_bind_service=+eip $(which ruby)
 RUN /usr/sbin/setcap cap_net_raw,cap_net_bind_service=+eip $(which nmap)

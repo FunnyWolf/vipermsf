@@ -54,7 +54,7 @@ class Process < Rex::Post::Process
   end
 
   #
-  # Attachs to the supplied process with a given set of permissions.
+  # Attaches to the supplied process with a given set of permissions.
   #
   def Process.open(pid = nil, perms = nil)
     real_perms = 0
@@ -305,6 +305,20 @@ class Process < Rex::Post::Process
     self.get_processes
   end
 
+  #
+  # Search memory for supplied regexes and return matches
+  #
+  def Process.memory_search(pid: 0, needles: [''], min_match_length: 5, max_match_length: 127)
+    request = Packet.create_request(COMMAND_ID_STDAPI_SYS_PROCESS_MEMORY_SEARCH)
+
+    request.add_tlv(TLV_TYPE_PID, pid)
+    needles.each { |needle| request.add_tlv(TLV_TYPE_MEMORY_SEARCH_NEEDLE, needle) }
+    request.add_tlv(TLV_TYPE_MEMORY_SEARCH_MATCH_LEN, max_match_length)
+    request.add_tlv(TLV_TYPE_UINT, min_match_length)
+
+    self.client.send_request(request)
+  end
+
   ##
   #
   # Instance methods
@@ -392,7 +406,7 @@ class Process < Rex::Post::Process
 
   #
   # Block until this process terminates on the remote side.
-  # By default we choose not to allow a packet responce timeout to
+  # By default we choose not to allow a packet response timeout to
   # occur as we may be waiting indefinatly for the process to terminate.
   #
   def wait( timeout = -1 )

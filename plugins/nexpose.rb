@@ -40,7 +40,7 @@ module Msf
 
       def nexpose_verify_db
         if !(framework.db && framework.db.usable && framework.db.active)
-          print_error('No database has been configured, please use db_create/db_connect first')
+          print_error('No database has been configured, please use db_connect first')
           return false
         end
 
@@ -545,7 +545,7 @@ module Msf
             print_status(" >> Scan has been completed with ID ##{sid}") if opt_verbose
           rescue ::Interrupt
             rep = false
-            print_status(" >> Terminating scan ID ##{sid} due to console interupt") if opt_verbose
+            print_status(" >> Terminating scan ID ##{sid} due to console interrupt") if opt_verbose
             @nsc.stop_scan(sid)
             break
           end

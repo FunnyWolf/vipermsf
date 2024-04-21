@@ -38,7 +38,7 @@ crass, 1.0.6, MIT
 daemons, 1.4.1, MIT
 date, 3.3.3, "ruby, Simplified BSD"
 debug, 1.8.0, "ruby, Simplified BSD"
-diff-lcs, 1.5.0, "MIT, Artistic-2.0, GPL-2.0+"
+diff-lcs, 1.5.1, "MIT, Artistic-2.0, GPL-2.0-or-later"
 dnsruby, 1.70.0, "Apache 2.0"
 docile, 1.4.0, MIT
 domain_name, 0.5.20190701, "Simplified BSD, New BSD, Mozilla Public License 2.0"
@@ -79,10 +79,10 @@ macaddr, 1.7.2, ruby
 memory_profiler, 1.0.1, MIT
 metasm, 1.0.5, LGPL-2.1
 metasploit-concern, 5.0.2, "New BSD"
-metasploit-credential, 6.0.6, "New BSD"
-metasploit-framework, 6.3.46, "New BSD"
+metasploit-credential, 6.0.7, "New BSD"
+metasploit-framework, 6.4.6, "New BSD"
 metasploit-model, 5.0.2, "New BSD"
-metasploit-payloads, 2.0.159, "3-clause (or ""modified"") BSD"
+metasploit-payloads, 2.0.166, "3-clause (or ""modified"") BSD"
 metasploit_data_models, 6.0.3, "New BSD"
 metasploit_payloads-mettle, 1.0.26, "3-clause (or ""modified"") BSD"
 method_source, 1.0.0, MIT
@@ -134,7 +134,7 @@ rb-readline, 0.5.5, BSD
 recog, 3.1.2, unknown
 redcarpet, 3.6.0, MIT
 regexp_parser, 2.8.1, MIT
-reline, 0.3.8, ruby
+reline, 0.4.1, ruby
 require_all, 3.0.0, MIT
 rex-arch, 0.1.15, "New BSD"
 rex-bin_tools, 0.1.9, "New BSD"
@@ -149,20 +149,20 @@ rex-powershell, 0.1.99, "New BSD"
 rex-random_identifier, 0.1.11, "New BSD"
 rex-registry, 0.1.5, "New BSD"
 rex-rop_builder, 0.1.5, "New BSD"
-rex-socket, 0.1.54, "New BSD"
+rex-socket, 0.1.57, "New BSD"
 rex-sslscan, 0.1.10, "New BSD"
 rex-struct2, 0.1.4, "New BSD"
-rex-text, 0.2.53, "New BSD"
+rex-text, 0.2.57, "New BSD"
 rex-zip, 0.1.5, "New BSD"
 rexml, 3.2.6, "Simplified BSD"
 rkelly-remix, 0.0.7, MIT
-rspec, 3.12.0, MIT
-rspec-core, 3.12.2, MIT
-rspec-expectations, 3.12.3, MIT
-rspec-mocks, 3.12.6, MIT
+rspec, 3.13.0, MIT
+rspec-core, 3.13.0, MIT
+rspec-expectations, 3.13.0, MIT
+rspec-mocks, 3.13.0, MIT
 rspec-rails, 6.0.3, MIT
 rspec-rerun, 1.1.0, MIT
-rspec-support, 3.12.1, MIT
+rspec-support, 3.13.0, MIT
 rubocop, 1.56.4, MIT
 rubocop-ast, 1.29.0, MIT
 ruby-macho, 4.0.0, MIT
@@ -171,7 +171,7 @@ ruby-prof, 1.4.2, "Simplified BSD"
 ruby-progressbar, 1.13.0, MIT
 ruby-rc4, 0.1.5, MIT
 ruby2_keywords, 0.0.5, "ruby, Simplified BSD"
-ruby_smb, 3.2.6, "New BSD"
+ruby_smb, 3.3.5, "New BSD"
 rubyntlm, 0.6.3, MIT
 rubyzip, 2.3.2, "Simplified BSD"
 sawyer, 0.9.2, MIT
@@ -207,5 +207,5 @@ windows_error, 0.1.5, BSD
 winrm, 2.3.6, "Apache 2.0"
 xdr, 3.0.3, "Apache 2.0"
 xmlrpc, 0.3.3, "ruby, Simplified BSD"
-yard, 0.9.34, MIT
+yard, 0.9.36, MIT
 zeitwerk, 2.6.12, MIT

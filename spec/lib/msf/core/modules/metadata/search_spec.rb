@@ -50,6 +50,13 @@ RSpec.describe Msf::Modules::Metadata::Search do
     it { expect(described_class.parse_search_string("stage:linux/x64/meterpreter ")).to eq({"stage"=>[["linux/x64/meterpreter"], []]}) }
     it { expect(described_class.parse_search_string("stager:linux/x64/reverse_tcp ")).to eq({"stager"=>[["linux/x64/reverse_tcp"], []]}) }
     it { expect(described_class.parse_search_string("adapter:cmd/linux/http/mips64 ")).to eq({"adapter"=>[["cmd/linux/http/mips64"], []]}) }
+    it { expect(described_class.parse_search_string("session_type:PostgreSQL ")).to eq({"session_type"=>[["postgresql"], []]}) }
+    it { expect(described_class.parse_search_string("session_type:MSSQL ")).to eq({"session_type"=>[["mssql"], []]}) }
+    it { expect(described_class.parse_search_string("session_type:MySQL ")).to eq({"session_type"=>[["mysql"], []]}) }
+    it { expect(described_class.parse_search_string("session_type:SMB ")).to eq({"session_type"=>[["smb"], []]}) }
+    it { expect(described_class.parse_search_string("session_type:Meterpreter ")).to eq({"session_type"=>[["meterpreter"], []]}) }
+    it { expect(described_class.parse_search_string("session_type:shell ")).to eq({"session_type"=>[["shell"], []]}) }
+    it { expect(described_class.parse_search_string("action:forge_golden ")).to eq({"action"=>[["forge_golden"], []]}) }
   end
 
   describe '#find' do
@@ -128,6 +135,14 @@ RSpec.describe Msf::Modules::Metadata::Search do
       it_should_behave_like 'search_filter', :accept => accept, :reject => reject
     end
 
+    context 'on a module with actions' do
+      let(:opts) { ({ 'actions' => [{ 'name' => 'ACTION_NAME', 'description' => 'ACTION_DESCRIPTION'}] }) }
+      accept = %w(action:action_name action:action_description)
+      reject = %w(action:unrelated)
+
+      it_should_behave_like 'search_filter', :accept => accept, :reject => reject
+    end
+
     context 'on a module with the author "joev"' do
       let(:opts) { ({ 'author' => ['joev'] }) }
       accept = %w(author:joev author:joe)
@@ -172,6 +187,48 @@ RSpec.describe Msf::Modules::Metadata::Search do
       let(:opts) { { 'adapter_refname' => 'linux/x64/meterpreter_reverse_https' } }
       accept = %w[adapter:linux/x64/meterpreter_reverse_http adapter:linux/x64/meterpreter_reverse_https]
       reject = %w[adapter:unrelated]
+
+      it_should_behave_like 'search_filter', accept: accept, reject: reject
+    end
+
+    context 'on a module with a #session_type of ["postgresql"]' do
+      let(:opts) { { 'session_types' => ['postgresql'] } }
+      accept = %w[session_type:postgresql]
+      accept_mis_spelt = %w[session_type:postgre]
+      reject = %w[session_type:unrelated]
+
+      it_should_behave_like 'search_filter', accept: accept, reject: reject
+      it_should_behave_like 'search_filter', accept: accept_mis_spelt, reject: reject
+    end
+
+    context 'on a module with a #session_types of ["postgresql"]' do
+      let(:opts) { { 'session_types' => ['postgresql'] } }
+      accept = %w[session_type:postgre]
+      reject = %w[session_type:unrelated]
+
+      it_should_behave_like 'search_filter', accept: accept, reject: reject
+    end
+
+    context 'on a module with a #session_type of ["mysql"]' do
+      let(:opts) { { 'session_types' => ['mysql'] } }
+      accept = %w[session_type:mysql]
+      reject = %w[session_type:unrelated]
+
+      it_should_behave_like 'search_filter', accept: accept, reject: reject
+    end
+
+    context 'on a module with a #session_type of ["smb"]' do
+      let(:opts) { { 'session_types' => ['smb'] } }
+      accept = %w[session_type:SMB]
+      reject = %w[session_type:unrelated]
+
+      it_should_behave_like 'search_filter', accept: accept, reject: reject
+    end
+
+    context 'on a module with a #session_type of ["mssql"]' do
+      let(:opts) { { 'session_types' => ['mssql'] } }
+      accept = %w[session_type:mssql]
+      reject = %w[session_type:unrelated]
 
       it_should_behave_like 'search_filter', accept: accept, reject: reject
     end
@@ -305,7 +362,7 @@ RSpec.describe Msf::Modules::Metadata::Search do
 
     REF_TYPES.each do |ref_type|
       ref_num = '1234-1111'
-      context 'on a module with reference #{ref_type}-#{ref_num}' do
+      context "on a module with reference #{ref_type}-#{ref_num}" do
         let(:opts) { ({ 'references' => ["#{ref_type}-#{ref_num}"] }) }
         accept = ["#{ref_type.downcase}:#{ref_num}"]
         reject = %w(1235-1111 1234-1112 bad).map { |n| "#{ref_type.downcase}:#{n}" }

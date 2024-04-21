@@ -1,4 +1,4 @@
-require 'metasploit/framework/mssql/client'
+require 'rex/proto/mssql/client'
 require 'metasploit/framework/login_scanner/base'
 require 'metasploit/framework/login_scanner/rex_socket'
 require 'metasploit/framework/login_scanner/ntlm'
@@ -14,7 +14,6 @@ module Metasploit
         include Metasploit::Framework::LoginScanner::Base
         include Metasploit::Framework::LoginScanner::RexSocket
         include Metasploit::Framework::LoginScanner::NTLM
-        include Metasploit::Framework::MSSQL::Client
 
         DEFAULT_PORT         = 1433
         DEFAULT_REALM         = 'WORKSTATION'
@@ -48,6 +47,18 @@ module Metasploit
         #   @return [Boolean] Whether to use Windows Authentication instead of SQL Server Auth.
         attr_accessor :windows_authentication
 
+        # @!attribute use_client_as_proof
+        #   @return [Boolean] If a login is successful and this attribute is true - an MSSQL::Client instance is used as proof
+        attr_accessor :use_client_as_proof
+
+        # @!attribute max_send_size
+        #   @return [Integer] The max size of the data to encapsulate in a single packet
+        attr_accessor :max_send_size
+
+        # @!attribute send_delay
+        #   @return [Integer] The delay between sending packets
+        attr_accessor :send_delay
+
         validates :windows_authentication,
           inclusion: { in: [true, false] }
 
@@ -66,8 +77,15 @@ module Metasploit
           }
 
           begin
-            if mssql_login(credential.public, credential.private, '', credential.realm)
+            client = Rex::Proto::MSSQL::Client.new(framework_module, framework, host, port, proxies)
+            if client.mssql_login(credential.public, credential.private, '', credential.realm)
               result_options[:status] = Metasploit::Model::Login::Status::SUCCESSFUL
+              if use_client_as_proof
+                result_options[:proof] = client
+                result_options[:connection] = client.sock
+              else
+                client.disconnect
+              end
             else
               result_options[:status] = Metasploit::Model::Login::Status::INCORRECT
             end

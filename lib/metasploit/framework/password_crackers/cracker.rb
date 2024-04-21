@@ -337,7 +337,7 @@ module Metasploit
         # This method returns the version of John the Ripper or Hashcat being used.
         #
         # @raise [PasswordCrackerNotFoundError] if a suitable cracker binary was never found
-        # @return [Sring] the version detected
+        # @return [String] the version detected
         def cracker_version
           if cracker == 'john'
             cmd = binary_path
@@ -445,7 +445,7 @@ module Metasploit
         # @return [Array] An array set up for {::IO.popen} to use
         def hashcat_crack_command
           cmd_string = binary_path
-          cmd = [cmd_string, '--session=' + cracker_session_id, '--logfile-disable']
+          cmd = [cmd_string, '--session=' + cracker_session_id, '--logfile-disable', '--quiet', '--username']
 
           if pot.present?
             cmd << ('--potfile-path=' + pot)
@@ -527,7 +527,7 @@ module Metasploit
 
         # This runs the show command in john and yields cracked passwords.
         #
-        # @return [Array] the output from teh command split on newlines
+        # @return [Array] the output from the command split on newlines
         def each_cracked_password
           ::IO.popen(show_command, 'rb').readlines
         end
@@ -563,7 +563,7 @@ module Metasploit
 
           pot_file = pot || john_pot_file
           if cracker == 'hashcat'
-            cmd = [cmd_string, '--show', "--potfile-path=#{pot_file}", "--hash-type=#{jtr_format_to_hashcat_format(format)}"]
+            cmd = [cmd_string, '--show', '--username', "--potfile-path=#{pot_file}", "--hash-type=#{jtr_format_to_hashcat_format(format)}"]
           elsif cracker == 'john'
             cmd = [cmd_string, '--show', "--pot=#{pot_file}", "--format=#{format}"]
 

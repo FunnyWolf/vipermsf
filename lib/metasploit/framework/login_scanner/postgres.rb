@@ -11,6 +11,10 @@ module Metasploit
       class Postgres
         include Metasploit::Framework::LoginScanner::Base
 
+        # @returns [Boolean] If a login is successful and this attribute is true - a Msf::Db::PostgresPR::Connection instance is used as proof,
+        #   and the socket is not immediately closed
+        attr_accessor :use_client_as_proof
+
         DEFAULT_PORT         = 5432
         DEFAULT_REALM        = 'template1'
         LIKELY_PORTS         = [ DEFAULT_PORT ]
@@ -41,8 +45,8 @@ module Metasploit
           pg_conn = nil
 
           begin
-            pg_conn = Msf::Db::PostgresPR::Connection.new(db_name,credential.public,credential.private,uri)
-          rescue RuntimeError => e
+            pg_conn = Msf::Db::PostgresPR::Connection.new(db_name,credential.public,credential.private,uri,proxies)
+          rescue ::RuntimeError => e
             case e.to_s.split("\t")[1]
               when "C3D000"
                 result_options.merge!({
@@ -70,8 +74,16 @@ module Metasploit
           end
 
           if pg_conn
-            pg_conn.close
             result_options[:status] = Metasploit::Model::Login::Status::SUCCESSFUL
+
+            # This module no longer owns the socket so return it as proof so the calling context can perform additional operations
+            # Additionally assign values to nil to avoid closing the socket etc automatically
+            if use_client_as_proof
+              result_options[:proof] = pg_conn
+              result_options[:connection] = pg_conn.conn
+            else
+              pg_conn.close
+            end
           else
             result_options[:status] = Metasploit::Model::Login::Status::INCORRECT
           end

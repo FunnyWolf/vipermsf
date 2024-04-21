@@ -58,6 +58,10 @@ def run
   @show_progress = datastore['ShowProgress']
   @show_percent  = datastore['ShowProgressPercent'].to_i
 
+  if self.respond_to?(:session) && session
+    datastore['RHOSTS'] = session.address
+  end
+
   rhosts_walker  = Msf::RhostsWalker.new(self.datastore['RHOSTS'], self.datastore).to_enum
   @range_count   = rhosts_walker.count || 0
   @range_done    = 0

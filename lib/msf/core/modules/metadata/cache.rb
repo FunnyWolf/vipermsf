@@ -46,9 +46,9 @@ class Cache
   # if there are changes.
   #
   def refresh_metadata(module_sets)
+    has_changes = false
     @mutex.synchronize {
       unchanged_module_references = get_unchanged_module_references
-      has_changes = false
       module_sets.each do |mt|
         unchanged_reference_name_set = unchanged_module_references[mt[0]]
 
@@ -78,13 +78,20 @@ class Cache
           end
         end
       end
-
-      if has_changes
-        update_store
-        clear_maps
-        update_stats
-      end
     }
+    if has_changes
+      update_store
+      clear_maps
+      update_stats
+    end
+  end
+
+  def module_metadata(type)
+    @mutex.synchronize do
+      wait_for_load
+      # TODO: Should probably figure out a way to cache this
+      @module_metadata_cache.filter_map { |_, metadata| [metadata.ref_name, metadata] if metadata.type == type }.to_h
+    end
   end
 
   #######
@@ -155,7 +162,7 @@ class Cache
     @module_metadata_cache = {}
     @store_loaded = false
     @console = Rex::Ui::Text::Output::Stdio.new
-    @load_thread = Thread.new  {
+    @load_thread = Thread.new {
       init_store
       @store_loaded = true
     }

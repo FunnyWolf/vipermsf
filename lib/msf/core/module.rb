@@ -338,6 +338,10 @@ module Msf
       false
     end
 
+    def default_options
+      self.module_info['DefaultOptions']
+    end
+
     def required_cred_options
       @required_cred_options ||= lambda {
         self.options.select { |name, opt|
@@ -459,6 +463,8 @@ module Msf
     attr_writer   :platform, :references # :nodoc:
     attr_writer   :privileged # :nodoc:
     attr_writer   :license # :nodoc:
+
+
 
   end
 

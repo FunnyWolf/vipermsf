@@ -5,25 +5,29 @@ module SMB
 
 class SimpleClient
 
-require 'rex/text'
-require 'rex/struct2'
-require 'ruby_smb'
+  require 'rex/text'
+  require 'rex/struct2'
+  require 'ruby_smb'
 
-# Some short-hand class aliases
-CONST = Rex::Proto::SMB::Constants
-CRYPT = Rex::Proto::SMB::Crypt
-UTILS = Rex::Proto::SMB::Utils
-XCEPT = Rex::Proto::SMB::Exceptions
-EVADE = Rex::Proto::SMB::Evasions
+  # Some short-hand class aliases
+  CONST = Rex::Proto::SMB::Constants
+  CRYPT = Rex::Proto::SMB::Crypt
+  UTILS = Rex::Proto::SMB::Utils
+  XCEPT = Rex::Proto::SMB::Exceptions
+  EVADE = Rex::Proto::SMB::Evasions
 
-# Public accessors
-attr_accessor :last_error, :server_max_buffer_size
+  DEFAULT_VERSIONS = [1, 2, 3].freeze
 
-# Private accessors
-attr_accessor :socket, :client, :direct, :shares, :last_share, :versions
+  # Public accessors
+  attr_accessor :last_error, :server_max_buffer_size
+
+  # Private accessors
+  attr_accessor :socket, :client, :direct, :shares, :last_share, :versions
+
+  attr_reader :address, :port
 
   # Pass the socket object and a boolean indicating whether the socket is netbios or cifs
-  def initialize(socket, direct = false, versions = [1, 2, 3], always_encrypt: true, backend: nil, client: nil)
+  def initialize(socket, direct = false, versions = DEFAULT_VERSIONS, always_encrypt: true, backend: nil, client: nil)
     self.socket = socket
     self.direct = direct
     self.versions = versions
@@ -53,6 +57,7 @@ attr_accessor :socket, :client, :direct, :shares, :last_share, :versions
         'obscure_trans_pipe' => EVADE::EVASION_NONE,
       }
     end
+    @address, @port = self.socket.peerinfo.split(':')
   end
 
   def login(name = '', user = '', pass = '', domain = '',
@@ -211,6 +216,7 @@ attr_accessor :socket, :client, :direct, :shares, :last_share, :versions
       end
 
       file_id = self.client.open(path, mode, read: true, write: write || perm.include?('w'))
+
     else
       mode = UTILS.open_mode_to_mode(perm)
       access = UTILS.open_mode_to_access(perm)
@@ -254,6 +260,19 @@ attr_accessor :socket, :client, :direct, :shares, :last_share, :versions
     self.client.negotiated_smb_version || -1
   end
 
+  alias peerhost address
+
+  def peerport
+    port.to_i
+  end
+
+  def peerinfo
+    "#{peerhost}:#{peerport}"
+  end
+
+  private
+
+  attr_writer :address, :port
 end
 end
 end

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    metasploit-framework (6.3.46)
+    metasploit-framework (6.4.6)
       actionpack (~> 7.0.0)
       activerecord (~> 7.0.0)
       activesupport (~> 7.0.0)
@@ -33,7 +33,7 @@ PATH
       metasploit-concern
       metasploit-credential
       metasploit-model
-      metasploit-payloads (= 2.0.159)
+      metasploit-payloads (= 2.0.166)
       metasploit_data_models
       metasploit_payloads-mettle (= 1.0.26)
       mqtt
@@ -60,6 +60,7 @@ PATH
       rb-readline
       recog
       redcarpet
+      reline
       rex-arch
       rex-bin_tools
       rex-core
@@ -80,7 +81,7 @@ PATH
       rex-zip
       ruby-macho
       ruby-mysql
-      ruby_smb (~> 3.2.0)
+      ruby_smb (~> 3.3.3)
       rubyntlm
       rubyzip
       sinatra
@@ -188,7 +189,7 @@ GEM
     debug (1.8.0)
       irb (>= 1.5.0)
       reline (>= 0.3.1)
-    diff-lcs (1.5.0)
+    diff-lcs (1.5.1)
     dnsruby (1.70.0)
       simpleidn (~> 0.2.1)
     docile (1.4.0)
@@ -265,7 +266,7 @@ GEM
       activesupport (~> 7.0)
       railties (~> 7.0)
       zeitwerk
-    metasploit-credential (6.0.6)
+    metasploit-credential (6.0.7)
       metasploit-concern
       metasploit-model
       metasploit_data_models (>= 5.0.0)
@@ -279,7 +280,7 @@ GEM
       activemodel (~> 7.0)
       activesupport (~> 7.0)
       railties (~> 7.0)
-    metasploit-payloads (2.0.159)
+    metasploit-payloads (2.0.166)
     metasploit_data_models (6.0.3)
       activerecord (~> 7.0)
       activesupport (~> 7.0)
@@ -383,7 +384,7 @@ GEM
     redis-client (0.8.0)
       connection_pool
     regexp_parser (2.8.1)
-    reline (0.3.8)
+    reline (0.4.1)
       io-console (~> 0.5)
     require_all (3.0.0)
     rex-arch (0.1.15)
@@ -424,30 +425,30 @@ GEM
       metasm
       rex-core
       rex-text
-    rex-socket (0.1.54)
+    rex-socket (0.1.57)
       rex-core
     rex-sslscan (0.1.10)
       rex-core
       rex-socket
       rex-text
     rex-struct2 (0.1.4)
-    rex-text (0.2.53)
+    rex-text (0.2.57)
     rex-zip (0.1.5)
       rex-text
     rexml (3.2.6)
     rkelly-remix (0.0.7)
-    rspec (3.12.0)
-      rspec-core (~> 3.12.0)
-      rspec-expectations (~> 3.12.0)
-      rspec-mocks (~> 3.12.0)
-    rspec-core (3.12.2)
-      rspec-support (~> 3.12.0)
-    rspec-expectations (3.12.3)
+    rspec (3.13.0)
+      rspec-core (~> 3.13.0)
+      rspec-expectations (~> 3.13.0)
+      rspec-mocks (~> 3.13.0)
+    rspec-core (3.13.0)
+      rspec-support (~> 3.13.0)
+    rspec-expectations (3.13.0)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.12.0)
-    rspec-mocks (3.12.6)
+      rspec-support (~> 3.13.0)
+    rspec-mocks (3.13.0)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.12.0)
+      rspec-support (~> 3.13.0)
     rspec-rails (6.0.3)
       actionpack (>= 6.1)
       activesupport (>= 6.1)
@@ -458,7 +459,7 @@ GEM
       rspec-support (~> 3.12)
     rspec-rerun (1.1.0)
       rspec (~> 3.0)
-    rspec-support (3.12.1)
+    rspec-support (3.13.0)
     rubocop (1.56.4)
       base64 (~> 0.1.1)
       json (~> 2.3)
@@ -479,8 +480,8 @@ GEM
     ruby-progressbar (1.13.0)
     ruby-rc4 (0.1.5)
     ruby2_keywords (0.0.5)
-    ruby_smb (3.2.6)
-      bindata
+    ruby_smb (3.3.5)
+      bindata (= 2.4.15)
       openssl-ccm
       openssl-cmac
       rubyntlm
@@ -550,7 +551,7 @@ GEM
       activesupport (>= 4.2, < 8.0)
     xmlrpc (0.3.3)
       webrick
-    yard (0.9.34)
+    yard (0.9.36)
     zeitwerk (2.6.12)
 
 PLATFORMS

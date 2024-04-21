@@ -48,6 +48,12 @@ module Metasploit
           ].freeze
         end
 
+        # @returns [Array[Integer]] The SMB versions to negotiate
+        attr_accessor :versions
+
+        # @returns [Boolean] By default the client uses encryption even if it is not required by the server. Disable this by setting always_encrypt to false
+        attr_accessor :always_encrypt
+
         # @!attribute dispatcher
         #   @return [RubySMB::Dispatcher::Socket]
         attr_accessor :dispatcher
@@ -57,7 +63,11 @@ module Metasploit
         #     A factory method for creating a kerberos authenticator
         attr_accessor :kerberos_authenticator_factory
 
-        # If login is successul and {Result#access_level} is not set
+        # @returns [Boolean] If a login is successful and this attribute is true - a RubySMB::Client instance is used as proof,
+        #   and the socket is not immediately closed
+        attr_accessor :use_client_as_proof
+
+        # If login is successful and {Result#access_level} is not set
         # then arbitrary credentials are accepted. If it is set to
         # Guest, then arbitrary credentials are accepted, but given
         # Guest permissions.
@@ -100,7 +110,16 @@ module Metasploit
             realm = (credential.realm || '').dup.force_encoding('UTF-8')
             username = (credential.public || '').dup.force_encoding('UTF-8')
             password = (credential.private || '').dup.force_encoding('UTF-8')
-            client = RubySMB::Client.new(dispatcher, username: username, password: password, domain: realm)
+            client = RubySMB::Client.new(
+               dispatcher,
+               username: username,
+               password: password,
+               domain: realm,
+               smb1: versions.include?(1),
+               smb2: versions.include?(2),
+               smb3: versions.include?(3),
+               always_encrypt: always_encrypt
+            )
 
             if kerberos_authenticator_factory
               client.extend(Msf::Exploit::Remote::SMB::Client::KerberosAuthentication)
@@ -129,6 +148,15 @@ module Metasploit
             case status_code
             when WindowsError::NTStatus::STATUS_SUCCESS, WindowsError::NTStatus::STATUS_PASSWORD_MUST_CHANGE, WindowsError::NTStatus::STATUS_PASSWORD_EXPIRED
               status = Metasploit::Model::Login::Status::SUCCESSFUL
+              # This module no long owns the socket, return it as proof so the calling context can perform additional operations
+              # Additionally assign values to nil to avoid closing the socket etc automatically
+              if use_client_as_proof
+                proof = client
+                connection = self.sock
+                client = nil
+                self.sock = nil
+                self.dispatcher = nil
+              end
             when WindowsError::NTStatus::STATUS_ACCOUNT_LOCKED_OUT
               status = Metasploit::Model::Login::Status::LOCKED_OUT
             when WindowsError::NTStatus::STATUS_LOGON_FAILURE, WindowsError::NTStatus::STATUS_ACCESS_DENIED
@@ -157,7 +185,11 @@ module Metasploit
             access_level ||= AccessLevels::GUEST
           end
 
-          result = Result.new(credential: credential, status: status, proof: proof, access_level: access_level)
+          result = Result.new(credential: credential,
+                              status: status,
+                              proof: proof,
+                              access_level: access_level,
+                              connection: connection)
           result.host = host
           result.port = port
           result.protocol = 'tcp'
@@ -175,6 +207,8 @@ module Metasploit
           self.connection_timeout = 10 if connection_timeout.nil?
           self.max_send_size = 0 if max_send_size.nil?
           self.send_delay = 0 if send_delay.nil?
+          self.always_encrypt = true if always_encrypt.nil?
+          self.versions = ::Rex::Proto::SMB::SimpleClient::DEFAULT_VERSIONS if versions.nil?
         end
 
       end

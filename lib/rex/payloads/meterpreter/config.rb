@@ -63,7 +63,7 @@ private
     end
     session_data = [
       0,                  # comms socket, patched in by the stager
-      exit_func,          # exit function identifer
+      exit_func,          # exit function identifier
       opts[:expiration],  # Session expiry
       uuid,               # the UUID
       session_guid,        # the Session GUID
@@ -108,7 +108,7 @@ private
       url << "?#{opts[:scope_id]}" if opts[:scope_id]
     end
 
-    # if the transport URI is for a HTTP or DNS payload we need to add a stack
+    # if the transport URI is for a HTTP payload we need to add a stack
     # of other stuff
     pack = 'A*VVV'
     transport_data = [

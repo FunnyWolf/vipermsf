@@ -8,6 +8,7 @@ module Msf::Modules::Metadata::Search
 
   VALID_PARAMS =
     %w[
+      action
       adapter
       aka
       arch
@@ -33,6 +34,7 @@ module Msf::Modules::Metadata::Search
       reference
       references
       rport
+      session_type
       stage
       stager
       target
@@ -139,7 +141,8 @@ module Msf::Modules::Metadata::Search
         # free form text search will honor 'and' semantics, i.e. 'metasploit pro' will only match modules that contain both
         # words, and will return false when only one word is matched
         if keyword == 'text'
-          text_segments = [module_metadata.name, module_metadata.fullname, module_metadata.description] + module_metadata.references + module_metadata.author + (module_metadata.notes['AKA'] || [])
+          module_actions = (module_metadata.actions || []).flat_map { |action| action.values.map(&:to_s) }
+          text_segments = [module_metadata.name, module_metadata.fullname, module_metadata.description] + module_metadata.references + module_metadata.author + (module_metadata.notes['AKA'] || []) + module_actions
 
           if module_metadata.targets
             text_segments = text_segments + module_metadata.targets
@@ -167,6 +170,8 @@ module Msf::Modules::Metadata::Search
 
           regex = as_regex(search_term)
           case keyword
+            when 'action'
+              match = [keyword, search_term] if (module_metadata&.actions || []).any? { |action| action.any? { |k, v| k =~ regex || v =~ regex } }
             when 'aka'
               match = [keyword, search_term] if (module_metadata.notes['AKA'] || []).any? { |aka| aka =~ regex }
             when 'author', 'authors'
@@ -209,6 +214,8 @@ module Msf::Modules::Metadata::Search
               match = [keyword, search_term] if module_metadata.stager_refname =~ regex
             when 'adapter'
               match = [keyword, search_term] if module_metadata.adapter_refname =~ regex
+            when 'session_type'
+              match = [keyword, search_term] if module_metadata.session_types && module_metadata.session_types.any? { |session_type| session_type =~ regex }
             when 'port', 'rport'
               match = [keyword, search_term] if module_metadata.rport.to_s =~ regex
             when 'rank'

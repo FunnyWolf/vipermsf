@@ -7,6 +7,7 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::Postgres
   include Msf::Auxiliary::Scanner
   include Msf::Auxiliary::Report
+  include Msf::OptionalSession::PostgreSQL
 
   # Creates an instance of this module.
   def initialize(info = {})
@@ -31,6 +32,7 @@ class MetasploitModule < Msf::Auxiliary
   # Loops through each host in turn. Note the current IP address is both
   # ip and datastore['RHOST']
   def run_host(ip)
+    self.postgres_conn = session.client if session
     user = datastore['USERNAME']
     pass = postgres_password
     do_fingerprint(user,pass,datastore['DATABASE'])
@@ -38,12 +40,12 @@ class MetasploitModule < Msf::Auxiliary
 
   # Alias for RHOST
   def rhost
-    datastore['RHOST']
+    postgres_conn&.peerhost || datastore['RHOST']
   end
 
   # Alias for RPORT
   def rport
-    datastore['RPORT']
+    postgres_conn&.peerport || datastore['RPORT']
   end
 
   def report_cred(opts)
@@ -76,14 +78,14 @@ class MetasploitModule < Msf::Auxiliary
     begin
       msg = "#{rhost}:#{rport} Postgres -"
       password = pass || postgres_password
-      vprint_status("#{msg} Trying username:'#{user}' with password:'#{password}' against #{rhost}:#{rport} on database '#{database}'")
+      vprint_status("#{msg} Trying username:'#{user}' with password:'#{password}' against #{rhost}:#{rport} on database '#{database}'") unless postgres_conn
       result = postgres_fingerprint(
         :db => database,
         :username => user,
         :password => password
       )
       if result[:auth]
-        vprint_good "#{rhost}:#{rport} Postgres - Logged in to '#{database}' with '#{user}':'#{password}'"
+        vprint_good "#{rhost}:#{rport} Postgres - Logged in to '#{database}' with '#{user}':'#{password}'" unless session
         print_status "#{rhost}:#{rport} Postgres - Version #{result[:auth]} (Post-Auth)"
       elsif result[:preauth]
         print_good "#{rhost}:#{rport} Postgres - Version #{result[:preauth]} (Pre-Auth)"
@@ -123,7 +125,7 @@ class MetasploitModule < Msf::Auxiliary
       end
 
       # Logout
-      postgres_logout
+      postgres_logout if self.postgres_conn && session.blank?
 
     rescue Rex::ConnectionError
       vprint_error "#{rhost}:#{rport} Connection Error: #{$!}"

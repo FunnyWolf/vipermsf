@@ -451,10 +451,10 @@ class Creds
 
     if output_file&.ends_with?('.hcat')
       output_file = ::File.open(output_file, 'wb')
-      output_formatter = method(:hash_to_hashcat)
+      output_formatter = Metasploit::Framework::PasswordCracker::Hashcat::Formatter.method(:hash_to_hashcat)
     elsif output_file&.ends_with?('.jtr')
       output_file = ::File.open(output_file, 'wb')
-      output_formatter = method(:hash_to_jtr)
+      output_formatter = Metasploit::Framework::PasswordCracker::JtR::Formatter.method(:hash_to_jtr)
     else
       output_file = ::File.open(output_file, 'wb') unless output_file.blank?
       tbl = Rex::Text::Table.new(tbl_opts)
@@ -477,8 +477,8 @@ class Creds
         else
           private_val = ''
         end
-        if truncate && private_val.to_s.length > 87
-          private_val = "#{private_val[0,87]} (TRUNCATED)"
+        if truncate && private_val.to_s.length > 88
+          private_val = "#{private_val[0,76]} (TRUNCATED)"
         end
         realm_val = core.realm ? core.realm.value : ''
         human_val = core.private ? core.private.class.model_name.human : ''

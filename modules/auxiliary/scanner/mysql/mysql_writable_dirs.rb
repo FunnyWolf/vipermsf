@@ -7,6 +7,7 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::MYSQL
   include Msf::Auxiliary::Report
   include Msf::Auxiliary::Scanner
+  include Msf::OptionalSession::MySQL
 
   def initialize
     super(
@@ -34,17 +35,21 @@ class MetasploitModule < Msf::Auxiliary
   # This function does not handle any errors, if you use this
   # make sure you handle the errors yourself
   def mysql_query_no_handle(sql)
-    res = @mysql_handle.query(sql)
+    res = self.mysql_conn.query(sql)
     res
   end
 
   def run_host(ip)
     print_warning("For every writable directory found, a file called #{datastore['FILE_NAME']} with the text test will be written to the directory.")
-    print_status("Login...")
+    print_status("Login...") unless session
 
-    unless mysql_login_datastore
-      print_error('Unable to login to the server.')
-      return
+    # If we have a session make use of it
+    if session
+      print_status("Using existing session #{session.sid}")
+      self.mysql_conn = session.client
+    else
+      # otherwise fallback to attempting to login
+      return unless mysql_login_datastore
     end
 
     File.read(datastore['DIR_LIST']).each_line do |dir|
@@ -57,17 +62,17 @@ class MetasploitModule < Msf::Auxiliary
     begin
       print_status("Checking #{dir}...")
       res = mysql_query_no_handle("SELECT _utf8'test' INTO DUMPFILE '#{dir}/" + datastore['FILE_NAME'] + "'")
-    rescue ::Mysql::ServerError => e
+    rescue ::Rex::Proto::MySQL::Client::ServerError => e
       print_warning(e.to_s)
     rescue Rex::ConnectionTimeout => e
       print_error("Timeout: #{e.message}")
     else
       print_good("#{dir} is writeable")
       report_note(
-        :host  => rhost,
+        :host  => mysql_conn.peerhost,
         :type  => "filesystem.file",
         :data  => "#{dir} is writeable",
-        :port  => rport,
+        :port  => mysql_conn.peerport,
         :proto => 'tcp',
         :update => :unique_data
       )

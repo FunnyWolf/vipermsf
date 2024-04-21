@@ -1350,7 +1350,9 @@ class Core
       # Save the framework's datastore
       begin
         framework.save_config
-        driver.framework.dns_resolver.save_config
+        if driver.framework.dns_resolver
+          driver.framework.dns_resolver.save_config
+        end
 
         if active_module
           active_module.save_config
@@ -1419,10 +1421,14 @@ class Core
     color = driver.output.config[:color]
 
     if args[0] == "off"
-      driver.init_ui(driver.input, Rex::Ui::Text::Output::Stdio.new)
+      stdout = Rex::Ui::Text::Output::Stdio.new
+      driver.init_ui(driver.input, stdout)
+      active_module.init_ui(driver.input, stdout) if defined?(active_module) && active_module
       msg = "Spooling is now disabled"
     else
-      driver.init_ui(driver.input, Rex::Ui::Text::Output::Tee.new(args[0]))
+      stdout = Rex::Ui::Text::Output::Tee.new(args[0])
+      driver.init_ui(driver.input, stdout)
+      active_module.init_ui(driver.input, stdout) if defined?(active_module) && active_module
       msg = "Spooling to file #{args[0]}..."
     end
 
@@ -1600,7 +1606,8 @@ class Core
           end
 
           begin
-            if session.type == 'meterpreter'
+            case session.type.downcase
+            when 'meterpreter'
               # If session.sys is nil, dont even try..
               unless session.sys
                 print_error("Session #{s} does not have stdapi loaded, skipping...")
@@ -1617,12 +1624,14 @@ class Core
                 print_line(data) unless data.blank?
               rescue ::Rex::Post::Meterpreter::RequestError
                 print_error("Failed: #{$!.class} #{$!}")
-              rescue Rex::TimeoutError
+              rescue ::Rex::TimeoutError
                 print_error("Operation timed out. Timeout currently #{session.response_timeout} seconds, you can configure this with %grnsessions -c <cmd> --timeout <value>%clr")
               end
-            elsif session.type == 'shell' || session.type == 'powershell'
+            when 'shell', 'powershell'
               output = session.shell_command(cmd)
               print_line(output) if output
+            when 'mssql', 'postgresql', 'mysql'
+              session.run_cmd(cmd, driver.output)
             end
           ensure
             # Restore timeout for each session
@@ -2428,7 +2437,7 @@ class Core
       print_line "Usage: unset [-g] var1 var2 var3 ..."
       print_line
       print_line "The unset command is used to unset one or more variables."
-      print_line "To flush all entires, specify 'all' as the variable name."
+      print_line "To flush all entries, specify 'all' as the variable name."
       print_line "With -g, operates on global datastore variables."
       print_line
     else
@@ -2717,7 +2726,7 @@ class Core
     all_lines.each_with_index do |line, line_num|
       next if (output_mods[:skip] and line_num < output_mods[:skip])
       our_lines << line if (output_mods[:keep] and line_num < output_mods[:keep])
-      # we don't wan't to keep processing if we have a :max and we've reached it already (not counting skips/keeps)
+      # we don't want to keep processing if we have a :max and we've reached it already (not counting skips/keeps)
       break if match_mods[:max] and count >= match_mods[:max]
       if eval statement
         count += 1
@@ -2872,7 +2881,7 @@ class Core
   # from all_lines by supplying the +before+ and/or +after+ parameters which are always positive
   #
   # @param all_lines [Array<String>] An array of all lines being considered for matching
-  # @param line_num [Integer] The line number in all_lines which has satisifed the match
+  # @param line_num [Integer] The line number in all_lines which has satisfied the match
   # @param after [Integer] The number of lines after the match line to include (should always be positive)
   # @param before [Integer] The number of lines before the match line to include (should always be positive)
   # @return [Array<String>] Array of lines including the line at line_num and any +before+ and/or +after+

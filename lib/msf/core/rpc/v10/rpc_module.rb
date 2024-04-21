@@ -13,7 +13,7 @@ class RPC_Module < RPC_Base
   # @example Here's how you would use this from the client:
   #  rpc.call('module.exploits')
   def rpc_exploits
-    { "modules" => self.framework.exploits.keys }
+    { "modules" => self.framework.exploits.module_refnames }
   end
 
 
@@ -24,7 +24,7 @@ class RPC_Module < RPC_Base
   # @example Here's how you would use this from the client:
   #  rpc.call('module.evasion')
   def rpc_evasion
-    { "modules" => self.framework.evasion.keys }
+    { "modules" => self.framework.evasion.module_refnames }
   end
 
 
@@ -35,7 +35,7 @@ class RPC_Module < RPC_Base
   # @example Here's how you would use this from the client:
   #  rpc.call('module.auxiliary')
   def rpc_auxiliary
-    { "modules" => self.framework.auxiliary.keys }
+    { "modules" => self.framework.auxiliary.module_refnames }
   end
 
 
@@ -185,7 +185,7 @@ class RPC_Module < RPC_Base
   # @example Here's how you would use this from the client:
   #  rpc.call('module.post')
   def rpc_post
-    { "modules" => self.framework.post.keys }
+    { "modules" => self.framework.post.module_refnames }
   end
 
 
@@ -225,6 +225,7 @@ class RPC_Module < RPC_Base
     res['authors'] = m.author.map { |a| a.to_s }
     res['privileged'] = m.privileged?
     res['check'] = m.has_check?
+    res['default_options'] = m.default_options
 
     res['references'] = []
     m.references.each do |r|
@@ -237,7 +238,7 @@ class RPC_Module < RPC_Base
         res['targets'][i] = m.targets[i].name
       end
 
-      if (m.default_target)
+      if m.default_target
         res['default_target'] = m.default_target
       end
 
@@ -350,6 +351,8 @@ class RPC_Module < RPC_Base
   def rpc_compatible_sessions(mname)
     if mname.start_with? 'exploit/'
       m = _find_module('exploit',mname)
+    elsif mname.start_with? 'auxiliary/'
+      m = _find_module('auxiliary', mname)
     else
       m = _find_module('post',mname)
     end

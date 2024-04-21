@@ -25,7 +25,7 @@ module Msf::Post::Common
   def rhost
     return super unless defined?(session) and session
 
-    case session.type
+    case session.type.downcase
     when 'meterpreter'
       session.sock.peerhost
     when 'shell', 'powershell'
@@ -38,7 +38,7 @@ module Msf::Post::Common
   def rport
     return super unless defined?(session) and session
 
-    case session.type
+    case session.type.downcase
     when 'meterpreter'
       session.sock.peerport
     when 'shell', 'powershell'

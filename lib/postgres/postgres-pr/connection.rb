@@ -56,12 +56,12 @@ class Connection
     end
   end
 
-  def initialize(database, user, password=nil, uri = nil)
+  def initialize(database, user, password=nil, uri = nil, proxies = nil)
     uri ||= DEFAULT_URI
 
     @transaction_status = nil
-    @params = {}
-    establish_connection(uri)
+    @params = { 'username' => user, 'database' => database }
+    establish_connection(uri, proxies)
 
     # Check if the password supplied is a Postgres-style md5 hash
     md5_hash_match = password.match(/^md5([a-f0-9]{32})$/)
@@ -100,7 +100,7 @@ class Connection
         raise "unknown auth type '#{msg.auth_type}' with buffer content:\n#{Rex::Text.to_hex_dump(msg.buffer.content)}"
 
       when AuthentificationKerberosV4, AuthentificationKerberosV5, AuthentificationSCMCredential
-        raise "unsupported authentification"
+        raise "unsupported authentication"
 
       when AuthentificationOk
       when ErrorResponse
@@ -119,6 +119,110 @@ class Connection
         raise "unhandled message type"
       end
     end
+  end
+
+  def peerhost
+    @conn.peerhost
+  end
+
+  def peerport
+    @conn.peerport
+  end
+
+  def peerinfo
+    "#{peerhost}:#{peerport}"
+  end
+
+  def current_database
+    @params['database']
+  end
+
+  # List of supported PostgreSQL platforms & architectures:
+  # https://postgrespro.com/docs/postgresql/16/supported-platforms
+  def map_compile_os_to_platform(compile_os)
+    return Msf::Platform::Unknown.realname if compile_os.blank?
+
+    compile_os = compile_os.downcase.encode(::Encoding::BINARY)
+
+    if compile_os.match?('linux')
+      platform = Msf::Platform::Linux
+    elsif compile_os.match?(/(darwin|mac|osx)/)
+      platform = Msf::Platform::OSX
+    elsif compile_os.match?('win')
+      platform = Msf::Platform::Windows
+    elsif compile_os.match?('free')
+      platform = Msf::Platform::FreeBSD
+    elsif compile_os.match?('net')
+      platform = Msf::Platform::NetBSD
+    elsif compile_os.match?('open')
+      platform = Msf::Platform::OpenBSD
+    elsif compile_os.match?('solaris')
+      platform = Msf::Platform::Solaris
+    elsif compile_os.match?('aix')
+      platform = Msf::Platform::AIX
+    elsif compile_os.match?('hpux')
+      platform = Msf::Platform::HPUX
+    elsif compile_os.match?('irix')
+      platform = Msf::Platform::Irix
+    else
+      # Return the query result if the value can't be mapped
+      return compile_os
+    end
+
+    platform.realname
+  end
+
+  # List of supported PostgreSQL platforms & architectures:
+  # https://postgrespro.com/docs/postgresql/16/supported-platforms
+  def map_compile_arch_to_architecture(compile_arch)
+    return '' if compile_arch.blank?
+
+    compile_arch = compile_arch.downcase.encode(::Encoding::BINARY)
+
+    if compile_arch.match?('sparc')
+      if compile_arch.include?('64')
+        arch = ARCH_SPARC64
+      else
+        arch = ARCH_SPARC
+      end
+    elsif compile_arch.include?('mips')
+      arch = ARCH_MIPS
+    elsif compile_arch.include?('ppc')
+      arch = ARCH_PPC
+    elsif compile_arch.match?('arm')
+      if compile_arch.match?('64')
+        arch = ARCH_AARCH64
+      elsif compile_arch.match?('arm')
+        arch = ARCH_ARMLE
+      end
+    elsif compile_arch.match?('64')
+      arch = ARCH_X86_64
+    elsif compile_arch.match?('86') || compile_arch.match?('i686')
+      arch = ARCH_X86
+    else
+      # Return the query result if the value can't be mapped
+      arch = compile_arch
+    end
+
+    arch
+  end
+
+  # @return [Hash] Detect the platform and architecture of the PostgreSQL server:
+  #  * :arch [String] The server architecture.
+  #  * :platform [String] The server platform.
+  def detect_platform_and_arch
+    result = {}
+
+    query_result = query('select version()').rows.join.match(/on (?<architecture>\w+)-\w+-(?<platform>\w+)/)
+    server_vars = {
+      'version_compile_machine' => query_result[:architecture],
+      'version_compile_os' => query_result[:platform]
+    }
+
+    result[:arch] = map_compile_arch_to_architecture(server_vars['version_compile_machine'])
+    result[:platform] = map_compile_os_to_platform(server_vars['version_compile_os'])
+
+    result
   end
 
   def close
@@ -235,14 +339,15 @@ class Connection
 
   # tcp://localhost:5432
   # unix:/tmp/.s.PGSQL.5432
-  def establish_connection(uri)
+  def establish_connection(uri, proxies)
     u = URI.parse(uri)
     case u.scheme
     when 'tcp'
       @conn = Rex::Socket.create(
       'PeerHost' => (u.host || DEFAULT_HOST).gsub(/[\[\]]/, ''),  # Strip any brackets off (IPv6)
       'PeerPort' => (u.port || DEFAULT_PORT),
-      'proto' => 'tcp'
+      'proto' => 'tcp',
+      'Proxies' => proxies
     )
     when 'unix'
       @conn = UNIXSocket.new(u.path)

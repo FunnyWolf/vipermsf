@@ -224,7 +224,6 @@ class RPC_Session < RPC_Base
     { "result" => "success" }
   end
 
-
   # Reads the output from a meterpreter session (such as a command output).
   #
   # @note Multiple concurrent callers writing and reading the same Meterperter session can lead to
@@ -593,11 +592,11 @@ class RPC_Session < RPC_Base
   end
 
 
-  # Returns all the compatible post modules for this session.
+  # Returns all the compatible modules for this session.
   #
   # @param [Integer] sid Session ID.
-  # @return [Hash] Post modules. It contains the following key:
-  #  * 'modules' [Array<string>] An array of post module names. Example: ['post/windows/wlan/wlan_profile']
+  # @return [Hash] Modules. It contains the following key:
+  #  * 'modules' [Array<string>] An array of module names. Example: ['post/windows/wlan/wlan_profile', 'auxiliary/scanner/postgres_version', 'exploit/windows/local/alpc_taskscheduler']
   # @example Here's how you would use this from the client:
   #  rpc.call('session.compatible_modules', 3)
   def rpc_compatible_modules( sid)
