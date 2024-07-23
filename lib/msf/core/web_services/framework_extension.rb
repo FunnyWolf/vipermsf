@@ -57,88 +57,7 @@ module Msf::WebServices
           # toybox
           framework.threads.spawn("viper_monitor", true) {
             loop do
-              res_jobs = {}
-              framework.jobs.each do |k, j|
-                begin
-                  res_jobs[k] = { 'name' => j.name,
-                                  'start_time' => j.start_time.to_i
-                  }
-                  res_jobs[k][:uuid] = j.ctx[0].uuid
-                  if j.ctx && j.ctx[0]
-                    modint = j.ctx[0]
-                    if modint.respond_to?(:get_resource)
-                      res_jobs[k][:uripath] = modint.get_resource
-                    end
-                    if modint.respond_to?(:datastore)
-                      tmpdatastore = modint.datastore
-                      tmpdatastore.delete('LocalInput')
-                      tmpdatastore.delete('LocalOutput')
-                      res_jobs[k]["datastore"] = tmpdatastore.user_defined
-                    end
-                  end
-                rescue => e
-                  elog("Error handle job info.", error: e)
-                end
-
-              end
-
-              res_sessions = {}
-              # toybox
-              framework.sessions.each do |sess|
-                begin
-                  i, s = sess
-
-                  res_sessions[s.sid] = {
-                    'type' => s.type.to_s,
-                    'tunnel_local' => s.tunnel_local.to_s,
-                    'tunnel_peer' => s.tunnel_peer.to_s,
-                    'comm_channel_session' => s.comm_channel_session,
-                    'via_exploit' => s.via_exploit.to_s,
-                    'via_payload' => s.via_payload.to_s,
-                    'desc' => s.desc.to_s,
-                    'info' => s.info.to_s,
-                    'workspace' => s.workspace.to_s,
-                    'session_host' => s.session_host.to_s,
-                    'session_port' => s.session_port.to_i,
-                    'target_host' => s.target_host.to_s,
-                    'username' => s.username.to_s,
-                    'uuid' => s.uuid.to_s,
-                    'exploit_uuid' => s.exploit_uuid.to_s,
-                    'routes' => s.routes,
-                    'arch' => s.arch.to_s,
-                    'name' => s.name,
-                  }
-
-                  if s.type.to_s == "meterpreter"
-                    res_sessions[s.sid]['platform'] = s.platform.to_s
-                    res_sessions[s.sid]['advanced_info'] = s.advanced_info
-                    res_sessions[s.sid]['load_powershell'] = s.ext.aliases.has_key?('powershell')
-                    res_sessions[s.sid]['load_python'] = s.ext.aliases.has_key?('python')
-                  else
-                    res_sessions[s.sid]['platform'] = nil
-                    res_sessions[s.sid]['advanced_info'] = {}
-                  end
-                  if s.respond_to?(:last_checkin) && s.last_checkin
-                    res_sessions[s.sid]['last_checkin'] = s.last_checkin.to_i
-                  else
-                    res_sessions[s.sid]['last_checkin'] = 0
-                  end
-                rescue
-                  elog("Error handle session info.", error: e)
-                end
-              end
-
-              begin
-                Msf::Module::Rpcredis.pub_heartbeat_data(true,
-                                                         "HEARTBEAT",
-                                                         {
-                                                           "jobs" => res_jobs,
-                                                           "sessions" => res_sessions
-                                                         })
-              rescue
-                elog("Error send heartbeat data.", error: e)
-              end
-
+              Msf::WebServices::FrameworkExtension.send_heartbeat(framework)
               ::IO.select(nil, nil, nil, 0.5)
             end
           }
@@ -162,6 +81,90 @@ module Msf::WebServices
 
       if db_result[:error]
         raise db_result[:error]
+      end
+    end
+
+    def self.send_heartbeat(framework)
+      res_jobs = {}
+      framework.jobs.each do |k, j|
+        begin
+          res_jobs[k] = { 'name' => j.name,
+                          'start_time' => j.start_time.to_i
+          }
+          res_jobs[k][:uuid] = j.ctx[0].uuid
+          if j.ctx && j.ctx[0]
+            modint = j.ctx[0]
+            if modint.respond_to?(:get_resource)
+              res_jobs[k][:uripath] = modint.get_resource
+            end
+            if modint.respond_to?(:datastore)
+              tmpdatastore = modint.datastore
+              tmpdatastore.delete('LocalInput')
+              tmpdatastore.delete('LocalOutput')
+              res_jobs[k]["datastore"] = tmpdatastore.user_defined
+            end
+          end
+        rescue => e
+          elog("Error handle job info.", error: e)
+        end
+
+      end
+
+      res_sessions = {}
+      # toybox
+      framework.sessions.each do |sess|
+        begin
+          i, s = sess
+
+          res_sessions[s.sid] = {
+            'type' => s.type.to_s,
+            'tunnel_local' => s.tunnel_local.to_s,
+            'tunnel_peer' => s.tunnel_peer.to_s,
+            'comm_channel_session' => s.comm_channel_session,
+            'via_exploit' => s.via_exploit.to_s,
+            'via_payload' => s.via_payload.to_s,
+            'desc' => s.desc.to_s,
+            'info' => s.info.to_s,
+            'workspace' => s.workspace.to_s,
+            'session_host' => s.session_host.to_s,
+            'session_port' => s.session_port.to_i,
+            'target_host' => s.target_host.to_s,
+            'username' => s.username.to_s,
+            'uuid' => s.uuid.to_s,
+            'exploit_uuid' => s.exploit_uuid.to_s,
+            'routes' => s.routes,
+            'arch' => s.arch.to_s,
+            'name' => s.name,
+          }
+
+          if s.type.to_s == "meterpreter"
+            res_sessions[s.sid]['platform'] = s.platform.to_s
+            res_sessions[s.sid]['advanced_info'] = s.advanced_info
+            res_sessions[s.sid]['load_powershell'] = s.ext.aliases.has_key?('powershell')
+            res_sessions[s.sid]['load_python'] = s.ext.aliases.has_key?('python')
+          else
+            res_sessions[s.sid]['platform'] = nil
+            res_sessions[s.sid]['advanced_info'] = {}
+          end
+          if s.respond_to?(:last_checkin) && s.last_checkin
+            res_sessions[s.sid]['last_checkin'] = s.last_checkin.to_i
+          else
+            res_sessions[s.sid]['last_checkin'] = 0
+          end
+        rescue
+          elog("Error handle session info.", error: e)
+        end
+      end
+
+      begin
+        Msf::Module::Rpcredis.pub_heartbeat_data(true,
+                                                 "HEARTBEAT",
+                                                 {
+                                                   "jobs" => res_jobs,
+                                                   "sessions" => res_sessions
+                                                 })
+      rescue
+        elog("Error send heartbeat data.", error: e)
       end
     end
 
