@@ -104,7 +104,7 @@ module Msf::WebServices
               res_jobs[k]["datastore"] = tmpdatastore.user_defined
             end
           end
-        rescue => e
+        rescue ::Exception => e
           elog("Error handle job info.", error: e)
         end
 
@@ -151,7 +151,7 @@ module Msf::WebServices
           else
             res_sessions[s.sid]['last_checkin'] = 0
           end
-        rescue
+        rescue ::Exception => e
           elog("Error handle session info.", error: e)
         end
       end
@@ -163,7 +163,7 @@ module Msf::WebServices
                                                    "jobs" => res_jobs,
                                                    "sessions" => res_sessions
                                                  })
-      rescue
+      rescue ::Exception => e
         elog("Error send heartbeat data.", error: e)
       end
     end
