@@ -35,7 +35,7 @@ function updateFrame() {
 
 setInterval(function() {
   updateFrame();
-},0.5);
+},500);
 
 </script>
 </head>
