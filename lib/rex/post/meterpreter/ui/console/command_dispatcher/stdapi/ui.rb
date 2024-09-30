@@ -239,27 +239,28 @@ class Console::CommandDispatcher::Stdapi::Ui
     }
 
     print_status("Preparing player...")
+    full_player_path = File.join("/root/viper/dist/icons", player_path)
     html = stream_html_template('screenshare', client.sock.peerhost, stream_path)
-    ::File.open(player_path, 'wb') do |f|
+    ::File.open(full_player_path, 'wb') do |f|
       f.write(html)
     end
 
-    path = ::File.expand_path(player_path)
-    if view
-      print_status("Opening player at: #{path}")
-      Rex::Compat.open_file(path)
-    else
-      print_status("Please open the player manually with a browser: #{path}")
-    end
-
+    # path = ::File.expand_path(player_path)
+    # if view
+    #   print_status("Opening player at: #{path}")
+    #   Rex::Compat.open_file(path)
+    # else
+    #   print_status("Please open the player manually with a browser: #{path}")
+    # end
+    print_status("Please open the player manually by url: https://vpsip:60000/icons/#{player_path}")
     print_status("Streaming...")
     begin
       ::Timeout.timeout(duration) do
         while client do
           data = client.ui.screenshot( quality )
-
+          full_stream_path = File.join("/root/viper/dist/icons", stream_path)
           if data
-            ::File.open(stream_path, 'wb') do |f|
+            ::File.open(full_stream_path, 'wb') do |f|
               f.write(data)
             end
             data = nil
