@@ -206,8 +206,8 @@ class Console::CommandDispatcher::Stdapi::Ui
     stream_path = Rex::Text.rand_text_alpha(8) + ".jpeg"
     player_path = Rex::Text.rand_text_alpha(8) + ".html"
     quality = 50
-    view = true
-    duration = 1800
+    view = false
+    duration = 180
 
     screenshare_opts = Rex::Parser::Arguments.new(
       "-h" => [ false, "Help Banner." ],
