@@ -57,8 +57,12 @@ module Msf::WebServices
           # toybox
           framework.threads.spawn("viper_monitor", true) {
             loop do
-              Msf::WebServices::FrameworkExtension.send_heartbeat(framework)
-              ::IO.select(nil, nil, nil, 0.5)
+              begin
+                Rex::ThreadSafe.sleep(0.5)
+                Msf::WebServices::FrameworkExtension.send_heartbeat(framework)
+              rescue ::Exception => e
+                elog("Error send heartbeat data.", error: e)
+              end
             end
           }
           framework

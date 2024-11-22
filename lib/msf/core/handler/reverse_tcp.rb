@@ -143,6 +143,8 @@ module ReverseTcp
             $ERROR_INFO.to_s,
             $ERROR_POSITION.join("\n")
           ].join("\n")
+        ensure
+          client.close unless client.nil?
         end
       end
     }
