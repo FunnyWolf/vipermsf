@@ -5,8 +5,9 @@
 
 class MetasploitModule < Msf::Auxiliary
 
-  include Msf::Exploit::Remote::LDAP
   include Msf::Auxiliary::Report
+  include Msf::Exploit::Remote::LDAP
+  include Msf::OptionalSession::LDAP
 
   ATTRIBUTE = 'msDS-KeyCredentialLink'.freeze
 
@@ -114,7 +115,9 @@ class MetasploitModule < Msf::Auxiliary
       else
         print_status('Discovering base DN automatically')
 
-        unless (@base_dn = discover_base_dn(ldap))
+        if (@base_dn = ldap.base_dn)
+          print_status("#{ldap.peerinfo} Discovered base DN: #{@base_dn}")
+        else
           print_warning("Couldn't discover base DN!")
         end
       end
@@ -133,8 +136,14 @@ class MetasploitModule < Msf::Auxiliary
         fail_with(Failure::UnexpectedReply, e.message)
       end
     end
+  rescue Errno::ECONNRESET
+    fail_with(Failure::Disconnected, 'The connection was reset.')
+  rescue Rex::ConnectionError => e
+    fail_with(Failure::Unreachable, e.message)
+  rescue Rex::Proto::Kerberos::Model::Error::KerberosError => e
+    fail_with(Failure::NoAccess, e.message)
   rescue Net::LDAP::Error => e
-    print_error("#{e.class}: #{e.message}")
+    fail_with(Failure::Unknown, "#{e.class}: #{e.message}")
   end
 
   def action_list(obj)

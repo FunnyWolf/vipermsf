@@ -176,7 +176,11 @@ class Meterpreter < Rex::Post::Meterpreter::Client
     end
 
     session.commands.concat(session.core.get_loaded_extension_commands('core'))
-
+    if session.tlv_enc_key[:weak_key?]
+      print_warning("Meterpreter session #{session.sid} is using a weak encryption key.")
+      print_warning('Meterpreter start up operations have been aborted. Use the session at your own risk.')
+      return nil
+    end
     # Unhook the process prior to loading stdapi to reduce logging/inspection by any AV/PSP
     if datastore['AutoUnhookProcess'] == true
       console.run_single('load unhook')
@@ -752,7 +756,7 @@ protected
           addr_and_mask = i.addrs.zip(i.netmasks).find do |addr, netmask|
             bits = Rex::Socket.net2bitmask( netmask )
             range = Rex::Socket::RangeWalker.new("#{addr}/#{bits}") rescue nil
-
+# toybox
             !!(range && range.valid? && range.include?(route.gateway) && addr != "127.0.0.1" && addr != "::1")
           end
           if addr_and_mask

@@ -325,7 +325,6 @@ class RPC_Session < RPC_Base
     { "result" => "success" }
   end
 
-
   # Sends an input to a meterpreter prompt.
   # You may want to use #rpc_meterpreter_read to retrieve the output.
   #
@@ -599,18 +598,24 @@ class RPC_Session < RPC_Base
   #  * 'modules' [Array<string>] An array of module names. Example: ['post/windows/wlan/wlan_profile', 'auxiliary/scanner/postgres_version', 'exploit/windows/local/alpc_taskscheduler']
   # @example Here's how you would use this from the client:
   #  rpc.call('session.compatible_modules', 3)
-  def rpc_compatible_modules( sid)
-    ret = []
+  def rpc_compatible_modules(sid)
+    session = self.framework.sessions[sid]
+    compatible_modules = []
 
-    mtype = "post"
-    names = self.framework.post.keys.map{ |x| "post/#{x}" }
-    names.each do |mname|
-      m = _find_module(mtype, mname)
-      next if not m.session_compatible?(sid)
-      ret << m.fullname
+    if session
+      session_type = session.type
+      search_params = { 'session_type' => [[session_type], []] }
+      cached_modules = Msf::Modules::Metadata::Cache.instance.find(search_params)
+
+      cached_modules.each do |cached_module|
+        m = _find_module(cached_module.type, cached_module.fullname)
+        compatible_modules << m.fullname if m.session_compatible?(sid)
+      end
     end
-    { "modules" => ret }
+
+    { "modules" => compatible_modules }
   end
+
 # toybox
       def rpc_meterpreter_route_get(ipaddress_list)
         result_list = []
@@ -751,13 +756,30 @@ class RPC_Session < RPC_Base
 
 private
 
-  def _find_module(mtype,mname)
-    mod = self.framework.modules.create(mname)
-    if(not mod)
-      error(500, "Invalid Module")
-    end
+  INTERACTIVE_SESSION_TYPES = %w[
+    meterpreter
+    mssql
+    postgresql
+    mysql
+    smb
+  ].freeze
+
+  def _find_module(_mtype, mname)
+    mod = framework.modules.create(mname)
+    error(500, 'Invalid Module') if mod.nil?
 
     mod
+  end
+
+  def _valid_interactive_session(sid)
+    session = framework.sessions[sid.to_i]
+    error(500, "Unknown Session ID #{sid}") if session.nil?
+
+    unless INTERACTIVE_SESSION_TYPES.include?(session.type)
+      error(500, "Use `interactive_read` and `interactive_write` for sessions of #{session.type} type")
+    end
+
+    session
   end
 
   def _valid_session(sid,type)

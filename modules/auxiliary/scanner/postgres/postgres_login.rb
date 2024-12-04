@@ -14,6 +14,7 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
   include Msf::Auxiliary::CommandShell
   include Msf::Sessions::CreateSessionOptions
+  include Msf::Auxiliary::ReportSummary
 
   # Creates an instance of this module.
   def initialize(info = {})
@@ -48,7 +49,7 @@ class MetasploitModule < Msf::Auxiliary
         OptBool.new('CreateSession', [false, 'Create a new session for every successful login', false])
       ])
 
-    options_to_deregister = %w[SQL PASSWORD_SPRAY]
+    options_to_deregister = %w[SQL]
     if framework.features.enabled?(Msf::FeatureManager::POSTGRESQL_SESSION_TYPE)
       add_info('New in Metasploit 6.4 - The %grnCreateSession%clr option within this module can open an interactive session')
     else
@@ -70,7 +71,9 @@ class MetasploitModule < Msf::Auxiliary
     logins = results.flat_map { |_k, v| v[:successful_logins] }
     sessions = results.flat_map { |_k, v| v[:successful_sessions] }
     print_status("Bruteforce completed, #{logins.size} #{logins.size == 1 ? 'credential was' : 'credentials were'} successful.")
-    if datastore['CreateSession']
+    return results unless framework.features.enabled?(Msf::FeatureManager::POSTGRESQL_SESSION_TYPE)
+
+    if create_session?
       print_status("#{sessions.size} Postgres #{sessions.size == 1 ? 'session was' : 'sessions were'} opened successfully.")
     else
       print_status('You can open a Postgres session with these credentials and %grnCreateSession%clr set to true')
@@ -88,16 +91,18 @@ class MetasploitModule < Msf::Auxiliary
     )
 
     scanner = Metasploit::Framework::LoginScanner::Postgres.new(
-      host: ip,
-      port: rport,
-      proxies: datastore['Proxies'],
-      cred_details: cred_collection,
-      stop_on_success: datastore['STOP_ON_SUCCESS'],
-      bruteforce_speed: datastore['BRUTEFORCE_SPEED'],
-      connection_timeout: 30,
-      framework: framework,
-      framework_module: self,
-      use_client_as_proof: create_session?
+      configure_login_scanner(
+        host: ip,
+        port: rport,
+        proxies: datastore['Proxies'],
+        cred_details: cred_collection,
+        stop_on_success: datastore['STOP_ON_SUCCESS'],
+        bruteforce_speed: datastore['BRUTEFORCE_SPEED'],
+        connection_timeout: 30,
+        framework: framework,
+        framework_module: self,
+        use_client_as_proof: create_session?
+      )
     )
     successful_logins = []
     successful_sessions = []

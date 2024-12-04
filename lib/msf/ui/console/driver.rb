@@ -54,8 +54,6 @@ class Driver < Msf::Ui::Driver
   # @option opts [Boolean] 'AllowCommandPassthru' (true) Whether to allow
   #   unrecognized commands to be executed by the system shell
   # @option opts [Boolean] 'Readline' (true) Whether to use the readline or not
-  # @option opts [Boolean] 'RealReadline' (false) Whether to use the system's
-  #   readline library instead of RBReadline
   # @option opts [String] 'HistFile' (Msf::Config.history_file) Path to a file
   #   where we can store command history
   # @option opts [Array<String>] 'Resources' ([]) A list of resource files to
@@ -65,7 +63,7 @@ class Driver < Msf::Ui::Driver
   # @option opts [Boolean] 'SkipDatabaseInit' (false) Whether to skip
   #   connecting to the database and running migrations
   def initialize(prompt = DefaultPrompt, prompt_char = DefaultPromptChar, opts = {})
-    choose_readline(opts)
+    setup_readline
 
     histfile = opts['HistFile'] || Msf::Config.history_file
 
@@ -133,14 +131,6 @@ class Driver < Msf::Ui::Driver
     # stack
     enstack_dispatcher(CommandDispatcher::Core)
 
-    # Report readline error if there was one..
-    if !@rl_err.nil?
-      print_error("***")
-      print_error("* Unable to load readline: #{@rl_err}")
-      print_error("* Falling back to RbReadLine")
-      print_error("***")
-    end
-
     # Load the other "core" command dispatchers
     CommandDispatchers.each do |dispatcher_class|
       dispatcher = enstack_dispatcher(dispatcher_class)
@@ -207,9 +197,23 @@ class Driver < Msf::Ui::Driver
     if restore_handlers
       print_status("Starting persistent handler(s)...")
 
-      restore_handlers.each do |handler_opts|
+      restore_handlers.each.with_index do |handler_opts, index|
         handler = framework.modules.create(handler_opts['mod_name'])
-        handler.exploit_simple(handler_opts['mod_options'])
+        handler.init_ui(self.input, self.output)
+        replicant_handler = nil
+        handler.exploit_simple(handler_opts['mod_options']) do |yielded_replicant_handler|
+          replicant_handler = yielded_replicant_handler
+        end
+
+        if replicant_handler.nil? || replicant_handler.error
+          print_status("Failed to start persistent payload handler ##{index} (#{handler_opts['mod_name']})")
+          next
+        end
+
+        if replicant_handler.error.nil?
+          job_id = handler.job_id
+          print_status "Persistent payload handler started as Job #{job_id}"
+        end
       end
     end
 
@@ -558,10 +562,16 @@ protected
   def handle_session_logging(val)
     if (val =~ /^(y|t|1)/i)
       Msf::Logging.enable_session_logging(true)
-      print_line("Session logging will be enabled for future sessions.")
+      framework.sessions.values.each do |session|
+        Msf::Logging.start_session_log(session)
+      end
+      print_line("Session logging enabled.")
     else
       Msf::Logging.enable_session_logging(false)
-      print_line("Session logging will be disabled for future sessions.")
+      framework.sessions.values.each do |session|
+        Msf::Logging.stop_session_log(session)
+      end
+      print_line("Session logging disabled.")
     end
   end
 
@@ -689,37 +699,46 @@ protected
   # Require the appropriate readline library based on the user's preference.
   #
   # @return [void]
-  def choose_readline(opts)
-    # Choose a readline library before calling the parent
-    @rl_err = nil
-    if opts['RealReadline']
-      # Remove the gem version from load path to be sure we're getting the
-      # stdlib readline.
-      gem_dir = Gem::Specification.find_all_by_name('rb-readline').first.gem_dir
-      rb_readline_path = File.join(gem_dir, "lib")
-      index = $LOAD_PATH.index(rb_readline_path)
-      # Bundler guarantees that the gem will be there, so it should be safe to
-      # assume we found it in the load path, but check to be on the safe side.
-      if index
-        $LOAD_PATH.delete_at(index)
-      end
-    end
+  def setup_readline
+    require 'readline'
 
-    begin
-      require 'readline'
-    rescue ::LoadError => e
-      if @rl_err.nil? && index
-        # Then this is the first time the require failed and we have an index
-        # for the gem version as a fallback.
-        @rl_err = e
-        # Put the gem back and see if that works
-        $LOAD_PATH.insert(index, rb_readline_path)
-        index = rb_readline_path = nil
-        retry
-      else
-        # Either we didn't have the gem to fall back on, or we failed twice.
-        # Nothing more we can do here.
-        raise e
+    # Only Windows requires a monkey-patched RbReadline
+    return unless Rex::Compat.is_windows
+
+    if defined?(::RbReadline) && !defined?(RbReadline.refresh_console_handle)
+      ::RbReadline.instance_eval do
+        class << self
+          alias_method :old_rl_move_cursor_relative, :_rl_move_cursor_relative
+          alias_method :old_rl_get_screen_size, :_rl_get_screen_size
+          alias_method :old_space_to_eol, :space_to_eol
+          alias_method :old_insert_some_chars, :insert_some_chars
+        end
+
+        def self.refresh_console_handle
+          # hConsoleHandle gets set only when RbReadline detects it is running on Windows.
+          # Therefore, we don't need to check Rex::Compat.is_windows, we can simply check if hConsoleHandle is nil or not.
+          @hConsoleHandle = @GetStdHandle.Call(::Readline::STD_OUTPUT_HANDLE) if @hConsoleHandle
+        end
+
+        def self._rl_move_cursor_relative(*args)
+          refresh_console_handle
+          old_rl_move_cursor_relative(*args)
+        end
+
+        def self._rl_get_screen_size(*args)
+          refresh_console_handle
+          old_rl_get_screen_size(*args)
+        end
+
+        def self.space_to_eol(*args)
+          refresh_console_handle
+          old_space_to_eol(*args)
+        end
+
+        def self.insert_some_chars(*args)
+          refresh_console_handle
+          old_insert_some_chars(*args)
+        end
       end
     end
   end

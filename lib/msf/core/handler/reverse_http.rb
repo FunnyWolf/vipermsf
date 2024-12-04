@@ -223,7 +223,7 @@ module ReverseHttp
             'MsfExploit' => self,
           },
           comm,
-                                                 (ssl?) ? datastore['HandlerSSLCert'] : nil, nil, datastore['SSLCipher'], datastore['SSLVersion']
+          (ssl?) ? datastore['HandlerSSLCert'] : nil, nil, datastore['SSLCipher'], datastore['SSLVersion']
         )
         local_addr = ip
       rescue
@@ -240,6 +240,7 @@ module ReverseHttp
     self.service.server_name = datastore['HttpServerName']
 
     # Add the new resource
+    # toybox
     begin
       self.service.add_resource((luri + "/").gsub("//", "/"),
                            'Proc' => Proc.new { |cli, req|
@@ -266,6 +267,7 @@ module ReverseHttp
   #
   def stop_handler
     if self.service
+    # toybox
       if @repetitive_resource # just work for one time
         @repetitive_resource = false
       else
@@ -417,8 +419,7 @@ protected
             resp.body = blob
 
           rescue NoMethodError => e
-          rescue NoMethodError => e
-            print_error('Staging failed. This can occur when stageless listeners are used with staged payloads.''')
+            print_error('Staging failed. This can occur when stageless listeners are used with staged payloads.')
             elog('Staging failed. This can occur when stageless listeners are used with staged payloads.', error: e)
             return
           end

@@ -2,10 +2,15 @@
 ### Description
 The `windows_secrets_dump` auxiliary module dumps SAM hashes and LSA secrets
 (including cached creds) from the remote Windows target without executing any
-agent locally. First, it reads as much data as possible from the registry and
-then save the hives locally on the target (`%SYSTEMROOT%\\random.tmp`).
-Finally, it downloads the temporary hive files and reads the rest of the data
-from it. These temporary files are removed when it's done.
+agent locally. This is done by remotely updating the registry key security
+descriptor, taking advantage of the WriteDACL privileges held by local
+administrators to set temporary read permissions.
+
+This can be disabled by setting the `INLINE` option to false and the module
+will fallback to the original implementation, which consists in saving the
+registry hives locally on the target (%SYSTEMROOT%\Temp\<random>.tmp),
+downloading the temporary hive files and reading the data from it. This
+temporary files are removed when it's done.
 
 On domain controllers, secrets from Active Directory is extracted using [MS-DRDS]
 DRSGetNCChanges(), replicating the attributes we need to get SIDs, NTLM hashes,
@@ -22,7 +27,7 @@ Solino.
 ### Setup
 A privileged user is required to run this module, typically a local or domain
 Administrator. It has been tested against multiple Windows versions, from
-Windows XP/Server 2003 to Windows 10/Server version 2004.
+Windows XP/Server 2003 to Windows 10/Server version 2022.
 
 ## Verification Steps
 1. Start msfconsole
@@ -43,7 +48,22 @@ Windows XP/Server 2003 to Windows 10/Server version 2004.
 14. Verify the notes are there
 
 ## Options
-Apart from the standard SMB options, no other specific options are needed.
+
+### INLINE
+Use inline technique to read protected keys from the registry remotely without
+saving the hives to disk (default: true).
+
+### KRB_USERS
+Restrict retrieving domain information to the users or groups specified. This
+is a comma-separated list of Active Directory groups and users. This parameter
+is only utilised for domain replication (`action` set to `DOMAIN` or `ALL`).
+`set KRB_USERS "user1,user2,Domain Admins"
+
+### KRB_TYPES
+Restrict retrieving domain information to a specific type of account; either
+`USERS_ONLY` or `COMPUTERS_ONLY`, or `ALL` to retrieve all accounts. This
+parameter is only utilised for domain replication (`action` set to `DOMAIN` or
+`ALL`). It is ignored if `KRB_USERS` is also set.
 
 ## Actions
 

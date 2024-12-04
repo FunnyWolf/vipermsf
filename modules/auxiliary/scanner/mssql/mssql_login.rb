@@ -15,6 +15,7 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::CommandShell
   include Msf::Auxiliary::Scanner
   include Msf::Sessions::CreateSessionOptions
+  include Msf::Auxiliary::ReportSummary
 
   def initialize
     super(
@@ -40,11 +41,10 @@ class MetasploitModule < Msf::Auxiliary
       OptBool.new('CreateSession', [false, 'Create a new session for every successful login', false])
     ])
 
-    options_to_deregister = %w[PASSWORD_SPRAY]
     if framework.features.enabled?(Msf::FeatureManager::MSSQL_SESSION_TYPE)
       add_info('New in Metasploit 6.4 - The %grnCreateSession%clr option within this module can open an interactive session')
     else
-      options_to_deregister << 'CreateSession'
+      options_to_deregister = %w[CreateSession]
     end
     deregister_options(*options_to_deregister)
   end
@@ -62,7 +62,9 @@ class MetasploitModule < Msf::Auxiliary
     logins = results.flat_map { |_k, v| v[:successful_logins] }
     sessions = results.flat_map { |_k, v| v[:successful_sessions] }
     print_status("Bruteforce completed, #{logins.size} #{logins.size == 1 ? 'credential was' : 'credentials were'} successful.")
-    if datastore['CreateSession']
+    return results unless framework.features.enabled?(Msf::FeatureManager::MSSQL_SESSION_TYPE)
+
+    if create_session?
       print_status("#{sessions.size} MSSQL #{sessions.size == 1 ? 'session was' : 'sessions were'} opened successfully.")
     else
       print_status('You can open an MSSQL session with these credentials and %grnCreateSession%clr set to true')
@@ -92,6 +94,7 @@ class MetasploitModule < Msf::Auxiliary
     )
 
     scanner = Metasploit::Framework::LoginScanner::MSSQL.new(
+      configure_login_scanner(
         host: ip,
         port: rport,
         proxies: datastore['PROXIES'],
@@ -115,6 +118,7 @@ class MetasploitModule < Msf::Auxiliary
         ssl_cipher: datastore['SSLCipher'],
         local_port: datastore['CPORT'],
         local_host: datastore['CHOST']
+      )
     )
     successful_logins = []
     successful_sessions = []

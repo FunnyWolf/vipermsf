@@ -93,6 +93,7 @@ module PacketDispatcher
 
   def on_passive_request(cli, req)
     begin
+      # toybox
       resp = send_queue.shift
       cli.send_response(resp)
       self.last_checkin = ::Time.now
@@ -363,6 +364,7 @@ module PacketDispatcher
         # If the backlog is empty, we don't have old/stale
         # packets hanging around, so perform a blocking wait
         # for the next packet
+	# toybox
         if @new_packet_queue.length == 0
           ::IO.select(nil, nil, nil, 0.10)
         end

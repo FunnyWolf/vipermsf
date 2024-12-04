@@ -6,6 +6,7 @@
 class MetasploitModule < Msf::Auxiliary
 
   include Msf::Exploit::Remote::LDAP
+  include Msf::OptionalSession::LDAP
   include Msf::Auxiliary::Report
 
   IGNORED_ATTRIBUTES = [
@@ -48,7 +49,7 @@ class MetasploitModule < Msf::Auxiliary
           The READ, UPDATE, and DELETE actions will write a copy of the certificate template to disk that can be
           restored using the CREATE or UPDATE actions. The CREATE and UPDATE actions require a certificate template data
           file to be specified to define the attributes. Template data files are provided to create a template that is
-          vulnerable to ESC1, ESC2, and ESC3.
+          vulnerable to ESC1, ESC2, ESC3 and ESC15.
 
           This module is capable of exploiting ESC4.
         },
@@ -109,7 +110,7 @@ class MetasploitModule < Msf::Auxiliary
       else
         print_status('Discovering base DN automatically')
 
-        unless (@base_dn = discover_base_dn(ldap))
+        unless (@base_dn = ldap.base_dn)
           fail_with(Failure::NotFound, "Couldn't discover base DN!")
         end
       end
@@ -118,10 +119,14 @@ class MetasploitModule < Msf::Auxiliary
       send("action_#{action.name.downcase}")
       print_good('The operation completed successfully!')
     end
+  rescue Errno::ECONNRESET
+    fail_with(Failure::Disconnected, 'The connection was reset.')
   rescue Rex::ConnectionError => e
-    print_error("#{e.class}: #{e.message}")
+    fail_with(Failure::Unreachable, e.message)
+  rescue Rex::Proto::Kerberos::Model::Error::KerberosError => e
+    fail_with(Failure::NoAccess, e.message)
   rescue Net::LDAP::Error => e
-    print_error("#{e.class}: #{e.message}")
+    fail_with(Failure::Unknown, "#{e.class}: #{e.message}")
   end
 
   def get_certificate_template
@@ -422,6 +427,11 @@ class MetasploitModule < Msf::Auxiliary
     if pki_flag.present?
       pki_flag = [pki_flag.to_i].pack('l').unpack1('L')
       print_status("  msPKI-RA-Signature: 0x#{pki_flag.to_s(16).rjust(8, '0')}")
+    end
+
+    pki_flag = obj['mkpki-template-schema-version']&.first
+    if pki_flag.present?
+      print_status("  msPKI-Template-Schema-Version: #{pki_flag}")
     end
 
     if obj['mspki-certificate-policy'].present?

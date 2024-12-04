@@ -88,6 +88,7 @@ class Client
   # Cleans up the meterpreter instance, terminating the dispatcher thread.
   #
   def cleanup_meterpreter
+    # toybox
     # clean portfwd config
     service = self.pfservice
 
@@ -178,7 +179,7 @@ class Client
     end
 
     self.response_timeout = opts[:timeout] || self.class.default_timeout
-
+    # toybox
     if opts[:send_keepalives] == false
       self.send_keepalives  = false
     else

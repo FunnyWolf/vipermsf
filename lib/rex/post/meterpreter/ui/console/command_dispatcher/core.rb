@@ -1002,6 +1002,7 @@ class Console::CommandDispatcher::Core
 
   def cmd_migrate_help
     if client.platform == 'linux'
+      # toybox
       print_line('Usage: migrate <<pid> | -P <pid> | -N <name>> [-t timeout]')
     else
       print_line('Usage: migrate <<pid> | -P <pid> | -N <name>> [-t timeout]')
