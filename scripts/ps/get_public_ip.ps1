@@ -1,4 +1,4 @@
-$WebRequest = [System.Net.WebRequest]::Create("http://ifconfig.io/ip")
+$WebRequest = [System.Net.WebRequest]::Create("https://ipwho.is")
 $WebRequest.Method = "GET"
 $WebRequest.ContentType = "application/json"
 $Response = $WebRequest.GetResponse()

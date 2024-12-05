@@ -71,7 +71,9 @@ module Msf::Module::Rpcredis
     result[:data] = data
     json = Msf::Module::Rpcredis.json_dump(result)
     flag = @@redis_client.publish "MSF_RPC_HEARTBEAT_CHANNEL", json
-    dlog("pub_heartbeat_data num: #{flag}")
+    if flag != 1
+      dlog("pub_heartbeat_data num: #{flag}")
+    end
     flag
   end
 

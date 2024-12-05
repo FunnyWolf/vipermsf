@@ -2,14 +2,14 @@
 require 'rex/post/meterpreter'
 
 module Rex
-module Post
-module Meterpreter
-module Ui
+  module Post
+    module Meterpreter
+      module Ui
 
-module Console::CommandDispatcher::Stdapi::Stream
+        module Console::CommandDispatcher::Stdapi::Stream
 
-  def stream_html_template(name, host, stream_path)
-    html = %|<html>
+          def stream_html_template(name, host, stream_path)
+            html = %|<html>
 <head>
 <META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
 <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
@@ -25,18 +25,17 @@ function noImage() {
   updateStatus("Waiting");
 }
 
-var i = 0;
 function updateFrame() {
   var img = document.getElementById("streamer");
-  img.src = "#{stream_path}#" + i;
+  const timestamp = new Date().getTime();
+  img.src = "#{stream_path}?t=" + timestamp;
   img.style = "display:";
   updateStatus("Playing");
-  i++;
 }
 
 setInterval(function() {
   updateFrame();
-},25);
+},500);
 
 </script>
 </head>
@@ -52,14 +51,13 @@ Status     : <span id="status"></span>
 <br>
 <img onerror="noImage()" id="streamer">
 <br><br>
-<a href="http://www.metasploit.com" target="_blank">www.metasploit.com</a>
 </body>
 </html>
     |
-    html
+            html
+          end
+        end
+      end
+    end
   end
-end
-end
-end
-end
 end

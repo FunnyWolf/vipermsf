@@ -1,4 +1,5 @@
 # -*- coding: binary -*-
+# toybox
 module Msf
   module RPC
     class Health
@@ -24,7 +25,8 @@ module Msf
         end
 
         { status: 'UP' }
-      rescue => e
+        # toybox
+      rescue ::Exception => e
         elog('Health status failing', error: e)
 
         { status: 'DOWN' }
