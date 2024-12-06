@@ -1,3 +1,4 @@
+# toybox
 module Msf::Module::Compatibility
   #
   # Returns the hash that describes this module's compatibilities.

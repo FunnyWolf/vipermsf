@@ -194,7 +194,7 @@ class Meterpreter < Rex::Post::Meterpreter::Client
       unless datastore['AutoSystemInfo'] == false
         session.load_session_info
       end
-
+      # toybox
     end
 
     # only load priv on native windows
@@ -450,7 +450,11 @@ class Meterpreter < Rex::Post::Meterpreter::Client
 
   def update_session_info
     # sys.config.getuid, and fs.dir.getwd cache their results, so update them
-    fs&.dir&.getwd
+    begin
+      fs&.dir&.getwd
+    rescue Rex::Post::Meterpreter::RequestError => e
+      elog('failed retrieving working directory', error: e)
+    end
     username = self.sys.config.getuid
     sysinfo  = self.sys.config.sysinfo
     # toybox

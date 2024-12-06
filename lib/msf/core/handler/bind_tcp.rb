@@ -15,6 +15,7 @@ module Handler
 module BindTcp
 
   include Msf::Handler
+  # toybox
   include Msf::Handler::Reverse::Comm
   #
   # Returns the handler specific string representation, in this case
@@ -119,6 +120,7 @@ module BindTcp
       end
 
       stime = Time.now.to_i
+      # toybox
       comm = select_comm
 
 
@@ -142,6 +144,7 @@ module BindTcp
             wlog("Exception caught in bind handler: #{$!.class} #{$!}")
           end
         else
+          # toybox
           socket_subsystem = Rex::Post::Meterpreter::Extensions::Stdapi::Net::Socket.new(comm)
           params = Rex::Socket::Parameters.new({
                                                        'PeerHost' => rhost,

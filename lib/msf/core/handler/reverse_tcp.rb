@@ -128,6 +128,7 @@ module ReverseTcp
           # toybox
           dlog("new tcp connect #{client.peerhost}")
           unless redis_rpc_call("IPFilter.is_allow",0.5, ip: client.peerhost)
+            dlog("new tcp connect #{client.peerhost} not allow")
             client.close
             next
           end
@@ -143,7 +144,6 @@ module ReverseTcp
             $ERROR_INFO.to_s,
             $ERROR_POSITION.join("\n")
           ].join("\n")
-        ensure
           client.close unless client.nil?
         end
       end
