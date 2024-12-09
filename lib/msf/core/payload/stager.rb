@@ -196,6 +196,7 @@ module Msf::Payload::Stager
         p = generate_stage(opts)
         p = encode_stage(p)
       rescue ::RuntimeError, ::StandardError => e
+        dlog("Error (#{e.message}) (#{e.class})")
         warning_msg = "Failed to stage"
         warning_msg << " (#{conn.peerhost})"  if conn.respond_to? :peerhost
         warning_msg << ": #{e}"
